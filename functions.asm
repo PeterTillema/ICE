@@ -7,8 +7,8 @@ InsertA:
 
 InsertHL:
 	push de
-		ld de, (programPtr)
-		ex de, hl
+		ex de,hl
+		ld hl, (programPtr)
 		ld (hl), de
 		inc hl
 		inc hl
@@ -85,9 +85,9 @@ _:	cp trand
 CompareStrings:
 	ld a, (de)
 	cp a, (hl)
+	ret nz
 	inc hl
 	inc de
-	ret nz
 	cp tEnter
-	ret z
-	jr CompareStrings
+	jr nz,CompareStrings
+	ret
