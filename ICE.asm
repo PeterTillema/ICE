@@ -81,7 +81,6 @@ InRam:
 	ld (programNameLength), a
 	ld hl, 00021DDh
 	call InsertHL											; ld ix, XX****
-	ld a, 008h
 	call InsertA											; ld ix, XXXX**
 	ld a, 0E3h
 	call InsertA											; ld ix, XXXXXX
