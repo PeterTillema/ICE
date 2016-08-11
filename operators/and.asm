@@ -1,15 +1,14 @@
 functionAnd:
 	ld a, b
-	cp typeNumber
-	jp z, AndNumberXXX
-	cp typeVariable
-	jp z, AndVariableXXX
-	cp typeFunction
-	jp z, AndFunctionXXX
+	rra
+	jp nc, AndVariableXXX
+	rra
+	jp c, AndFunctionXXX
+	rra
+	jp nc, AndNumberXXX
 AndChainXXX:
-	ld a, c
-	cp ChainFirst
-	jr z, AndChainFirstXXX
+	bit 0, c
+	jr nz, AndChainFirstXXX
 AndChainPushXXX:
 	ld a, d
 	cp typeChain
@@ -17,12 +16,12 @@ AndChainPushXXX:
 	ld a, 0F1h
 	call InsertA						; pop af
 	ld a, d
-	cp typeNumber
-	jr z, AndChainFirstNumber
-	cp typeVariable
-	jr z, AndChainFirstVariable
-	cp typeFunction
-	jr z, AndChainFirstFunction
+	rra
+	jr nc, AndChainFirstVariable
+	rra
+	jr c, AndChainFirstFunction
+	rra
+	jr nc, AndChainFirstNumber
 AndChainPushChain:
 	ld hl, 028B7C1h
 	call InsertHL						; pop bc \ or a \ jr z, *
@@ -34,20 +33,10 @@ AndChainPushChain:
 	jp InsertA							; ld a, 1
 AndChainFirstXXX:
 	ld a, d
-	cp typeNumber
-	jr z, AndChainFirstNumber
-	cp typeFunction
-	jr z, AndChainFirstFunction
-AndChainFirstVariable:
-	ld hl, 00828B7h
-	call InsertHL						; or a \ jr z, 08
-	call InsertAIXE						; ld a, (ix+*)
-	ld hl, 0022887h
-	call InsertHL						; or a \ jr z, 02
-	ld a, 03Eh
-	call InsertA						; ld a, *
-	ld a, 1
-	jp InsertA							; ld a, 1
+	rra
+	jr nc,AndChainFirstVariable
+	rra
+	jr c, AndChainFirstFunction
 AndChainFirstNumber:
 	ld c, e
 	jr AndNumberChain
@@ -58,21 +47,32 @@ AndChainFirstFunction:
 	call GetFunction
 	ld a, 080h
 	jp InsertA							; add a, b
+AndChainFirstVariable:
+	ld hl, 00828B7h
+	call InsertHL						; or a \ jr z, 08
+	call InsertAIXE						; ld a, (ix+*)
+	ld hl, 0022887h
+	call InsertHL						; or a \ jr z, 02
+	ld a, 03Eh
+	call InsertA						; ld a, *
+	ld a, 1
+	jp InsertA							; ld a, 1
 AndNumberXXX:
 	ld a, d
-	cp typeNumber
-	jr z, AndNumberNumber
-	cp typeVariable
-	jr z, AndNumberVariable
-	cp typeFunction
-	jr z, AndNumberFunction
+	rra
+	jr nc, AndNumberVariable
+	rra
+	jr c, AndNumberFunction
+	rra
+	jr nc, AndNumberNumber
+	
 AndNumberChain:
 	ld a, c
 	or a
 	jr nz, +_
 	ld (hl), typeNumber
 	inc hl
-	ld (hl), 0
+	ld (hl), a
 	res chain_operators, (iy+myFlags)
 	ret
 _:	ld hl, 09F01D6h
@@ -96,19 +96,14 @@ AndNumberVariable:
 	ld c, e
 	ld e, a
 	jr AndVariableNumber
-AndNumberFunction:
-	ld a, e
-	call GetFunction
-	ld e, c
-	jr AndChainFirstNumber
 AndVariableXXX:
 	ld a, d
-	cp typeNumber
-	jr z, AndVariableNumber
-	cp typeVariable
-	jr z, AndVariableVariable
-	cp typeFunction
-	jr z, AndVariableFunction
+	rra
+	jr nc,AndVariableVariable
+	rra
+	jr c, AndVariableFunction
+	rra
+	jr nc, AndVariableNumber
 AndVariableChain:
 	ld hl, 00828B7h
 	call InsertHL						; or a \ jr z, 08
@@ -125,7 +120,7 @@ AndVariableNumber:
 	jr nz, +_
 	ld (hl), typeNumber
 	inc hl
-	ld (hl), 0
+	ld (hl), a
 	res chain_operators, (iy+myFlags)
 	ret
 _:	call InsertAIXC						; ld a, (ix+*)
@@ -151,12 +146,17 @@ AndFunctionXXX:
 	ld c, e
 	ld e, a
 	ld a, d
-	cp typeNumber
-	jr z, AndNumberFunction
-	cp typeVariable
-	jr z, AndVariableFunction
-	cp typeChain
-	jp z, AndChainFirstFunction
+	rra
+	jr nc, AndVariableFunction
+	rra
+	jr c,AndFunctionFunction
+	rra
+	jp c, AndChainFirstFunction
+AndNumberFunction:
+	ld a, e
+	call GetFunction
+	ld e, c
+	jr AndChainFirstNumber	
 AndFunctionFunction:
 	ld a, c
 	call GetFunction
