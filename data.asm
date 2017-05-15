@@ -34,7 +34,7 @@ CArguments:
 	.dl CFunction0Args, CFunction1Arg, CFunction2Args, CFunction3Args, CFunction4Args, CFunction5Args, CFunction6Args
 	
 functionCustomStart:
-	.dl functionExecHex, functionDefineSprite, functionCall, functionCompilePrgm
+	.dl functionExecHex, functionDefineSprite, functionCall, functionCompilePrgm, functionSetBASICVar, functionGetBASICVar
 	
 precedence:	.db 7, 4,4,5,5,3,3,3,3,3,3,2, 2,  1,  0
 	         ;   t+ - + / * ≠ ≥ ≤ > < = or xor and →
@@ -46,25 +46,26 @@ lists:
 hexadecimals:
 	.db tF, tE, tD, tC, tB, tA, t9, t8, t7, t6, t5, t4, t3, t2, t1, t0
 	
-stackPtr:		.dl stack
-outputPtr:		.dl output
-programPtr:		.dl program
-programNamesPtr:	.dl programNamesStack
-labelPtr:		.dl labelStack
-gotoPtr:		.dl gotoStack
+stackPtr:		        .dl stack
+outputPtr:		        .dl output
+programPtr:		        .dl program
+programNamesPtr:	    .dl programNamesStack
+labelPtr:		        .dl labelStack
+gotoPtr:		        .dl gotoStack
 programDataOffsetPtr:	.dl programDataOffsetStack
-tempStringsPtr:		.dl tempStringsStack
-tempListsPtr:		.dl tempListsStack
-programDataDataPtr:	.dl programDataData
-amountOfPrograms	.db 0
-openedParensE		.db 0
-openedParensF		.db 0
-amountOfArguments	.db 0
-amountOfCRoutines	.db 0
-amountOfEnds		.db 0
-amountOfInput		.db 0
-amountOfPause		.db 0
-amountOfRoot		.db 0
+tempStringsPtr:		    .dl tempStringsStack
+tempListsPtr:		    .dl tempListsStack
+programDataDataPtr:	    .dl programDataData
+debugCodePtr:           .dl InsertDebugCode
+amountOfPrograms	    .db 0
+openedParensE		    .db 0
+openedParensF		    .db 0
+amountOfArguments	    .db 0
+amountOfCRoutines	    .db 0
+amountOfEnds		    .db 0
+amountOfInput		    .db 0
+amountOfPause		    .db 0
+amountOfRoot		    .db 0
 ExprOutput		.db 0
 ExprOutput2		.db 0
 AmountOfSubPrograms	.db 0
@@ -153,31 +154,31 @@ PressKey:
 InputRoutine:
 	call	_ClrScrn
 	call	_HomeUp
-	xor	a, a
-	ld	(ioPrompt), a
-	ld	(curUnder), a
+	xor	    a, a
+	ld	    (ioPrompt), a
+	ld	    (curUnder), a
 	call	_GetStringInput
-	ld	hl, (editSym)
+	ld	    hl, (editSym)
 	call	_VarNameToOP1HL
 	call	_ChkFindSym
-	ld	a, (de)
-	inc	de
-	inc	de
-	ld	b, a
-	sbc	hl, hl
+	ld	    a, (de)
+	inc	    de
+	inc	    de
+	ld	    b, a
+	sbc	    hl, hl
 _:	push	bc
-		add	hl, hl
-		push	hl
-		pop	bc
-		add	hl, hl
-		add	hl, hl
-		add	hl, bc
-		ld	a, (de)
-		sub	a, t0
-		ld	bc, 0
-		ld	c, a
-		add	hl, bc
-		inc	de
+            add	    hl, hl
+            push	hl
+            pop	    bc
+            add	    hl, hl
+            add	    hl, hl
+            add	    hl, bc
+            ld	    a, (de)
+            sub	    a, t0
+            ld	    bc, 0
+            ld	    c, a
+            add	    hl, bc
+            inc	    de
 	pop	bc
 	djnz	-_
 InputOffset = $+2
@@ -187,7 +188,7 @@ InputRoutineEnd:
 
 RandRoutine:
 	ld	hl, (ix+rand1)
-	ld	de, (ix+rand1+3)
+	ld	de, (ix+rand2)
 	ld	b, h
 	ld	c, l
 	add	hl, hl
@@ -200,19 +201,19 @@ RandRoutine:
 	add	hl, bc
 	ld	(ix+rand1), hl
 	adc	hl, de
-	ld	(ix+rand1+3), hl
+	ld	(ix+rand2), hl
 	ex	de, hl
-	ld	hl, (ix+rand1+6)
-	ld	bc, (ix+rand1+9)
+	ld	hl, (ix+rand3)
+	ld	bc, (ix+rand4)
 	add	hl, hl
 	rl	c
 	rl	b
-	ld	(ix+rand1+9), bc
+	ld	(ix+rand4), bc
 	sbc	a, a
 	and	%11000101
 	xor	l
 	ld	l, a
-	ld	(ix+rand1+6), hl
+	ld	(ix+rand3), hl
 	ex	de, hl
 	add	hl, bc
 	ret
@@ -322,6 +323,113 @@ XORANDSMC:
 	sbc	hl, hl
 	and	a, 1
 	ld	l, a
+    
+StoBASICVar:
+    push hl
+        call _ZeroOP1
+        ld hl, OP1+1
+        ld (hl), b
+        call _OP2Set0
+    pop hl
+    add hl, de
+    or a, a
+    sbc hl, de
+    jr z, +++_
+    ld b, 4
+    ld de, OP2+5
+_:  ld a, 10
+    call _DivHLByA
+    ld c, a
+    ld a, 10
+    call _DivHLByA
+    add a, a
+    add a, a
+    add a, a
+    add a, a
+    add a, c
+    ld (de), a
+    dec de
+    djnz -_
+    ld hl, OP2+1
+    ld (hl), $87
+_:  ld a, (OP2M)
+    cp a, $10
+    jr nc, +_
+    ld hl, OP2+5
+    xor a, a
+    rld
+    dec hl
+    rld
+    dec hl
+    rld
+    dec hl
+    rld
+    dec hl
+    dec (hl)
+    jr -_
+_:  call _ChkFindSym
+    call nc, _DelVarArc
+    call _CreateReal
+    ld hl, OP2
+    ld bc, 9
+    ldir
+    ret
+StoBASICVarEnd:
+
+GetBASICVar:
+    call _ZeroOP1
+    ld hl, OP1+1
+    ld (hl), b
+    call _FindSym
+    call nc, _RclVarSym
+    call _ConvOP1
+    ex de, hl
+    ret
+GetBASICVarEnd:
+
+DebugCode:
+    ld      hl, $474F4C
+    ld      (OP1+1), hl
+    xor     a, a
+    ld      (OP1+4), a
+    call    _FindProgSym
+    call    nc, _DelVarArc
+    ld      hl, (ix+debugPtr)
+    ld      de, debugStart
+    or      a, a
+    sbc     hl, de
+    push    de
+            push    hl
+                    call    _CreateProg
+            pop     bc
+    pop     hl
+    inc     de
+    inc     de
+    ld      a, b
+    or      a, c
+    jr      z, $+4
+    ldir
+    ret
+    ld      hl, debugStart
+    ld      (ix+debugPtr), hl
+DebugCodeEnd:
+
+InsertDebugCode:
+    ld      hl, (ix+debugPtr)
+    ld      (hl), a
+    inc     hl
+_:  ld      a, (de)
+    or      a, a
+    jr      z, +_
+    ld      (hl), a
+    inc     hl
+    inc     de
+    jr      -_
+_:  ld      (hl), tEnter
+    inc     hl
+    ld      (ix+debugPtr), hl
+    ret
+InsertDebugCodeEnd:
 
 CData:
 	ld	ix, L1+20000

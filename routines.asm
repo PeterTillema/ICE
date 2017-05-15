@@ -1,11 +1,11 @@
 InsertBCDEAHL:
-	push	hl
-		push	bc
-		pop	hl
-		call	InsertHL
-		ex	de, hl
-		call	InsertHL
-	pop	hl
+	push    hl
+	        push	bc
+	        pop     hl
+	        call    InsertHL
+	        ex      de, hl
+	        call    InsertHL
+	pop     hl
 InsertAHL:
 	call	InsertA
 InsertHL:
@@ -437,14 +437,17 @@ ErrorTooLargeLoop:
 LabelError:
 	ld	hl, LabelErrorMessage
 DispFinalString:
-	push	hl
-		call	ClearScreen
-	pop	hl
+	ld bc, 1
+	ld	(TextXPos_ASM), bc
+	ld	a, 21
+	ld	(TextYPos_ASM), a
+	xor	a, a
+	ld	(color), a
 	call	PrintString
 ReturnToOS:
 	bit	good_compilation, (iy+fProgram1)
 	jr	nz, SkipDisplayLineNumber
-	ld	a, 21
+	ld	a, 30
 	ld	(TextYPos_ASM), a
 	ld	hl, 1
 	ld	(TextXPos_ASM), hl
@@ -492,15 +495,16 @@ SkipDisplayLineNumber:
 	ld	(TextXPos_ASM), hl
 	ld	hl, PressKey
 	call	PrintString
+backupSP = $+1
+	ld	    sp, 0
+    pop     ix
 	call	_GetKey
 StopProgram:
-	ld	hl, (curPC)
-	ld	de, (begPC)
+	ld	    hl, (curPC)
+	ld	    de, (begPC)
 	scf
-	sbc	hl, de
+	sbc	    hl, de
 	ld.sis	(errOffset - 0D00000h), hl
-backupSP = $+1
-	ld	sp, 0
 backupBegPC = $+1
 	ld	hl, 0
 	ld	(begPC), hl
@@ -714,7 +718,18 @@ UpdateSpritePointers:
 			ex	de, hl
 		pop	hl
 		ld	(hl), de
-	pop	bc
+        bit     debug_on, (iy+fAlways1);
+        jr      z, +_
+        ld      hl, (programPtr)
+        ld      bc, DebugCodeEnd - DebugCode - 3 - program + UserMem
+        add     hl, bc
+        call    InsertCallHL
+        ld      de, (programPtr)
+        ld      hl, DebugCode
+        ld      bc, DebugCodeEnd - DebugCode
+        ldir
+        ld      (programPtr), de
+_:	pop	bc
 	ret
 	
 GetProgramName:

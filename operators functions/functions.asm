@@ -128,16 +128,86 @@ _:	ldir
 	bit	triggered_a_comma, (iy+fExpression3)
 	ret
 	
-	
 functionLbl:
-	ld	ix, (labelPtr)
-	ld	hl, (programPtr)
-	ld	(ix), hl
-	ld	hl, (curPC)
-	inc	hl
-	ld	(ix+3), hl
-	lea	hl, ix+6
-	ld	(labelPtr), hl
+	ld	    ix, (labelPtr)
+	ld	    hl, (programPtr)
+	ld	    (ix), hl
+	ld	    hl, (curPC)
+	inc	    hl
+	ld	    (ix+3), hl
+	lea	    hl, ix+6
+	ld	    (labelPtr), hl
+    ld      b, tLbl
+InsertLblGotoToDebugSection:
+    bit     debug_on, (iy+fAlways1)
+    jr      z, +_
+    ld      hl, 011003Eh
+    ld      h, b
+    call    InsertHL                                                            ; ld a, * \ ld de, *
+    call    InsertProgramPtrToDataOffset
+    ld      hl, (programDataDataPtr)
+    call    InsertHL
+    ld      ix, programDataDataPtr
+_:  call    _IncFetch
+    jr      c, +_
+    cp      a, tEnter
+    jr      z, +_
+    bit     debug_on, (iy+fAlways1)
+    jr      z, -_
+    ld      hl, (ix)
+    ld      (hl), a
+    inc     hl
+    ld      (ix), hl
+    jr      -_
+_:  bit     debug_on, (iy+fAlways1)
+    ret     z
+    ld      hl, (ix)
+    ld      (hl), 0
+    inc     hl
+    ld      (ix), hl
+_:  ld      a, 0CDh
+    call    InsertA                                                             ; call *
+    call    InsertProgramPtrToDataOffset
+    bit     has_already_debug, (iy+fProgram2)
+    set     has_already_debug, (iy+fProgram2)
+    jr      nz, +_
+    ld      hl, (programDataDataPtr)
+    push    hl
+            call    InsertHL
+    pop     de
+    ld      (debugCodePtr), de
+    ld      hl, InsertDebugCode
+    ld      bc, InsertDebugCodeEnd - InsertDebugCode
+    ldir
+    ld      (programDataDataPtr), de
+    ret
+_:  ld      hl, (debugCodePtr)
+    jp      InsertHL
+	
+functionCall:
+	ld	    a, 0CDh
+	jr	    +_
+functionGoto:
+	ld	    a, 0C3h
+_:	ld	    ix, (gotoPtr)
+	ld	    hl, (programPtr)
+    ld      de, 1
+    bit     debug_on, (iy+fAlways1)
+    jr      z, +_
+    ld      e, 4+4+2+1
+_:  add     hl, de
+    ld	    (ix), hl
+	ld	    hl, (curPC)
+	inc	    hl
+	ld	    (ix+3), hl
+	lea	    hl, ix+6
+	ld	    (gotoPtr), hl
+    push    af
+            ld      b, tGoto
+            call    InsertLblGotoToDebugSection
+    pop     af
+    jp      InsertAHL                                                       ;   jp/call RANDOM
+    
 functionSkipLine:
 	ld	hl, (endPC)
 	ld	de, (curPC)
@@ -153,23 +223,6 @@ functionSkipLine:
 	dec	hl
 	ld	(curPC), hl
 	ret
-	
-functionCall:
-	ld	a, 0CDh
-	jr	$+4
-functionGoto:
-	ld	a, 0C3h
-	call	InsertA															;	jp/call ******
-	ld	ix, (gotoPtr)
-	ld	hl, (programPtr)
-	ld	(ix), hl
-	ld	hl, (curPC)
-	inc	hl
-	ld	(ix+3), hl
-	lea	hl, ix+6
-	ld	(gotoPtr), hl
-	call	InsertHL															;	jp/call RANDOM
-	jr	functionSkipLine
 	
 functionReturn:
 	call	_NxtFetch
@@ -1284,7 +1337,7 @@ functionC:
 functionCustom:
 	call	_IncFetch
 	sub	10
-	jp	c, ErrorSyntax
+	jp  c, ErrorSyntax
 	cp	AMOUNT_OF_CUSTOM_TOKENS + 1
 	jp	nc, ErrorSyntax
 	ld	c, a
@@ -1298,9 +1351,9 @@ functionCustom:
 functionExecHex:
 	call	_IncFetch
 	ret	c
-	cp	tEnter
+	cp	a, tEnter
 	ret	z
-	cp	tString
+	cp	a, tString
 	ret	z
 	ld	hl, hexadecimals
 	ld	bc, 16
@@ -1321,6 +1374,92 @@ _:	jp	nz, ErrorSyntax
 	add	a, c
 	call	InsertA
 	jr	functionExecHex
+    
+functionSetBASICVar:
+    call    _IncFetch
+	jp      c, ErrorSyntax
+    cp      a, tA
+    jp      c, ErrorSyntax
+    cp      a, ttheta+1
+    jp      nc, ErrorSyntax
+    push    af
+            call    _IncFetch
+            jp      c, ErrorSyntax
+            cp      a, tComma
+            jp      nz, ErrorSyntax
+            call    _IncFetch
+            jp      c, ErrorSyntax
+            call	ParseExpression
+            ld      a, 006h
+            call    InsertA                                         ; ld b, *
+    pop     af
+    call    InsertA
+    ld      a, 0CDh
+    call    InsertA
+    call    InsertProgramPtrToDataOffset
+    bit     has_already_setvar, (iy+fProgram2)
+    set     has_already_setvar, (iy+fProgram2)
+    jr      z, +_
+    ld      hl, (SetBASICVarPtr)
+    jp      InsertHL
+_:  ld      hl, (programDataDataPtr)
+    ld      (SetBASICVarPtr), hl
+    push    hl
+    call    InsertHL
+    pop     de
+    ld      hl, StoBASICVar
+	ld      bc, StoBASICVarEnd-StoBASICVar
+	ldir
+	ld      (programDataDataPtr), de
+	ret
+    
+functionGetBASICVar:
+    ld      a, 006h
+    call    InsertA                                                 ; ld b, *
+    call    _IncFetch
+	jp      c, ErrorSyntax
+    cp      a, tA
+    jp      c, ErrorSyntax
+    cp      a, ttheta+1
+    jp      nc, ErrorSyntax
+    call    InsertA                                                 ; ld b, X
+    ld      a, 0CDh
+    call    InsertA                                                 ; call *
+    call    InsertProgramPtrToDataOffset
+    bit     has_already_getvar, (iy+fProgram2)
+    set     has_already_getvar, (iy+fProgram2)
+    jr      z, +_
+    ld      hl, (GetBASICVarPtr)
+    call    InsertHL
+    jr      ++_
+_:  ld      hl, (programDataDataPtr)
+    ld      (GetBASICVarPtr), hl
+    push    hl
+    call    InsertHL
+    pop     de
+    ld      hl, GetBASICVar
+	ld      bc, GetBASICVarEnd-GetBASICVar
+	ldir
+	ld      (programDataDataPtr), de
+_:  ld      a, 0DDh
+    call    InsertA                                                 ; ld (ix+*), hl
+    ld      a, 02Fh
+    call    InsertA                                                 ; ld (ix+*), hl
+    call    _IncFetch
+    jp      c, ErrorSyntax
+    cp      a, tComma
+    jp      nz, ErrorSyntax
+    call    _IncFetch
+    jp      c, ErrorSyntax
+    cp      a, tA
+    jp      c, ErrorSyntax
+    cp      a, ttheta+1
+    jp      nc, ErrorSyntax
+    sub     a, tA
+    ld      b, a
+    add     a, a
+    add     a, b
+    jp      InsertA                                                 ; ld (ix+*), hl
 	
 functionRoot:
 	ld	a, 1
@@ -1438,32 +1577,32 @@ _:	push	de
 	ret
 	
 functionCompilePrgm:
-	ld	hl, OP1
-	call	GetProgramName
-	ld	a, ProgObj
-	ld	(OP1), a
-	call	_ChkFindSym
-	jr	nc, +_
-	ld	hl, OP1
-	inc	(hl)
-	call	_ChkFindSym
-	jp	c, ErrorNotFound
-_:	call	_ChkInRAM
-	jr	nc, +_
-	ex	de, hl
-	ld	de, 9
-	add	hl, de
-	ld	e, (hl)
-	add	hl, de
-	inc	hl
-	ex	de, hl
-_:	ld	hl, (OP1)
+	ld	hl, (OP1)
 	push	hl
 		ld	hl, (OP1+3)
 		push	hl
 			ld	hl, (OP1+6)
 			push	hl
-				ld	hl, (begPC)
+                ld	hl, OP1
+                call	GetProgramName
+                ld	a, ProgObj
+                ld	(OP1), a
+                call	_ChkFindSym
+                jr	nc, +_
+                ld	hl, OP1
+                inc	(hl)
+                call	_ChkFindSym
+                jp	c, ErrorNotFound
+_:	            call	_ChkInRAM
+                jr	nc, +_
+                ex	de, hl
+                ld	de, 9
+                add	hl, de
+                ld	e, (hl)
+                add	hl, de
+                inc	hl
+                ex	de, hl
+_:				ld	hl, (begPC)
 				push	hl
 					ld	hl, (curPC)
 					push	hl
