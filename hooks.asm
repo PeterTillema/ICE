@@ -41,8 +41,8 @@ KeyHook_start:
     ld      a, b
     ret     nz
     push    af
-            call    _os_ClearStatusBarLow
-            res     displayed_det, (iy+fAlways1)
+    call    _os_ClearStatusBarLow
+    res     displayed_det, (iy+fAlways1)
     pop     af
     cp      a, kTrace
     ret     nz
@@ -51,7 +51,7 @@ DisplayCustomTokensAndCFunctions:
     ld      d, 0
 DisplayTabWithTokens:
     push    de
-            call    _ClrLCDFull
+    call    _ClrLCDFull
     pop     de
     ld      hl, 30
     ld      (penRow), hl
@@ -89,14 +89,14 @@ DisplayTokensLoop:
     inc     b
     call    _VPutS
     push    hl
-            push    de
-                    ld    hl, (penRow)
-                    ld    de, 13
-                    add    hl, de
-                    ld    (penRow), hl
-                    ld    hl, 12
-                    ld    (penCol), hl
-            pop     de
+    push    de
+    ld      hl, (penRow)
+    ld      de, 13
+    add     hl, de
+    ld      (penRow), hl
+    ld      hl, 12
+    ld      (penCol), hl
+    pop     de
     pop     hl
     ld      a, (hl)
     or      a, a
@@ -117,10 +117,10 @@ GetRightCustomToken:
     ld      hl, 1
     ld      (penCol), hl
     push    hl
-            push    de
-                    ld      a, '>'
-                    call    _VPutMap
-            pop     de
+    push    de
+    ld      a, '>'
+    call    _VPutMap
+    pop     de
     pop     hl
     ld      (penCol), hl
 KeyLoop:
@@ -139,12 +139,12 @@ KeyLoop:
     dec     e
 EraseCursor:
     push    de
-            ld      a, ' '
-            call    _VPutMap
-            ld      a, ' '
-            call    _VPutMap
-            ld      a, ' '
-            call    _VPutMap
+    ld      a, ' '
+    call    _VPutMap
+    ld      a, ' '
+    call    _VPutMap
+    ld      a, ' '
+    call    _VPutMap
     pop     de
     jr      GetRightCustomToken
 KeyNotUp:
@@ -211,12 +211,12 @@ InsertCFunctionLoop:
     ld      e, (hl)
     jr      z, +_
     push    hl
-            call    _BufReplace
+    call    _BufReplace
     pop     hl
     inc     hl
     jr      InsertCFunctionLoop
 _:  push    hl
-            call    _BufInsert
+    call    _BufInsert
     pop     hl
     inc     hl
     jr      InsertCFunctionLoop
@@ -244,28 +244,28 @@ _:  call    _BufLeft
 _:  call    _BufRight
 BufferFound:
     push    bc
-            call    _ClrLCDFull
-            call    _ClrTxtShd
-            ld      de, CustomTokensProgramText - KeyHook_start
-            ld      hl, (rawKeyHookPtr)
-            add     hl, de
-            xor     a, a
-            ld      (curCol), a
-            ld      (curRow), a
-            call    _PutS
-            ld      hl, progToEdit
-            ld      b, 8
-_:          ld      a, (hl)
-            or      a, a
-            jr      z, +_
-            call    _PutC
-            inc     hl
-            djnz    -_
-_:          call    _NewLine
-            ld      a, ':'
-            call    _PutC
-            call    _DispEOW
-            pop     bc
+    call    _ClrLCDFull
+    call    _ClrTxtShd
+    ld      de, CustomTokensProgramText - KeyHook_start
+    ld      hl, (rawKeyHookPtr)
+    add     hl, de
+    xor     a, a
+    ld      (curCol), a
+    ld      (curRow), a
+    call    _PutS
+    ld      hl, progToEdit
+    ld      b, 8
+_:  ld      a, (hl)
+    or      a, a
+    jr      z, +_
+    call    _PutC
+    inc     hl
+    djnz    -_
+_:  call    _NewLine
+    ld      a, ':'
+    call    _PutC
+    call    _DispEOW
+    pop     bc
 MoveCursorOnce:
     ld      a, b
     or      a, c
@@ -280,105 +280,105 @@ ReturnToEditor:
     ret
 CustomTokensData:
 Tab1:
-C1:     .db "ExecHex(", 0
-C2:     .db "DefineSprite(", 0
-C3:     .db "Call ", 0
-C4:     .db "CompilePrgm(", 0
-C5:     .db "SetBASICVar(", 0
-C6:     .db "GetBASICVar(", 0
+C1: .db "ExecHex(", 0
+C2: .db "DefineSprite(", 0
+C3: .db "Call ", 0
+C4: .db "CompilePrgm(", 0
+C5: .db "SetBASICVar(", 0
+C6: .db "GetBASICVar(", 0
 
 #define AMOUNT_OF_C_FUNCTIONS 84
 
-C6_:   .db "Begin", 0
-C7_:   .db "End", 0
-C8_:   .db "SetColor", 0
-C9_:   .db "SetDefaultPalette", 0
-C10_:  .db "SetPalette", 0
-C11_:  .db "FillScreen", 0
-C12_:  .db "SetPixel", 0
-C13_:  .db "GetPixel", 0
-C14_:  .db "GetDraw", 0
-C15_:  .db "SetDraw", 0
+C6_:  .db "Begin", 0
+C7_:  .db "End", 0
+C8_:  .db "SetColor", 0
+C9_:  .db "SetDefaultPalette", 0
+C10_: .db "SetPalette", 0
+C11_: .db "FillScreen", 0
+C12_: .db "SetPixel", 0
+C13_: .db "GetPixel", 0
+C14_: .db "GetDraw", 0
+C15_: .db "SetDraw", 0
 Tab2:
-C16_:  .db "SwapDraw", 0
-C17_:  .db "Blit", 0
-C18_:  .db "BlitLines", 0
-C19_:  .db "BlitArea", 0
-C20_:  .db "PrintChar", 0
-C21_:  .db "PrintInt", 0
-C22_:  .db "PrintUInt", 0
-C23_:  .db "PrintString", 0
-C24_:  .db "PrintStringXY", 0
-C25_:  .db "SetTextXY", 0
-C26_:  .db "SetTextBGColor", 0
-C27_:  .db "SetTextFGColor", 0
-C28_:  .db "SetTextTransparentColor", 0
-C29_:  .db "SetCustomFontData", 0
-C30_:  .db "SetCustomFontSpacing", 0
-C31_:  .db "SetMonospaceFont", 0
+C16_: .db "SwapDraw", 0
+C17_: .db "Blit", 0
+C18_: .db "BlitLines", 0
+C19_: .db "BlitArea", 0
+C20_: .db "PrintChar", 0
+C21_: .db "PrintInt", 0
+C22_: .db "PrintUInt", 0
+C23_: .db "PrintString", 0
+C24_: .db "PrintStringXY", 0
+C25_: .db "SetTextXY", 0
+C26_: .db "SetTextBGColor", 0
+C27_: .db "SetTextFGColor", 0
+C28_: .db "SetTextTransparentColor", 0
+C29_: .db "SetCustomFontData", 0
+C30_: .db "SetCustomFontSpacing", 0
+C31_: .db "SetMonospaceFont", 0
 Tab3:
-C32_:  .db "GetStringWidth", 0
-C33_:  .db "GetCharWidth", 0
-C34_:  .db "GetTextX", 0
-C35_:  .db "GetTextY", 0
-C36_:  .db "Line", 0
-C37_:  .db "HorizLine", 0
-C38_:  .db "VertLine", 0
-C39_:  .db "Circle", 0
-C40_:  .db "FillCircle", 0
-C41_:  .db "Rectangle", 0
-C42_:  .db "FillRectangle", 0
-C43_:  .db "Line_NoClip", 0
-C44_:  .db "HorizLine_NoClip", 0
-C45_:  .db "VertLine_NoClip", 0
-C46_:  .db "FillCircle_NoClip", 0
-C47_:  .db "Rectangle_NoClip", 0
+C32_: .db "GetStringWidth", 0
+C33_: .db "GetCharWidth", 0
+C34_: .db "GetTextX", 0
+C35_: .db "GetTextY", 0
+C36_: .db "Line", 0
+C37_: .db "HorizLine", 0
+C38_: .db "VertLine", 0
+C39_: .db "Circle", 0
+C40_: .db "FillCircle", 0
+C41_: .db "Rectangle", 0
+C42_: .db "FillRectangle", 0
+C43_: .db "Line_NoClip", 0
+C44_: .db "HorizLine_NoClip", 0
+C45_: .db "VertLine_NoClip", 0
+C46_: .db "FillCircle_NoClip", 0
+C47_: .db "Rectangle_NoClip", 0
 Tab4:
-C48_:  .db "FillRectangle_NoClip", 0
-C49_:  .db "SetClipRegion", 0
-C50_:  .db "GetClipRegion", 0
-C51_:  .db "ShiftDown", 0
-C52_:  .db "ShiftUp", 0
-C53_:  .db "ShiftLeft", 0
-C54_:  .db "ShiftRight", 0
-C55_:  .db "Tilemap", 0
-C56_:  .db "Tilemap_NoClip", 0
-C57_:  .db "TransparentTilemap", 0
-C58_:  .db "TransparentTilemap_NoClip", 0
-C59_:  .db "TilePtr", 0
-C60_:  .db "TilePtrMapped", 0
-C61_:  .db "LZDecompress", 0
-C62_:  .db "AllocSprite", 0
-C63_:  .db "Sprite", 0
+C48_: .db "FillRectangle_NoClip", 0
+C49_: .db "SetClipRegion", 0
+C50_: .db "GetClipRegion", 0
+C51_: .db "ShiftDown", 0
+C52_: .db "ShiftUp", 0
+C53_: .db "ShiftLeft", 0
+C54_: .db "ShiftRight", 0
+C55_: .db "Tilemap", 0
+C56_: .db "Tilemap_NoClip", 0
+C57_: .db "TransparentTilemap", 0
+C58_: .db "TransparentTilemap_NoClip", 0
+C59_: .db "TilePtr", 0
+C60_: .db "TilePtrMapped", 0
+C61_: .db "LZDecompress", 0
+C62_: .db "AllocSprite", 0
+C63_: .db "Sprite", 0
 Tab5:
-C64_:  .db "TransparentSprite", 0
-C65_:  .db "Sprite_NoClip", 0
-C66_:  .db "TransparentSprite_NoClip", 0
-C67_:  .db "GetSprite_NoClip", 0
-C68_:  .db "ScaledSprite_NoClip", 0
-C69_:  .db "ScaledTransparentSprite_NoClip", 0
-C70_:  .db "FlipSpriteY", 0
-C71_:  .db "FlipSpriteX", 0
-C72_:  .db "RotateSpriteC", 0
-C73_:  .db "RotateSpriteCC", 0
-C74_:  .db "RotateSpriteHalf", 0
-C75_:  .db "Polygon", 0
-C76_:  .db "Polygon_NoClip", 0
-C77_:  .db "FillTriangle", 0
-C78_:  .db "FillTriangle_NoClip", 0
-C79_:  .db "LZDecompressSprite", 0
+C64_: .db "TransparentSprite", 0
+C65_: .db "Sprite_NoClip", 0
+C66_: .db "TransparentSprite_NoClip", 0
+C67_: .db "GetSprite_NoClip", 0
+C68_: .db "ScaledSprite_NoClip", 0
+C69_: .db "ScaledTransparentSprite_NoClip", 0
+C70_: .db "FlipSpriteY", 0
+C71_: .db "FlipSpriteX", 0
+C72_: .db "RotateSpriteC", 0
+C73_: .db "RotateSpriteCC", 0
+C74_: .db "RotateSpriteHalf", 0
+C75_: .db "Polygon", 0
+C76_: .db "Polygon_NoClip", 0
+C77_: .db "FillTriangle", 0
+C78_: .db "FillTriangle_NoClip", 0
+C79_: .db "LZDecompressSprite", 0
 Tab6:
-C80_:  .db "SetTextScale", 0
-C81_:  .db "SetTransparentColor", 0
-C82_:  .db "ZeroScreen", 0
-C83_:  .db "SetTextConfig", 0
-C84_:  .db "GetSpriteChar", 0
-C85_:  .db "Lighten", 0
-C86_:  .db "Darken", 0
-C87_:  .db "SetFontHeight", 0
-C88_:  .db "ScaledSprite", 0
-C89_:  .db "FloodFill", 0
-       .db 0
+C80_: .db "SetTextScale", 0
+C81_: .db "SetTransparentColor", 0
+C82_: .db "ZeroScreen", 0
+C83_: .db "SetTextConfig", 0
+C84_: .db "GetSpriteChar", 0
+C85_: .db "Lighten", 0
+C86_: .db "Darken", 0
+C87_: .db "SetFontHeight", 0
+C88_: .db "ScaledSprite", 0
+C89_: .db "FloodFill", 0
+      .db 0
 TabData:
     .dl Tab1 - KeyHook_start
     .dl Tab2 - KeyHook_start
@@ -513,89 +513,89 @@ TokenHook_data:
 TokenHook_end:
 
 CursorHook_start:
-    .db    83h
-    cp    a, 24h
-    jr    nz, +_
-    inc    a
-    ld    a, (curUnder)
+    .db     83h
+    cp      a, 24h
+    jr      nz, +_
+    inc     a
+    ld      a, (curUnder)
     ret
-_:    cp    a, 22h
-    ret    nz
-    ld    a, (cxCurApp)
-    cp    a, cxPrgmEdit
-    ret    nz
-    ld    hl, (editCursor)
-    ld    a, (hl)
-    cp    a, tDet
-    ret    nz
+_:  cp      a, 22h
+    ret     nz
+    ld      a, (cxCurApp)
+    cp      a, cxPrgmEdit
+    ret     nz
+    ld      hl, (editCursor)
+    ld      a, (hl)
+    cp      a, tDet
+    ret     nz
 DrawDetText:
-    bit    displayed_det, (iy+fAlways1)
-    ret    nz
-    ld    hl, (editTail)
-    inc    hl
-    ld    a, (hl)
-    sub    a, t0
-    ret    c
-    cp    a, t9-t0+1
-    ld    bc, (editBtm)
-    ld    de, 0
-    ld    e, a
-    jr    c, GetDetValueLoop
+    bit     displayed_det, (iy+fAlways1)
+    ret     nz
+    ld      hl, (editTail)
+    inc     hl
+    ld      a, (hl)
+    sub     a, t0
+    ret     c
+    cp      a, t9-t0+1
+    ld      bc, (editBtm)
+    ld      de, 0
+    ld      e, a
+    jr      c, GetDetValueLoop
 WrongDetValue:
-    inc    a
+    inc     a
     ret
 GetDetValueLoop:
-    inc    hl
-    or    a, a
-    sbc    hl, bc
-    jr    z, GetDetValueStop
-    add    hl, bc
-    ld    a, (hl)
-    sub    a, t0
-    jr    c, GetDetValueStop
-    cp    a, t9-t0+1
-    jr    nc, GetDetValueStop
+    inc     hl
+    or      a, a
+    sbc     hl, bc
+    jr      z, GetDetValueStop
+    add     hl, bc
+    ld      a, (hl)
+    sub     a, t0
+    jr      c, GetDetValueStop
+    cp      a, t9-t0+1
+    jr      nc, GetDetValueStop
     push    hl
-        ex    de, hl
-        add    hl, hl
-        push    hl
-        pop    de
-        add    hl, hl
-        add    hl, hl
-        add    hl, de
-        ld    de, 0
-        ld    e, a
-        add    hl, de
-        ex    de, hl
-    pop    hl
-    jr    GetDetValueLoop
+    ex      de, hl
+    add     hl, hl
+    push    hl
+    pop     de
+    add     hl, hl
+    add     hl, hl
+    add     hl, de
+    ld      de, 0
+    ld      e, a
+    add     hl, de
+    ex      de, hl
+    pop     hl
+    jr      GetDetValueLoop
 GetDetValueStop:
-    ex    de, hl
-    ld    de, AMOUNT_OF_C_FUNCTIONS
-    or    a, a
-    sbc    hl, de
-    jr    nc, WrongDetValue
-    add    hl, de
-    ld    h, 3
-    mlt    hl
-    ld    de, CData5 - KeyHook_start
-    add    hl, de
-    ld    de, (rawKeyHookPtr)
-    add    hl, de
-    ld    hl, (hl)
-    add    hl, de
-    ld    de, 000E71Ch
-    ld.sis    (drawFGColor - 0D00000h), de
-    ld.sis    de, (statusBarBGColor - 0D00000h)
-    ld.sis    (drawBGColor - 0D00000h), de
-    ld    a, 14
-    ld    (penRow),a
-    ld    de, 2
-    ld.sis    (penCol - 0D00000h), de
+    ex      de, hl
+    ld      de, AMOUNT_OF_C_FUNCTIONS
+    or      a, a
+    sbc     hl, de
+    jr      nc, WrongDetValue
+    add     hl, de
+    ld      h, 3
+    mlt     hl
+    ld      de, CData5 - KeyHook_start
+    add     hl, de
+    ld      de, (rawKeyHookPtr)
+    add     hl, de
+    ld      hl, (hl)
+    add     hl, de
+    ld      de, 000E71Ch
+    ld.sis  (drawFGColor & 0FFFFh), de
+    ld.sis  de, (statusBarBGColor & 0FFFFh)
+    ld.sis  (drawBGColor & 0FFFFh), de
+    ld      a, 14
+    ld      (penRow),a
+    ld      de, 2
+    ld.sis  (penCol & 0FFFFh), de
     call    _VPutS
-    ld    de, $FFFF
-    ld.sis    (drawBGColor - 0D00000h), de
-    set    displayed_det, (iy+fAlways1)
+    ld      de, 0FFFFh
+    ld.sis  (drawBGColor & 0FFFFh), de
+    set     displayed_det, (iy+fAlways1)
     ret
 CursorHook_end:
 

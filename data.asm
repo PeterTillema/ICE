@@ -21,14 +21,14 @@ FunctionsSingleStart:
     .dl functionDisp, functionRepeat, functionWhile, functionIf, functionPause, functionClrHome, functionInput, functionOutput
     
 operator_start:
-    .dl SubNumberXXX, SubVariableXXX, SubChainPushXXX, SubChainAnsXXX, SubFunctionXXX, SubError
-    .dl AddNumberXXX, AddVariableXXX, AddChainPushXXX, AddChainAnsXXX, AddFunctionXXX, AddError
-    .dl DivNumberXXX, DivVariableXXX, DivChainPushXXX, DivChainAnsXXX, DivFunctionXXX, DivError
-    .dl MulNumberXXX, MulVariableXXX, MulChainPushXXX, MulChainAnsXXX, MulFunctionXXX, MulError
-    .dl NEQNumberXXX, NEQVariableXXX, NEQChainPushXXX, NEQChainAnsXXX, NEQFunctionXXX, NEQError
-    .dl GLETNumberXXX, GLETVariableXXX, GLETChainPushXXX, GLETChainAnsXXX, GLETFunctionXXX, GLETError
+    .dl SubNumberXXX,    SubVariableXXX,    SubChainPushXXX,    SubChainAnsXXX,    SubFunctionXXX,    SubError
+    .dl AddNumberXXX,    AddVariableXXX,    AddChainPushXXX,    AddChainAnsXXX,    AddFunctionXXX,    AddError
+    .dl DivNumberXXX,    DivVariableXXX,    DivChainPushXXX,    DivChainAnsXXX,    DivFunctionXXX,    DivError
+    .dl MulNumberXXX,    MulVariableXXX,    MulChainPushXXX,    MulChainAnsXXX,    MulFunctionXXX,    MulError
+    .dl NEQNumberXXX,    NEQVariableXXX,    NEQChainPushXXX,    NEQChainAnsXXX,    NEQFunctionXXX,    NEQError
+    .dl GLETNumberXXX,   GLETVariableXXX,   GLETChainPushXXX,   GLETChainAnsXXX,   GLETFunctionXXX,   GLETError
     .dl XORANDNumberXXX, XORANDVariableXXX, XORANDChainPushXXX, XORANDChainAnsXXX, XORANDFunctionXXX, XORANDError
-    .dl StoNumberXXX, StoVariableXXX, StoChainPushXXX, StoChainAnsXXX, StoFunctionXXX, StoListXXX
+    .dl StoNumberXXX,    StoVariableXXX,    StoChainPushXXX,    StoChainAnsXXX,    StoFunctionXXX,    StoListXXX
     
 CArguments:
     .dl CFunction0Args, CFunction1Arg, CFunction2Args, CFunction3Args, CFunction4Args, CFunction5Args, CFunction6Args
@@ -36,9 +36,11 @@ CArguments:
 functionCustomStart:
     .dl functionExecHex, functionDefineSprite, functionCall, functionCompilePrgm, functionSetBASICVar, functionGetBASICVar
     
-precedence:  .db 7, 4,4,5,5,3,3,3,3,3,3,1, 1,  2,  0
-             ;   t+ - + / * ≠ ≥ ≤ > < = or xor and →
-precedence2: .db 0, 4,4,5,5,3,3,3,3,3,3,1, 1,  2,  6
+precedence:
+    .db 7, 4,4,5,5,3,3,3,3,3,3,1, 1,  2,  0
+    ;   t+ - + / * ≠ ≥ ≤ > < = or xor and →
+precedence2:
+    .db 0, 4,4,5,5,3,3,3,3,3,3,1, 1,  2,  6
 
 lists:
     .dl L1, L2, L3, L4, L5, L6
@@ -74,7 +76,6 @@ ICEAppvar:
     .db AppVarObj, "ICEAPPV", 0
 ICEProgram:
     .db ProtProgObj, "ICE", 0
-    
 ErrorMessageStandard:
     .db "Invalid arguments for '", 0
 EndErrorMessage:
@@ -148,241 +149,241 @@ PressKey:
 InputRoutine:
     call    _ClrScrn
     call    _HomeUp
-    xor        a, a
-    ld        (ioPrompt), a
-    ld        (curUnder), a
+    xor     a, a
+    ld      (ioPrompt), a
+    ld      (curUnder), a
     call    _GetStringInput
-    ld        hl, (editSym)
+    ld      hl, (editSym)
     call    _VarNameToOP1HL
     call    _ChkFindSym
-    ld        a, (de)
-    inc        de
-    inc        de
-    ld        b, a
-    sbc        hl, hl
-_:    push    bc
-            add        hl, hl
-            push    hl
-            pop        bc
-            add        hl, hl
-            add        hl, hl
-            add        hl, bc
-            ld        a, (de)
-            sub        a, t0
-            ld        bc, 0
-            ld        c, a
-            add        hl, bc
-            inc        de
-    pop    bc
+    ld      a, (de)
+    inc     de
+    inc     de
+    ld      b, a
+    sbc     hl, hl
+_:  push    bc
+    add     hl, hl
+    push    hl
+    pop     bc
+    add     hl, hl
+    add     hl, hl
+    add     hl, bc
+    ld      a, (de)
+    sub     a, t0
+    ld      bc, 0
+    ld      c, a
+    add     hl, bc
+    inc     de
+    pop     bc
     djnz    -_
 InputOffset = $+2
-    ld    (ix+0), hl
-    jp    _DeleteTempEditEqu
+    ld      (ix+0), hl
+    jp      _DeleteTempEditEqu
 InputRoutineEnd:
 
 RandRoutine:
-    ld    hl, (ix+rand1)
-    ld    de, (ix+rand2)
-    ld    b, h
-    ld    c, l
-    add    hl, hl
-    rl    e
-    rl    d
-    add    hl, hl
-    rl    e
-    rl    d
-    inc    l
-    add    hl, bc
-    ld    (ix+rand1), hl
-    adc    hl, de
-    ld    (ix+rand2), hl
-    ex    de, hl
-    ld    hl, (ix+rand3)
-    ld    bc, (ix+rand4)
-    add    hl, hl
-    rl    c
-    rl    b
-    ld    (ix+rand4), bc
-    sbc    a, a
-    and    %11000101
-    xor    l
-    ld    l, a
-    ld    (ix+rand3), hl
-    ex    de, hl
-    add    hl, bc
+    ld      hl, (ix+rand1)
+    ld      de, (ix+rand2)
+    ld      b, h
+    ld      c, l
+    add     hl, hl
+    rl      e
+    rl      d
+    add     hl, hl
+    rl      e
+    rl      d
+    inc     l
+    add     hl, bc
+    ld      (ix+rand1), hl
+    adc     hl, de
+    ld      (ix+rand2), hl
+    ex      de, hl
+    ld      hl, (ix+rand3)
+    ld      bc, (ix+rand4)
+    add     hl, hl
+    rl      c
+    rl      b
+    ld      (ix+rand4), bc
+    sbc     a, a
+    and     a, 011000101b
+    xor     a, l
+    ld      l, a
+    ld      (ix+rand3), hl
+    ex      de, hl
+    add     hl, bc
     ret
 RandRoutineEnd:
 
 DispNumberRoutine:
-    ld    a, 18
-    ld    (curCol), a
+    ld      a, 18
+    ld      (curCol), a
     call    _DispHL
     call    _NewLine
     
 DispStringRoutine:
-    xor    a, a
-    ld    (curCol), a
+    xor     a, a
+    ld      (curCol), a
     call    _PutS
     call    _NewLine
 
 PauseRoutine:                       ; Time including call/ret: HL*48000000 + 44
-    dec    hl                          ; 4
+    dec     hl                          ; 4
 PauseRoutine2:
-    ld    c, 110                      ; 8
-_:    ld    b, 32                       ; 8
+    ld      c, 110                      ; 8
+_:  ld      b, 32                       ; 8
     djnz    $                       ; 13/8      411
-    dec    c                           ; 4
-    jr    nz, -_                      ; 13/8      47955
-    or    a, a                        ; 4
-    ld    de, -1                      ; 16
-    add    hl, de                      ; 4
-    jr    c, PauseRoutine2            ; 13/8
+    dec     c                           ; 4
+    jr      nz, -_                      ; 13/8      47955
+    or      a, a                        ; 4
+    ld      de, -1                      ; 16
+    add     hl, de                      ; 4
+    jr      c, PauseRoutine2            ; 13/8
     ret                             ; 21
 PauseRoutineEnd:
 
 MeanRoutine:
-    ld    ix, 0
-    add    ix, sp
-    add    hl, de
+    ld      ix, 0
+    add     ix, sp
+    add     hl, de
     push    hl
-        rr    (ix-1)
-    pop    hl
-    rr    h
-    rr    l
-    ld    ix, L1+20000
+    rr      (ix-1)
+    pop     hl
+    rr      h
+    rr      l
+    ld      ix, L1+20000
     ret
 MeanRoutineEnd:
 
 KeypadRoutine:
     di
-    ld    hl, 0F50000h
-    ld    (hl), 2
-    xor    a, a
-_:    cp    a, (hl)
-    jr    nz, -_
+    ld      hl, 0F50000h
+    ld      (hl), 2
+    xor     a, a
+_:  cp      a, (hl)
+    jr      nz, -_
     ei
-    ld    l, b
-    ld    a, (hl)
-    sbc    hl, hl
-    and    c
-    ret    z
-    inc    l
+    ld      l, b
+    ld      a, (hl)
+    sbc     hl, hl
+    and     a, c
+    ret     z
+    inc     l
     ret
 KeypadRoutineEnd:
 
 RootRoutine:
     di
-    dec sp      ; (sp) = ?
-    push hl      ; (sp) = ?uhl
-        dec sp      ; (sp) = ?uhl?
-        pop iy      ; (sp) = ?u, uix = hl?
-        dec sp      ; (sp) = ?u?
-    pop af      ; af = u?
-    or  a,a
-    sbc hl,hl
-    ex  de,hl   ; de = 0
-    sbc hl,hl   ; hl = 0
-    ld  bc,$C40 ; b = 12, c = 0x40
+    dec     sp      ; (sp) = ?
+    push    hl      ; (sp) = ?uhl
+    dec     sp      ; (sp) = ?uhl?
+    pop     iy      ; (sp) = ?u, uix = hl?
+    dec     sp      ; (sp) = ?u?
+    pop     af      ; af = u?
+    or      a, a
+    sbc     hl, hl
+    ex      de, hl   ; de = 0
+    sbc     hl, hl   ; hl = 0
+    ld      bc, 0C40h ; b = 12, c = 0x40
 Sqrt24Loop:
-    sub     a,c
-    sbc     hl,de
-    jr      nc,Sqrt24Skip
-    add     a,c
-    adc     hl,de
+    sub     a, c
+    sbc     hl, de
+    jr      nc, Sqrt24Skip
+    add     a, c
+    adc     hl, de
 Sqrt24Skip:
     ccf
-    rl    e
-    rl    d
-    add    iy,iy
+    rl      e
+    rl      d
+    add     iy, iy
     rla
-    adc    hl,hl
-    add    iy,iy
+    adc     hl, hl
+    add     iy, iy
     rla
-    adc    hl,hl
+    adc     hl, hl
     djnz    Sqrt24Loop
-    ex    de,hl
+    ex      de,hl
     ret
 RootRoutineEnd:
 
 XORANDData:
-    ld    bc, -1
-    add    hl, bc
-    sbc    a, a
-    ex    de, hl
-    ld    d, a
-    add    hl, bc
-    sbc    a, a
+    ld      bc, -1
+    add     hl, bc
+    sbc     a, a
+    ex      de, hl
+    ld      d, a
+    add     hl, bc
+    sbc     a, a
 XORANDSMC:
-    and    a, d
-    sbc    hl, hl
-    and    a, 1
-    ld    l, a
+    and     a, d
+    sbc     hl, hl
+    and     a, 1
+    ld      l, a
     
 StoBASICVar:
-    push hl
-        call _ZeroOP1
-        ld hl, OP1+1
-        ld (hl), b
-        call _OP2Set0
-    pop hl
-    add hl, de
-    or a, a
-    sbc hl, de
-    jr z, +++_
-    ld b, 4
-    ld de, OP2+5
-_:  ld a, 10
-    call _DivHLByA
-    ld c, a
-    ld a, 10
-    call _DivHLByA
-    add a, a
-    add a, a
-    add a, a
-    add a, a
-    add a, c
-    ld (de), a
-    dec de
-    djnz -_
-    ld hl, OP2+1
-    ld (hl), $87
-_:  ld a, (OP2M)
-    cp a, $10
-    jr nc, +_
-    ld hl, OP2+5
-    xor a, a
+    push    hl
+    call    _ZeroOP1
+    ld      hl, OP1+1
+    ld      (hl), b
+    call    _OP2Set0
+    pop     hl
+    add     hl, de
+    or      a, a
+    sbc     hl, de
+    jr      z, +++_
+    ld      b, 4
+    ld      de, OP2+5
+_:  ld      a, 10
+    call    _DivHLByA
+    ld      c, a
+    ld      a, 10
+    call    _DivHLByA
+    add     a, a
+    add     a, a
+    add     a, a
+    add     a, a
+    add     a, c
+    ld      (de), a
+    dec     de
+    djnz    -_
+    ld      hl, OP2+1
+    ld      (hl), $87
+_:  ld      a, (OP2M)
+    cp      a, $10
+    jr      nc, +_
+    ld      hl, OP2+5
+    xor     a, a
     rld
-    dec hl
+    dec     hl
     rld
-    dec hl
+    dec     hl
     rld
-    dec hl
+    dec     hl
     rld
-    dec hl
-    dec (hl)
-    jr -_
-_:  call _ChkFindSym
-    call nc, _DelVarArc
-    call _CreateReal
-    ld hl, OP2
-    ld bc, 9
+    dec     hl
+    dec     (hl)
+    jr      -_
+_:  call    _ChkFindSym
+    call    nc, _DelVarArc
+    call    _CreateReal
+    ld      hl, OP2
+    ld      bc, 9
     ldir
     ret
 StoBASICVarEnd:
 
 GetBASICVar:
-    call _ZeroOP1
-    ld hl, OP1+1
-    ld (hl), b
-    call _FindSym
-    call nc, _RclVarSym
-    call _ConvOP1
-    ex de, hl
+    call    _ZeroOP1
+    ld      hl, OP1+1
+    ld      (hl), b
+    call    _FindSym
+    call    nc, _RclVarSym
+    call    _ConvOP1
+    ex      de, hl
     ret
 GetBASICVarEnd:
 
 DebugCode:
-    ld      hl, $474F4C
+    ld      hl, 0474F4Ch
     ld      (OP1+1), hl
     xor     a, a
     ld      (OP1+4), a
@@ -393,9 +394,9 @@ DebugCode:
     or      a, a
     sbc     hl, de
     push    de
-            push    hl
-                    call    _CreateProg
-            pop     bc
+    push    hl
+    call    _CreateProg
+    pop     bc
     pop     hl
     inc     de
     inc     de
@@ -426,34 +427,34 @@ _:  ld      (hl), tEnter
 InsertDebugCodeEnd:
 
 CData:
-    ld    ix, L1+20000
-    ld    hl, LibLoadAppVar - CData + UserMem
+    ld      ix, L1+20000
+    ld      hl, LibLoadAppVar - CData + UserMem
     call    _Mov9ToOP1
-    ld    a, AppVarObj
-    ld    (OP1), a
-_:    call    _ChkFindSym
-    jr    c, NotFound
+    ld      a, AppVarObj
+    ld      (OP1), a
+_:  call    _ChkFindSym
+    jr      c, NotFound
     call    _ChkInRAM
-    jr    nz, InArc
+    jr      nz, InArc
     call    _PushOP1
     call    _Arc_UnArc
     call    _PopOP1
-    jr    -_
+    jr      -_
 InArc:
-    ex    de, hl
-    ld    de, 9
-    add    hl, de
-    ld    e, (hl)
-    add    hl, de
-    inc    hl
-    inc    hl
-    inc    hl
-    ld    de, RelocationStart - CData + UserMem
-    jp    (hl)
+    ex      de, hl
+    ld      de, 9
+    add     hl, de
+    ld      e, (hl)
+    add     hl, de
+    inc     hl
+    inc     hl
+    inc     hl
+    ld      de, RelocationStart - CData + UserMem
+    jp      (hl)
 NotFound:
     call    _ClrScrn
     call    _HomeUp
-    ld    hl, MissingAppVar - CData + UserMem
+    ld      hl, MissingAppVar - CData + UserMem
     call    _PutS
     call    _NewLine
     jp    _PutS

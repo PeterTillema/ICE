@@ -284,7 +284,7 @@ InsertKeypadRoutine2:
     call    InsertA                                    ; call *
     call    InsertProgramPtrToDataOffset
     ld      hl, (KeypadStartData)
-    bit    has_already_keypad, (iy+fProgram1)
+    bit     has_already_keypad, (iy+fProgram1)
     jp      nz, InsertHL                                ; call XXXXXX
     ld      hl, (programDataDataPtr)
     ld      (KeypadStartData), hl
@@ -523,12 +523,12 @@ backupEndPC = $+1
     ld      (endPC), hl
     call    _ClrLCDFull
     call    _HomeUp
-    ld  a, lcdBpp16
+    ld      a, lcdBpp16
     ld      (mpLcdCtrl), a
     call    _DrawStatusBar
     ret
-;    bit     good_compilation, (iy+fProgram1)
-;    ret     nz
+;    bit      good_compilation, (iy+fProgram1)
+;    ret      nz
 ;#include "editor.asm"
     
 ClearScreen:
