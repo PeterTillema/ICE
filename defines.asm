@@ -21,11 +21,11 @@ tempListsStack          .equ pixelShadow+08000
 programDataData         .equ pixelShadow+16000
 
 tempArg1                .equ saveSScreen+15000
-tempArg2                .equ pixelShadow+16000
-tempArg3                .equ pixelShadow+17000
-tempArg4                .equ pixelShadow+18000
-tempArg5                .equ pixelShadow+19000
-tempArg6                .equ pixelShadow+20000
+tempArg2                .equ saveSScreen+16000
+tempArg3                .equ saveSScreen+17000
+tempArg4                .equ saveSScreen+18000
+tempArg5                .equ saveSScreen+19000
+tempArg6                .equ saveSScreen+20000
 
 startTab                .equ saveSScreen
 debugStart              .equ plotSScreen+10000
