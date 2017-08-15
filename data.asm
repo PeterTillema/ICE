@@ -237,7 +237,7 @@ _:	ld	b, 32			; 8
 	or	a, a			; 4
 	ld	de, -1			; 16
 	add	hl, de			; 4
-	jr	c, PauseRoutine2            ; 13/8
+	jr	c, PauseRoutine2	; 13/8
 	ret				; 21
 PauseRoutineEnd:
 
@@ -283,7 +283,7 @@ RootRoutine:
 	sbc	hl, hl
 	ex	de, hl			; de = 0
 	sbc	hl, hl			; hl = 0
-	ld	bc, 0C40h 		; b = 12, c = 0x40
+	ld	bc, 0C40h		; b = 12, c = 0x40
 Sqrt24Loop:
 	sub	a, c
 	sbc	hl, de

@@ -26,21 +26,21 @@ InsertHIXC:
 	mlt	bc
 	ld	a, c
 	call	_SetHLUToA
-	jp	InsertHL                                                                ; ld hl, (ix+*)
+	jp	InsertHL		; ld hl, (ix+*)
 InsertIXE:
 	ld	hl, 00017DDh
 	ld	d, 3
 	mlt	de
 	ld	a, e
 	call	_SetHLUToA
-	jp	InsertHL                                                                ; ld de, (ix+*)
+	jp	InsertHL		; ld de, (ix+*)
 InsertIXC:
 	ld	hl, 00007DDh
 	ld	d, 3
 	mlt	de
 	ld	a, e
 	call	_SetHLUToA
-	jp	InsertHL                                                                ; ld bc, (ix+*)
+	jp	InsertHL		; ld bc, (ix+*)
 
 InsertBCDEHL:
 	push	hl
@@ -100,10 +100,10 @@ GetFunctionHL:
 	cp	a, tGetKey
 	jr	nz, +_
 	ld	hl, _GetCSC
-	call	InsertCallHL                                                            ; call _GetCSC
+	call	InsertCallHL		; call _GetCSC
 	ld	a, 0B7h
 	ld	hl, 06F62EDh
-	jp	InsertAHL                                                            ; or a \ sbc hl, hl \ ld l, a
+	jp	InsertAHL		; or a \ sbc hl, hl \ ld l, a
 _:	cp	a, trand
 	jp	nz, InvalidTokenError
 	bit	need_push, (iy+myFlags)
@@ -119,7 +119,7 @@ _:	cp	a, trand
 	push	hl
 	pop	de
 	ld	(RandStartData), hl
-	call	InsertHL                                                            ; call XXXXXX
+	call	InsertHL		; call XXXXXX
 	ld	hl, RandRoutine
 	ld	bc, RandRoutineEnd - RandRoutine
 	ldir
@@ -130,7 +130,7 @@ _:	cp	a, trand
 	ld	a, 0D1h
 	jp	InsertA			; pop de
 _:	ld	hl, (RandStartData)
-	call	InsertHL                                                            ; call XXXXXX
+	call	InsertHL		; call XXXXXX
 	bit	need_push, (iy+myFlags)
 	ret	z
 	ld	a, 0D1h
@@ -141,9 +141,9 @@ GetFunctionDE:
 	jr	nz, +_
 	ld	a, 0E5h
 	bit	need_push, (iy+myFlags)
-	call	nz, InsertA                                                        ; push hl
+	call	nz, InsertA		; push hl
 	ld	hl, _GetCSC
-	call	InsertCallHL                                                            ; call _GetCSC
+	call	InsertCallHL		; call _GetCSC
 	bit	need_push, (iy+myFlags)
 	jr	z, $+8
 	ld	a, 0E1h
@@ -152,12 +152,12 @@ GetFunctionDE:
 	call	InsertA			; ld de, *
 	xor	a, a
 	ld	hl, 05F0000h
-	jp	InsertAHL                                                            ; ld de, 0 \ ld e, a
+	jp	InsertAHL		; ld de, 0 \ ld e, a
 _:	cp	a, trand
 	jp	nz, InvalidTokenError
 	ld	a, 0E5h
 	bit	need_push, (iy+myFlags)
-	call	nz, InsertA                                                        ; push hl
+	call	nz, InsertA		; push hl
 	ld	a, 0CDh
 	call	InsertA			; call *
 	call	InsertProgramPtrToDataOffset
@@ -167,7 +167,7 @@ _:	cp	a, trand
 	ld	(RandStartData), hl
 	push	hl
 	pop	de
-	call	InsertHL                                                            ; call XXXXXX
+	call	InsertHL		; call XXXXXX
 	ld	hl, RandRoutine
 	ld	bc, RandRoutineEnd - RandRoutine
 	ldir
@@ -175,7 +175,7 @@ _:	cp	a, trand
 	set	has_already_rand, (iy+myFlags5)
 	jr	++_
 _:	ld	hl, (RandStartData)
-	call	InsertHL                                                            ; call XXXXXX
+	call	InsertHL		; call XXXXXX
 _:	ld	a, 0EBh
 	call	InsertA			; ex de, hl
 	bit	need_push, (iy+myFlags)
@@ -188,22 +188,22 @@ GetFunctionBC:
 	jr	nz, +_
 	ld	a, 0E5h
 	bit	need_push, (iy+myFlags)
-	call	nz, InsertA                                                        ; push hl
+	call	nz, InsertA		; push hl
 	ld	hl, _GetCSC
-	call	InsertCallHL                                                            ; call _GetCSC
+	call	InsertCallHL		; call _GetCSC
 	ld	a, 0E1h
 	bit	need_push, (iy+myFlags)
-	call	nz, InsertA                                                        ; pop hl
+	call	nz, InsertA		; pop hl
 	ld	a, 001h
 	call	InsertA			; ld bc, *
 	xor	a, a
 	ld	hl, 05F0000h
-	jp	InsertAHL                                                            ; ld bc, 0 \ ld e, a
+	jp	InsertAHL		; ld bc, 0 \ ld e, a
 _:	cp	a, trand
 	jp	nz, InvalidTokenError
 	ld	a, 0E5h
 	bit	need_push, (iy+myFlags)
-	call	nz, InsertA                                                        ; push hl
+	call	nz, InsertA		; push hl
 	ld	a, 0CDh
 	call	InsertA			; call *
 	call	InsertProgramPtrToDataOffset
@@ -213,7 +213,7 @@ _:	cp	a, trand
 	ld	(RandStartData), hl
 	push	hl
 	pop	de
-	call	InsertHL                                                            ; call XXXXXX
+	call	InsertHL		; call XXXXXX
 	ld	hl, RandRoutine
 	ld	bc, RandRoutineEnd - RandRoutine
 	ldir
@@ -221,7 +221,7 @@ _:	cp	a, trand
 	set	has_already_rand, (iy+myFlags5)
 	jr	++_
 _:	ld	hl, (RandStartData)
-	call	InsertHL                                                            ; call XXXXXX
+	call	InsertHL		; call XXXXXX
 _:	ld	a, 0E5h
 	call	InsertA			; push hl
 	ld	a, 0C1h
@@ -523,7 +523,7 @@ AddCFunctionToProgram:
 	pop	hl
 	add	hl, hl
 	add	hl, de
-	call	InsertAHL                                                                ; jp *
+	call	InsertAHL		; jp *
 FunctionAlreadyInProgram:
 WrongCFunction:
 	pop	hl

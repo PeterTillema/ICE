@@ -445,7 +445,7 @@ ParseSingleArgument:
 	ld	hl, (hl)
 ParseSingleArgument2:
 	ld	a, 021h
-	jp	InsertAHL                                                            ;    ld hl, *
+	jp	InsertAHL		;    ld hl, *
 ParseSingleNotNumber:
 	dec	a
 	jr	nz, ParseSingleNotVariable
@@ -469,10 +469,10 @@ ParseSingleNotFunction:
 	call	InsertA			;    ld hl, *
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (programDataDataPtr)
-	call	InsertHL                                                        ;    ld hl, XXXXXXX
+	call	InsertHL		;    ld hl, XXXXXXX
 	pop	hl
 	inc	hl
-	ld	de, (hl)                                                                ;    hl points to string in string stack
+	ld	de, (hl)		;    hl points to string in string stack
 	ld	hl, (hl)
 	ld	bc, -1
 	xor	a, a
