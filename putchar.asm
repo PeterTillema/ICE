@@ -1,85 +1,85 @@
 _PrintChar_ASM:
-    push    hl
+	push	hl
 TextXPos_ASM = $+1
-    ld      bc, 0
-    push    af
-    push    af
-    push    bc
-    or      a, a
-    sbc     hl, hl
-    ld      l, a
-    ld      de, DefaultCharSpacing_ASM
-    add     hl, de
-    ld      a, (hl)
-    ld      (charwidth), a
-    or      a, a
-    sbc     hl, hl
-    ld      l, a
-    neg
-    ld      (CharWidthDelta_ASM), a
-    add     hl, bc
-    ld      (TextXPos_ASM),hl
+	ld	bc, 0
+	push	af
+	push	af
+	push	bc
+	or	a, a
+	sbc	hl, hl
+	ld	l, a
+	ld	de, DefaultCharSpacing_ASM
+	add	hl, de
+	ld	a, (hl)
+	ld	(charwidth), a
+	or	a, a
+	sbc	hl, hl
+	ld	l, a
+	neg
+	ld	(CharWidthDelta_ASM), a
+	add	hl, bc
+	ld	(TextXPos_ASM),hl
 CharWidthDelta_ASM = $+1
-    ld      de, -1
-    ld      hl, lcdWidth
-    add     hl, de
-    ld      (line_change), hl
+	ld	de, -1
+	ld	hl, lcdWidth
+	add	hl, de
+	ld	(line_change), hl
 TextYPos_ASM    = $+1
-    ld      l, 0
-    ld      h, 160
-    mlt     hl
-    add     hl, hl
-    ld      de, vRAM
-    add     hl, de
-    pop     de
-    add     hl, de
-    pop     af
-    ex      de, hl
-    or      a, a
-    sbc     hl, hl
-    sub     a, 23
-    ld      l, a
-    add     hl, hl
-    add     hl, hl
-    add     hl, hl
-    ld      bc, DefaultTextData_ASM
-    add     hl, bc
-    ld      b, 8
+	ld	l, 0
+	ld	h, 160
+	mlt	hl
+	add	hl, hl
+	ld	de, vRAM
+	add	hl, de
+	pop	de
+	add	hl, de
+	pop	af
+	ex	de, hl
+	or	a, a
+	sbc	hl, hl
+	sub	a, 23
+	ld	l, a
+	add	hl, hl
+	add	hl, hl
+	add	hl, hl
+	ld	bc, DefaultTextData_ASM
+	add	hl, bc
+	ld	b, 8
 iloop:
-    push    bc
-    ld      c, (hl)
+	push	bc
+	ld	c, (hl)
 charwidth = $+1
-    ld      b, 0
-    ex      de, hl
+	ld	b, 0
+	ex	de, hl
 color = $+1
-    ld      a, 0
+	ld	a, 0
 cloop:
-    sla     c
-    jr      nc, +_
-    ld      (hl), a
-_:  inc     hl
-    djnz    cloop
+	sla	c
+	jr	nc, +_
+	ld	(hl), a
+_:	inc	hl
+	djnz	cloop
 line_change =$+1
-    ld      bc, 0
-    add     hl, bc
-    ex      de, hl
-    inc     hl
-    pop     bc
-    djnz    iloop
-    pop     af
-    pop     hl
-    ret
+	ld	bc, 0
+	add	hl, bc
+	ex	de, hl
+	inc	hl
+	pop	bc
+	djnz	iloop
+	pop	af
+	pop	hl
+	ret
 
 DefaultCharSpacing_ASM:
     ;      0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F
-    .db    8,8,8,8,8,8,8,8,8,8,8,8,8,2,8,8    ;    0
-    .db    8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8    ;    1
-    .db    3,4,6,8,8,8,8,5,5,5,8,7,4,7,3,8    ;    2
-    .db    8,7,8,8,8,8,8,8,8,8,3,4,6,7,6,7    ;    3
-    .db    8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8    ;    4
-    .db    8,8,8,8,8,8,8,8,8,8,8,5,8,5,8,8    ;    5
-    .db    4,8,8,8,8,8,8,8,8,5,8,8,5,8,8,8    ;    6
-    .db    8,8,8,8,7,8,8,8,8,8,8            ;    7
+	.db	8,8,8,8,8,8,8,8,8,8,8,8,8,2,8,8    ;    0
+	.db	8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8    ;    1
+	.db	3,4,6,8,8,8,8,5,5,5,8,7,4,7,3,8    ;    2
+	.db	8,7,8,8,8,8,8,8,8,8,3,4,6,7,6,7    ;    3
+	.db	8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8    ;    4
+	.db	8,8,8,8,8,8,8,8,8,8,8,5,8,5,8,8    ;    5
+	.db	4,8,8,8,8,8,8,8,8,5,8,8,5,8,8,8    ;    6
+	.db	8,8,8,8,7,8,8,8,8,8,8            ;    7
  
 ;-------------------------------------------------------------------------------
 DefaultTextData_ASM:
