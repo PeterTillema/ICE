@@ -55,8 +55,7 @@ _:	ld	d, b
 	ldir
 	set	good_compilation, (iy+fProgram1)
 	res	modified_iy, (iy+fAlways1)
-	res	debug_on, (iy+fAlways1)	;
-	ld	hl, ICEName
+	res	debug_on, (iy+fAlways1)	; ld	hl, ICEName
 	ld	a, 1
 	ld	(TextYPos_ASM), a
 	add	a, 20
@@ -177,7 +176,7 @@ _:	call	_ChkInRAM
 	ex	de, hl
 _:	ld	bc, 0
 	ex	de, hl
-	ld	c, (hl)			;    BC = program length
+	ld	c, (hl)			; BC = program length
 	inc	hl
 	ld	b, (hl)
 	inc	hl
@@ -197,15 +196,15 @@ _:	ld	bc, 0
 	call	PreScanPrograms
 	ld	a, 0CDh
 	ld	hl, _RunIndicOff
-	call	InsertAHL		;    call _RunIndicOff
+	call	InsertAHL		; call _RunIndicOff
 	ld	hl, (programPtr)
 	ld	de, 4+4+5+UserMem-program
 	add	hl, de
-	call	InsertAHL		;    call *
+	call	InsertAHL		; call *
 	ld	bc, 08021FDh
 	ld	de, 0C3D000h
 	ld	hl, _DrawStatusBar
-	call	InsertBCDEHL		;    ld iy, flags \ jp _DrawStatusBar
+	call	InsertBCDEHL		; ld iy, flags \ jp _DrawStatusBar
 	ld	hl, (programPtr)
 	ld	(PrevProgramPtr), hl
 	ld	a, (amountOfCRoutines)
@@ -310,29 +309,29 @@ FindGotosLoop:
 	ld	de, gotoStack
 	or	a, a
 	sbc	hl, de
-	jr	z, AddDataToProgramData	;    have we finished all the Goto's?
+	jr	z, AddDataToProgramData	; have we finished all the Goto's?
 	add	hl, de
 	dec	hl
 	dec	hl
 	dec	hl
 	push	hl
 	ld	hl, (hl)
-	ex	de, hl			;    de = pointer to goto data
+	ex	de, hl			; de = pointer to goto data
 	ld	hl, (labelPtr)
 FindLabels:
 	ld	bc, labelStack
 	or	a, a
 	sbc	hl, bc
-	jp	z, LabelError		;    have we finished all the Lbl's?
+	jp	z, LabelError		; have we finished all the Lbl's?
 	add	hl, bc
 	dec	hl
 	dec	hl
-	dec	hl			;    hl = pointer to label
+	dec	hl			; hl = pointer to label
 FindLabel:
 	push	hl
 	push	de
-	ld	hl, (hl)		;    hl = pointer to label data
-	call	CompareStrings		;    is it the right label?
+	ld	hl, (hl)		; hl = pointer to label data
+	call	CompareStrings		; is it the right label?
 	pop	de
 	pop	hl
 	jr	nz, LabelNotRightOne
@@ -343,16 +342,16 @@ RightLabel:
 	ld	hl, (hl)
 	ld	de, UserMem-program
 	add	hl, de
-	ex	de, hl			;    de points to label memory
-	pop	hl			;    hl = pointer to goto
+	ex	de, hl			; de points to label memory
+	pop	hl			; hl = pointer to goto
 	dec	hl
 	dec	hl
 	dec	hl
-	ld	hl, (hl)		;    hl = pointer to jump to
+	ld	hl, (hl)		; hl = pointer to jump to
 	ld	(hl), de
 	ld	hl, (gotoPtr)
 	ld	de, -6
-	add	hl, de			;    get next Goto
+	add	hl, de			; get next Goto
 	ld	(gotoPtr), hl
 	jr	FindGotosLoop
 LabelNotRightOne:
@@ -366,35 +365,35 @@ AddDataToProgramData:
 	bit	last_token_is_ret, (iy+fExpression1)
 	jr	nz, +_
 	ld	a, 0C9h
-	call	InsertA			;    ret
+	call	InsertA			; ret
 _:	ld	hl, (programDataDataPtr)
 	ld	bc, programDataData
 	or	a, a
 	sbc	hl, bc
 	push	hl
-	pop	bc			;    bc = data length
-	jr	z, CreateProgram	;    check IF there is data
+	pop	bc			; bc = data length
+	jr	z, CreateProgram	; check IF there is data
 	ld	de, (programPtr)
 	ld	hl, programDataData
 	or	a, a
 	sbc	hl, de
 	push	hl
 	add	hl, de
-	ldir				;    move the data to the end of the program
+	ldir				; move the data to the end of the program
 	ld	(programPtr), de
 	pop	de
 	ld	hl, (programDataOffsetPtr)
-AddDataLoop:                                                                ;    update all the pointers pointing to data
+AddDataLoop:				; update all the pointers pointing to data
 	ld	bc, programDataOffsetStack
 	or	a, a
 	sbc	hl, bc
-	jr	z, CreateProgram	;    no more pointers left
+	jr	z, CreateProgram	; no more pointers left
 	add	hl, bc
 	dec	hl
 	dec	hl
 	dec	hl
 	push	hl
-	ld	hl, (hl)		;    complicated stuff XD
+	ld	hl, (hl)		; complicated stuff XD
 	push	hl
 	ld	hl, (hl)
 	or	a, a
@@ -404,7 +403,7 @@ AddDataLoop:                                                                ;   
 	push	hl
 	pop	bc
 	pop	hl
-	ld	(hl), bc		;    ld (XXXXXX), hl
+	ld	(hl), bc		; ld (XXXXXX), hl
 	pop	hl
 	jr	AddDataLoop
 CreateProgram:
@@ -438,17 +437,17 @@ _:	ld	hl, (programPtr)
 	inc	de
 	ld	hl, program
 	ex	de, hl
-	ld	(hl), tExtTok		;    insert header
+	ld	(hl), tExtTok		; insert header
 	inc	hl
 	ld	(hl), tAsm84CeCmp
 	inc	hl
-    ;ld      (hl), 07Fh                                                           ; Cesium recognition
+    ;ld      (hl), 07Fh			; Cesium recognition
     ;inc     hl
 	ex	de, hl
-	ldir				;    insert the program data
+	ldir				; insert the program data
 	ld	hl, GoodCompileMessage
 	set	good_compilation, (iy+fProgram1)
-	jp	DispFinalString		;    DONE :D :D :D
+	jp	DispFinalString		; DONE :D :D :D
 
 #include "routines.asm"
 #include "parse.asm"

@@ -16,11 +16,11 @@ JumpFunction = $+1
 functionPrgm:
 	call	MaybeInsertIYFlags
 	ld	a, 021h
-	call	InsertA                                                            ;    ld hl, *
+	call	InsertA			; ld hl, *
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (programDataDataPtr)
 	push	hl
-	call	InsertHL                                                        ;    ld hl, programname
+	call	InsertHL		; ld hl, programname
 	pop	hl
 	ld	(hl), ProgObj
 	call	GetProgramName
@@ -28,16 +28,16 @@ functionPrgm:
 	ld	(programDataDataPtr), hl
 	ld	a, 0CDh
 	ld	hl, _Mov9ToOP1
-	call	InsertAHL                                                            ;    call _Mov9ToOP1
+	call	InsertAHL		; call _Mov9ToOP1
 	ld	a, 0FDh
 	ld	hl, 0CE08CBh
-	call	InsertAHL                                                            ;    set 1, (iy+8)
+	call	InsertAHL		; set 1, (iy+8)
 	ld	a, 0CDh
 	ld	hl, _ParseInp
-	call	InsertAHL                                                            ;    call _ParseInp
+	call	InsertAHL		; call _ParseInp
 	ld	a, 0FDh
 	ld	hl, 08E08CBh
-	jp	InsertAHL                                                            ;    res 1, (iy+8)
+	jp	InsertAHL		; res 1, (iy+8)
     
 
 functionOutput:
@@ -53,7 +53,7 @@ functionOutput:
 	jr	nz, OutputRowIsNumber
 OutputRowIsVariable:
 	ld	a, 07Dh
-	call	InsertA                                                            ;    ld a, l
+	call	InsertA			; ld a, l
 	jr	+_
 OutputRowIsNumber:
 	ld	hl, (programPtr)
@@ -62,10 +62,10 @@ OutputRowIsNumber:
 	ld	(programPtr), hl
 	dec	hl
 	dec	hl
-	ld	(hl), 03Eh                                                            ;    ld a, *
+	ld	(hl), 03Eh		; ld a, *
 _:	ld	a, 032h
 	ld	hl, curRow
-	call	InsertAHL                                                            ;    ld (curRow), a
+	call	InsertAHL		; ld (curRow), a
 	call	_IncFetch
 	call	ParseExpression
 	bit	triggered_a_comma, (iy+fExpression3)
@@ -75,7 +75,7 @@ _:	ld	a, 032h
 	jr	nz, OutputColumnIsNumber
 OutputColumnIsVariable:
 	ld	a, 07Dh
-	call	InsertA                                                            ;    ld a, l
+	call	InsertA			; ld a, l
 	jr	+_
 OutputColumnIsNumber:
 	ld	hl, (programPtr)
@@ -84,11 +84,11 @@ OutputColumnIsNumber:
 	ld	(programPtr), hl
 	dec	hl
 	dec	hl
-	ld	(hl), 03Eh                                                            ;    ld a, *
+	ld	(hl), 03Eh		; ld a, *
 _:	ld	a, 032h
 	ld	hl, curCol
-	call	InsertAHL                                                            ;    ld (curCol), a
-	or	a, 1                                                                    ;    rest zero flag
+	call	InsertAHL		; ld (curCol), a
+	or	a, 1			; rest zero flag
 	call	DisplayNumberOrString
 	jp	nz, ErrorSyntax
 	ret
@@ -97,7 +97,7 @@ functionDisp:
 	call	MaybeInsertIYFlags
 	ld	a, 1
 	ld	(openedParensF), a
-	dec	a                                                                    ;    set zero flag
+	dec	a			; set zero flag
 	call	DisplayNumberOrString
 	ret	z
 	jr	functionDisp
@@ -143,7 +143,7 @@ InsertLblGotoToDebugSection:
 	jr	z, +_
 	ld	hl, 011003Eh
 	ld	h, b
-	call	InsertHL                                                            ; ld a, * \ ld de, *
+	call	InsertHL		; ld a, * \ ld de, *
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (programDataDataPtr)
 	call	InsertHL
@@ -166,7 +166,7 @@ _:	bit	debug_on, (iy+fAlways1)
 	inc	hl
 	ld	(ix), hl
 _:	ld	a, 0CDh
-	call	InsertA                                                             ; call *
+	call	InsertA			; call *
 	call	InsertProgramPtrToDataOffset
 	bit	has_already_debug, (iy+fProgram2)
 	set	has_already_debug, (iy+fProgram2)
@@ -206,7 +206,7 @@ _:	add	hl, de
 	ld	b, tGoto
 	call	InsertLblGotoToDebugSection
 	pop	af
-	jp	InsertAHL                                                       ;   jp/call RANDOM
+	jp	InsertAHL		; jp/call RANDOM
     
 functionSkipLine:
 	ld	hl, (endPC)
@@ -234,12 +234,12 @@ _:	cp	tIf
 	call	_IncFetch
 	call	ParseExpression
 	ld	a, 019h
-	call	InsertA                                                            ;    add hl, de
+	call	InsertA			; add hl, de
 	ld	a, 0B7h
 	ld	hl, 0C052EDh
-	jp	InsertAHL                                                            ;    or a \ sbc hl, de \ ret nz
+	jp	InsertAHL		; or a \ sbc hl, de \ ret nz
 _:	ld	a, 0C9h
-	jp	InsertA                                                                ;    ret
+	jp	InsertA			; ret
         
 functionRepeat:
 	ld	hl, amountOfEnds
@@ -290,7 +290,7 @@ _:	bit	last_token_was_not, (iy+fExpression2)
 InsertNormalRepeat2:
 	ld	a, 019h
 	ld	hl, 052EDB7h
-	call	InsertAHL                                                        ;    add hl, de \ or a \ sbc hl, de
+	call	InsertAHL		; add hl, de \ or a \ sbc hl, de
 functionRepeatInsert:
 	ld	bc, UserMem - program
 	add	hl, bc
@@ -314,9 +314,9 @@ functionRepeatSmall:
 _:	bit	last_token_was_not, (iy+fExpression2)
 	jr	z, $+4
 	xor	8
-	call	InsertA                                                            ;    jr [n]z, *
+	call	InsertA			; jr [n]z, *
 	ld	a, b
-	jp	InsertA                                                                ;    jr [n]z, *
+	jp	InsertA			; jr [n]z, *
 functionRepeatLarge:
 	ex	de, hl
 	bit	ans_set_z_flag, (iy+fExpression1)
@@ -328,7 +328,7 @@ _:	ld	a, 0CAh
 _:	bit	last_token_was_not, (iy+fExpression2)
 	jr	z, $+4
 	xor	8
-	jp	InsertAHL                                                            ;    jp [n]z, XXXXXX
+	jp	InsertAHL		; jp [n]z, XXXXXX
 functionRepeatInfinite:
 	ld	hl, (programPtr)
 	dec	hl
@@ -360,13 +360,13 @@ functionRepeatInfinite:
 functionRepeatInfiniteSmall:
 	ld	b, a
 	ld	a, 018h
-	call	InsertA                                                            ;    jr *
+	call	InsertA			; jr *
 	ld	a, b
-	jp	InsertA                                                                ;    jr *
+	jp	InsertA			; jr *
 functionRepeatInfiniteLarge:
 	ex	de, hl
 	ld	a, 0C3h
-	jp	InsertAHL                                                            ;    jp XXXXXX
+	jp	InsertAHL		; jp XXXXXX
 
 functionIf:
 	ld	hl, amountOfEnds
@@ -399,25 +399,25 @@ InsertNormalIf:
 InsertNormalIf2:
 	ld	a, 019h
 	ld	hl, 052EDB7h
-	call	InsertAHL                                                            ;    add hl, de \ or a \ sbc hl, de
+	call	InsertAHL		; add hl, de \ or a \ sbc hl, de
 	ld	a, 0CAh
 	bit	last_token_was_not, (iy+fExpression2)
 	jr	z, InsertIf
 	ld	a, 0C2h
 InsertIf:
-	call	InsertA                                                            ;    jp z, ******
+	call	InsertA			; jp z, ******
 	ld	hl, (programPtr)
 	push	hl
-	call	InsertHL                                                        ;    jp z, XXXXXX
+	call	InsertHL		; jp z, XXXXXX
 	call	ParseProgramUntilEnd
 	cp	tElse
 	jr	nz, +_
 	ld	hl, amountOfEnds
 	inc	(hl)
 	ld	a, 0C3h
-	call	InsertA                                                        ;    jp ******
+	call	InsertA			; jp ******
 	ld	de, (programPtr)
-	call	InsertHL                                                        ;    jp XXXXXX
+	call	InsertHL		; jp XXXXXX
 	ld	bc, UserMem - program
 	add	hl, bc
 	push	hl
@@ -507,16 +507,16 @@ _:	bit	last_token_was_not, (iy+fExpression2)
 InsertNormalWhile2:
 	ld	a, 019h
 	ld	hl, 052EDB7h
-	call	InsertAHL                                                        ;    add hl, de \ or a \ sbc hl, de
+	call	InsertAHL		; add hl, de \ or a \ sbc hl, de
 	ld	a, 0CAh
 InsertNormalWhile:
 	bit	last_token_was_not, (iy+fExpression2)
 	jr	z, $+4
 	xor	8
-	call	InsertA                                                        ;    jp z, ******
+	call	InsertA			; jp z, ******
 	ld	hl, (programPtr)
 	push	hl
-	call	InsertHL                                                    ;    jp z, ******
+	call	InsertHL		; jp z, ******
 	call	ParseProgramUntilEnd
 	cp	tElse
 	jp	z, ErrorSyntax
@@ -525,7 +525,7 @@ InsertNormalWhile:
 	pop	hl
 	ld	bc, UserMem - program
 	add	hl, bc
-	call	InsertAHL                                                            ;    jp XXXXXX
+	call	InsertAHL		; jp XXXXXX
 	add	hl, bc
 	ex	de, hl
 	ld	(hl), de
@@ -550,7 +550,7 @@ functionWhileInfinite:
 	pop	hl
 	ld	bc, UserMem - program
 	add	hl, bc
-	jp	InsertAHL                                                            ;    jp XXXXXX
+	jp	InsertAHL		; jp XXXXXX
 _:	call	ParseProgramUntilEnd
 	cp	tElse
 	jp	z, ErrorSyntax
@@ -564,9 +564,9 @@ functionClrHome:
 	cp	tEnter
 	jp	nz, ErrorSyntax
 _:	ld	hl, _HomeUp
-	call	InsertCallHL                                                        ;    call _HomeUp
+	call	InsertCallHL		; call _HomeUp
 	ld	hl, _ClrLCDFull
-	jp	InsertAHL                                                            ;    call _ClrLCDFull
+	jp	InsertAHL		; call _ClrLCDFull
     
 functionPause:
 	call	_IncFetch
@@ -580,7 +580,7 @@ functionPause:
 	bit	has_already_pause, (iy+fProgram1)
 	jr	nz, AddPause
 	ld	a, 0CDh
-	call	InsertA                                                            ;    call *
+	call	InsertA			; call *
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (programDataDataPtr)
 	ld	(PauseStartData), hl
@@ -599,7 +599,7 @@ functionPause:
 	ld	(hl), bc
 	pop	hl
 	inc	hl
-_:	call	InsertHL                                                            ;    call *
+_:	call	InsertHL		; call *
 	ld	hl, PauseRoutine
 	ld	bc, PauseRoutineEnd - PauseRoutine
 	ldir
@@ -607,13 +607,13 @@ _:	call	InsertHL                                                            ;   
 	set	has_already_pause, (iy+fProgram1)
 	ret
 _:	ld	hl, _GetCSC
-	call	InsertCallHL                                                        ;    call _GetCSC
+	call	InsertCallHL		; call _GetCSC
 	ld	a, 0FEh
 	ld	hl, 0F82009h
-	jp	InsertAHL                                                            ;    cp tEnter \ jr nz, $-9
+	jp	InsertAHL		; cp tEnter \ jr nz, $-9
 AddPause:
 	ld	a, 0CDh
-	call	InsertA                                                            ;    call ******
+	call	InsertA			; call ******
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (PauseStartData)
 	bit	output_is_number, (iy+fExpression1)
@@ -629,7 +629,7 @@ AddPause:
 	ld	(hl), de
 	pop	hl
 	inc	hl
-_:	jp	InsertHL                                                                ;    call XXXXXX
+_:	jp	InsertHL		; call XXXXXX
 functionPauseOnce:
 	ld	de, (programPtr)
 	ld	hl, PauseRoutine
@@ -663,15 +663,15 @@ _:	ld	a, (amountOfInput)
 	dec	a
 	jr	z, functionInputOnce
 	ld	a, 03Eh
-	call	InsertA                                                            ;    ld a, **
+	call	InsertA			; ld a, **
 	call	_CurFetch
 	sub	tA
 	ld	b, a
 	add	a, a
 	add	a, b
-	call	InsertA                                                            ;    ld a, XX
+	call	InsertA			; ld a, XX
 	ld	a, 032h
-	call	InsertA                                                            ;    ld (******), a
+	call	InsertA			; ld (******), a
 	call	InsertProgramPtrToDataOffset
 	bit	has_already_input, (iy+fProgram1)
 	jr	nz, AddPointerToInput
@@ -679,14 +679,14 @@ _:	ld	a, (amountOfInput)
 	ld	(InputStartData), hl
 	ld	bc, InputOffset-InputRoutine
 	add	hl, bc
-	call	InsertHL                                                            ;    ld (XXXXXX), a
+	call	InsertHL		; ld (XXXXXX), a
 	ld	a, 0CDh
-	call	InsertA                                                            ;    call ******
+	call	InsertA			; call ******
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (programDataDataPtr)
 	push	hl
 	pop	de
-	call	InsertHL                                                            ;    call XXXXXX
+	call	InsertHL		; call XXXXXX
 _:	ld	hl, InputRoutine
 	ld	bc, InputRoutineEnd-InputRoutine
 	ldir
@@ -698,12 +698,12 @@ AddPointerToInput:
 	push	hl
 	ld	bc, InputOffset-InputRoutine
 	add	hl, bc
-	call	InsertHL                                                        ;    ld (XXXXXX), a
+	call	InsertHL		; ld (XXXXXX), a
 	ld	a, 0CDh
-	call	InsertA                                                        ;    call ******
+	call	InsertA			; call ******
 	call	InsertProgramPtrToDataOffset
 	pop	hl
-	jp	InsertHL                                                                ;    call XXXXXX
+	jp	InsertHL		; call XXXXXX
 functionInputOnce:
 	call	_CurFetch
 	sub	tA
@@ -757,17 +757,17 @@ NotVariable:
 	ld	a, c
 	ld	hl, 00027DDh
 	call	_SetHLUToA
-	call	InsertHL                                                            ;    ld hl, (ix+*)
+	call	InsertHL		; ld hl, (ix+*)
 	jr	NotChainAns
 NotChainPush:
 	jp	UnknownError
 NotChainAns:
 	ld	a, 011h
-	call	InsertA                                                            ;    ld de, *
+	call	InsertA			; ld de, *
 	ld	a, 0FFh
 	ld	de, 019FFFFh
 	ld	hl, 02362EDh
-	jp	InsertADEHL                                                            ;    ld de, -1 \ add hl, de \ sbc hl, hl \ inc hl
+	jp	InsertADEHL		; ld de, -1 \ add hl, de \ sbc hl, hl \ inc hl
 NotFunction:
 	ld	a, (ix-3)
 	ld	b, OutputInHL
@@ -840,7 +840,7 @@ RemainderNumberVariable:
 	ld	a, 021h
 	push	bc
 	pop	hl
-	call	InsertAHL                                                            ;    ld hl, *
+	call	InsertAHL		; ld hl, *
 	jp	RemainderChainAnsVariable
 RemainderNumberChainPush:
 	jp	UnknownError
@@ -848,9 +848,9 @@ RemainderNumberChainAns:
 	ld	de, 021C1E5h
 	push	bc
 	pop	hl
-	call	InsertDEHL                                                            ;    push hl \ pop bc \ ld hl, *
+	call	InsertDEHL		; push hl \ pop bc \ ld hl, *
 	ld	hl, __idvrmu
-	jp	InsertCallHL                                                            ;    call __idvrmu
+	jp	InsertCallHL		; call __idvrmu
 RemainderNumberFunction:
 	ld	a, e
 	push	bc
@@ -858,9 +858,9 @@ RemainderNumberFunction:
 	call	GetFunction
 	pop	hl
 	ld	a, 021h
-	call	InsertAHL                                                            ;    ld hl, *
+	call	InsertAHL		; ld hl, *
 	ld	hl, __idvrmu
-	jp	InsertCallHL                                                            ;    call __idvrmu
+	jp	InsertCallHL		; call __idvrmu
 RemainderVariableXXX:
 	ld	a, ixl
 	or	a, a
@@ -875,21 +875,21 @@ RemainderVariableXXX:
 	jr	z, RemainderVariableFunction
 	jp	ErrorSyntax
 RemainderVariableNumber:
-	call	InsertHIXC                                                            ;    ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jr	RemainderChainAnsNumber
 RemainderVariableVariable
-	call	InsertHIXC                                                            ;    ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jr	RemainderChainAnsVariable
 RemainderVariableChainPush:
 	jp	UnknownError
 RemainderVariableChainAns:
 	ld	a, 0E5h
-	call	InsertA                                                            ;    push hl
+	call	InsertA			; push hl
 	ld	a, 0C1h
-	call	InsertA                                                            ;    pop bc
-_:	call	InsertHIXC                                                            ;    ld hl, (ix+*)
+	call	InsertA			; pop bc
+_:	call	InsertHIXC		; ld hl, (ix+*)
 	ld	hl, __idvrmu
-	jp	InsertCallHL                                                            ;    call __idvrmu
+	jp	InsertCallHL		; call __idvrmu
 RemainderVariableFunction:
 	ld	a, e
 	ld	b, OutputInBC
@@ -900,7 +900,7 @@ RemainderChainPushXXX:
 	cp	typeChainAns
 	jp	nz, UnknownError
 	ld	hl, 0E1C1E5h
-	call	InsertAHL                                                            ;    push hl \ pop bc \ pop hl
+	call	InsertAHL		; push hl \ pop bc \ pop hl
 	jr	+_
 RemainderChainAnsXXX:
 	ld	a, ixl
@@ -918,11 +918,11 @@ RemainderChainAnsXXX:
 RemainderChainAnsNumber:
 	ex	de, hl
 	ld	a, 001h
-	call	InsertAHL                                                            ;    ld bc, *
+	call	InsertAHL		; ld bc, *
 _:	ld	hl, __idvrmu
-	jp	InsertCallHL                                                            ;    call __idvrmu
+	jp	InsertCallHL		; call __idvrmu
 RemainderChainAnsVariable:
-	call	InsertIXC                                                            ;    ld bc, (ix+*)
+	call	InsertIXC		; ld bc, (ix+*)
 	jr	-_
 RemainderChainAnsChainPush:
 	jp	UnknownError
@@ -961,9 +961,9 @@ RemainderFunctionChainPush:
 	jp	UnknownError
 RemainderFunctionChainAns:
 	ld	a, 0E5h
-	call	InsertA                                                        ;    push hl
+	call	InsertA			; push hl
 	ld	a, 0C1h
-	call	InsertA                                                        ;    pop bc
+	call	InsertA			; pop bc
 	ld	a, c
 	ld	b, OutputInHL
 	call	GetFunction
@@ -1093,10 +1093,10 @@ MaxMinMeanVariableXXX:
 	jr	z, MaxMinMeanVariableFunction
 	jp	ErrorSyntax
 MaxMinMeanVariableNumber:
-	call	InsertHIXC                                                            ;    ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jr	MaxMinMeanChainAnsNumber
 MaxMinMeanVariableVariable
-	call	InsertHIXC                                                            ;    ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	MaxMinMeanChainAnsVariable
 MaxMinMeanVariableChainPush:
 	ld	hl, (programPtr)
@@ -1111,7 +1111,7 @@ _:	ld	(programPtr), hl
 	jp	MaxMinMeanChainAnsVariable
 MaxMinMeanVariableChainAns:
 _:	ld	e, c
-	call	InsertIXE                                                            ;    ld de, (ix+*)
+	call	InsertIXE		; ld de, (ix+*)
 	jr	MaxMinMeanInsert
 MaxMinMeanVariableFunction:
 	ld	a, e
@@ -1125,12 +1125,12 @@ MaxMinMeanChainPushXXX:
 	bit	use_mean_routine, (iy+fExpression2)
 	jr	nz, +_
 	ld	a, 0EBh
-	call	InsertA                                                            ;    ex de, hl
+	call	InsertA			; ex de, hl
 	ld	a, 0E1h
-	call	InsertA                                                            ;    pop hl
+	call	InsertA			; pop hl
 	jr	MaxMinMeanInsert
 _:	ld	a, 0D1h
-	call	InsertA                                                            ;    pop de
+	call	InsertA			; pop de
 	jr	MaxMinMeanInsert
 MaxMinMeanChainAnsXXX:
 	ld	a, ixl
@@ -1148,7 +1148,7 @@ MaxMinMeanChainAnsXXX:
 MaxMinMeanChainAnsNumber:
 	ex	de, hl
 	ld	a, 011h
-	call	InsertAHL                                                            ;    ld de, *
+	call	InsertAHL		; ld de, *
 MaxMinMeanInsert:
 	bit	use_mean_routine, (iy+fExpression2)
 	jp	nz, MeanInsert
@@ -1156,9 +1156,9 @@ MaxMinMeanInsert:
 	ld	de, 01952EDh
 MaxMinMeanInsertSMC = $+1
 	ld	hl, 0EB0130h
-	jp	InsertADEHL                                                            ;    or a \ sbc hl, de \ add hl, de \ jr [n]c, $+3 \ add hl, de
+	jp	InsertADEHL		; or a \ sbc hl, de \ add hl, de \ jr [n]c, $+3 \ add hl, de
 MaxMinMeanChainAnsVariable:
-	call	InsertIXE                                                            ;    ld de, (ix+*)
+	call	InsertIXE		; ld de, (ix+*)
 	jr	MaxMinMeanInsert
 MaxMinMeanChainAnsChainPush:
 	jp	UnknownError
@@ -1199,7 +1199,7 @@ MaxMinMeanFunctionChainAns:
 	bit	use_mean_routine, (iy+fExpression2)
 	jr	nz, ++_
 	ld	a, 0EBh
-	call	InsertA                                                            ;    ex de, hl
+	call	InsertA			; ex de, hl
 	ld	a, c
 	ld	b, OutputInHL
 _:	set	need_push, (iy+fExpression1)
@@ -1221,13 +1221,13 @@ MeanInsert:
 	bit	has_already_mean, (iy+fProgram1)
 	jr	nz, +_
 	ld	a, 0CDh
-	call	InsertA                                                            ;    call *
+	call	InsertA			; call *
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (programDataDataPtr)
 	ld	(MeanStartData), hl
 	push	hl
 	pop	de
-	call	InsertHL                                                            ;    call *
+	call	InsertHL		; call *
 	ld	hl, MeanRoutine
 	ld	bc, MeanRoutineEnd - MeanRoutine
 	ldir
@@ -1235,10 +1235,10 @@ MeanInsert:
 	set	has_already_mean, (iy+fProgram1)
 	ret
 _:	ld	a, 0CDh
-	call	InsertA                                                            ;    call ******
+	call	InsertA			; call ******
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (MeanStartData)
-	jp	InsertHL                                                                ;    call XXXXXX
+	jp	InsertHL		; call XXXXXX
     
 functionSqrt:
 	ld	a, 1
@@ -1273,7 +1273,7 @@ SqrtVariable:
 	ld	a, c
 	ld	hl, 00027DDh
 	call	_SetHLUToA
-	call	InsertHL                                                            ;    ld hl, (ix+*)
+	call	InsertHL		; ld hl, (ix+*)
 	jr	SqrtChainAns2
 SqrtChainPush:
 	jp	UnknownError
@@ -1282,7 +1282,7 @@ SqrtChainAns:
 SqrtChainAns2:
 	ld	de, 0CDC1E5h
 	ld	hl, __imuls
-	jp	InsertDEHL                                                            ;    push hl \ pop bc \ call __imuls
+	jp	InsertDEHL		; push hl \ pop bc \ call __imuls
 SqrtFunction:
 	ld	a, (ix-3)
 	ld	b, OutputInHL
@@ -1391,7 +1391,7 @@ functionSetBASICVar:
 	jp	c, ErrorSyntax
 	call	ParseExpression
 	ld	a, 006h
-	call	InsertA                                         ; ld b, *
+	call	InsertA			; ld b, *
 	pop	af
 	call	InsertA
 	ld	a, 0CDh
@@ -1415,16 +1415,16 @@ _:	ld	hl, (programDataDataPtr)
     
 functionGetBASICVar:
 	ld	a, 006h
-	call	InsertA                                                 ; ld b, *
+	call	InsertA			; ld b, *
 	call	_IncFetch
 	jp	c, ErrorSyntax
 	cp	a, tA
 	jp	c, ErrorSyntax
 	cp	a, ttheta+1
 	jp	nc, ErrorSyntax
-	call	InsertA                                                 ; ld b, X
+	call	InsertA			; ld b, X
 	ld	a, 0CDh
-	call	InsertA                                                 ; call *
+	call	InsertA			; call *
 	call	InsertProgramPtrToDataOffset
 	bit	has_already_getvar, (iy+fProgram2)
 	set	has_already_getvar, (iy+fProgram2)
@@ -1442,9 +1442,9 @@ _:	ld	hl, (programDataDataPtr)
 	ldir
 	ld	(programDataDataPtr), de
 _:	ld	a, 0DDh
-	call	InsertA                                                 ; ld (ix+*), hl
+	call	InsertA			; ld (ix+*), hl
 	ld	a, 02Fh
-	call	InsertA                                                 ; ld (ix+*), hl
+	call	InsertA			; ld (ix+*), hl
 	call	_IncFetch
 	jp	c, ErrorSyntax
 	cp	a, tComma
@@ -1459,7 +1459,7 @@ _:	ld	a, 0DDh
 	ld	b, a
 	add	a, a
 	add	a, b
-	jp	InsertA                                                 ; ld (ix+*), hl
+	jp	InsertA			; ld (ix+*), hl
     
 functionRoot:
 	ld	a, 1
@@ -1493,7 +1493,7 @@ RootVariable:
 	ld	a, c
 	ld	hl, 00027DDh
 	call	_SetHLUToA
-	call	InsertHL                                                            ;    ld hl, (ix+*)
+	call	InsertHL		; ld hl, (ix+*)
 	jr	RootChainAns
 RootChainPush:
 	jp	UnknownError
@@ -1511,10 +1511,10 @@ RootChainAnsAddRoutine:
 	ld	(programDataDataPtr), de
 RootChainAnsRecallRoutine:
 	ld	a, 0CDh
-	call	InsertA                                                            ;    call *
+	call	InsertA			; call *
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (RootStartData)
-	jp	InsertHL                                                                ;    call *
+	jp	InsertHL		; call *
 RootFunction:
 	ld	a, (ix-3)
 	ld	b, OutputInHL

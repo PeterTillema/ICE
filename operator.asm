@@ -1,6 +1,6 @@
 	ld	hl, precedence
 	add	hl, bc
-	ld	e, (hl)			;    e = precedence of current token
+	ld	e, (hl)			; e = precedence of current token
 	cp	a, tStore
 	call	z, MoveStackEntryToOutput
 CheckOperator:
@@ -24,11 +24,11 @@ CheckOperator:
 	cpir
 	ld	hl, precedence2
 	add	hl, bc
-	ld	a, (hl)			;    a = precedence of last token on stack
-	cp	a, e			;    if a <= e then move
+	ld	a, (hl)			; a = precedence of last token on stack
+	cp	a, e			; if a <= e then move
 	jr	c, InsertBoolean
 MoveBooleanFromStackToOutput:
-	ld	a, e			;    save for the precedence of current token
+	ld	a, e			; save for the precedence of current token
 	ld	de, (outputPtr)
 	ld	hl, (stackPtr)
 	dec	hl

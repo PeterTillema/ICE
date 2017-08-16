@@ -8,13 +8,13 @@ ChangeLastNumberFromStack:
 	dec	hl
 	push	hl
 	ld	hl, (hl)
-	add	hl, hl			;    HL * 10
+	add	hl, hl			; HL * 10
 	push	hl
 	pop	de
 	add	hl, hl
 	add	hl, hl
 	add	hl, de
-	sub	a, t0			;    HL + <number>
+	sub	a, t0			; HL + <number>
 	ld	de, 0
 	ld	e, a
 	add	hl, de
@@ -25,7 +25,7 @@ ChangeLastNumberFromStack:
 AddNumberToStack:
 	ld	(hl), typeNumber
 	inc	hl
-	sub	a, t0			;    new number
+	sub	a, t0			; new number
 InsertAndUpdatePointer
 	ld	de, 0
 	ld	e, a

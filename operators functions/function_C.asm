@@ -12,7 +12,7 @@ CFunctionArgsSMC = $+1
 	jr	nz, +_
 	push	hl
 	ld	hl, 0E5272Eh
-	call	InsertHL                                ; ld l, lcdBpp8 \ push hl
+	call	InsertHL		; ld l, lcdBpp8 \ push hl
 	inc	b
 	pop	hl
 _:	add	hl, de
@@ -21,14 +21,14 @@ _:	add	hl, de
 	mlt	de
 	ld	hl, CData2-CData+UserMem-4
 	add	hl, de
-	call	InsertCallHL                                    ; call *
+	call	InsertCallHL		; call *
 	ld	a, b
 	or	a, a
 	ret	z
 	ld	a, 0E1h
 _:	call	InsertA
 	djnz	-_
-	ret	; pop hl
+	ret				; pop hl
     
 CFunction1Arg:
 	bit	triggered_a_comma, (iy+fExpression3)
@@ -140,7 +140,7 @@ _:	pop	af
 	pop	hl
 	ld	(hl), de
 	dec	hl
-	ld	(hl), 02Ah                                    ; ld hl, (XXXXXX)
+	ld	(hl), 02Ah		; ld hl, (XXXXXX)
 	ret
 _:	inc	bc
 	inc	bc
@@ -152,27 +152,27 @@ _:	inc	bc
 	ld	hl, (hl)
 	push	hl
 	ld	a, 0E5h
-	call	InsertA                                    ; push hl
+	call	InsertA			; push hl
 	ld	a, 0D1h
 	ld	hl, 0111929h
-	call	InsertAHL                                ; pop de \ add hl, hl \ add hl, de \ ld de, ******
+	call	InsertAHL		; pop de \ add hl, hl \ add hl, de \ ld de, ******
 	ld	hl, (PrevProgramPtr)
 	ld	de, UserMem - program
 	add	hl, de
-	call	InsertHL                                ; ld de, XXXXXX
+	call	InsertHL		; ld de, XXXXXX
 	ld	a, 019h
 	ld	hl, 0E527EDh
-	call	InsertAHL                                ; add hl, de \ ld hl, (hl) \ push hl
+	call	InsertAHL		; add hl, de \ ld hl, (hl) \ push hl
 	pop	hl
-	call	InsertCallHL                                    ; call ******
+	call	InsertCallHL		; call ******
 	ld	hl, 0E1E1E1h
-	call	InsertHL                                    ; pop hl \ pop hl \ pop hl
+	call	InsertHL		; pop hl \ pop hl \ pop hl
 	ld	a, (CFunctionArgsSMC)
 	cp	a, 62
 	ret	c
 	ld	a, 0E1h
-	call	InsertA                                        ; pop hl
-	jp	InsertA                                        ; pop hl
+	call	InsertA			; pop hl
+	jp	InsertA			; pop hl
     
 CFunction4Args:
 	bit	triggered_a_comma, (iy+fExpression3)
@@ -294,7 +294,7 @@ CFunction6Args:
 	push	hl
 CFunction6ArgsSMC2 = $+1
 	ld	hl, 0
-	cp	a, a                    ;    reset zero flag
+	cp	a, a			; reset zero flag
 	call	CGetArgumentLast
 	ld	de, (programPtr)
 	pop	hl

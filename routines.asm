@@ -527,8 +527,8 @@ backupEndPC = $+1
 	ld	(mpLcdCtrl), a
 	call	_DrawStatusBar
 	ret
-;    bit      good_compilation, (iy+fProgram1)
-;    ret      nz
+; bit      good_compilation, (iy+fProgram1)
+; ret      nz
 ;#include "editor.asm"
     
 ClearScreen:
@@ -725,7 +725,7 @@ UpdateSpritePointers:
 	ex	de, hl
 	pop	hl
 	ld	(hl), de
-	bit	debug_on, (iy+fAlways1)	;
+	bit	debug_on, (iy+fAlways1)
 	jr	z, +_
 	ld	hl, (programPtr)
 	ld	bc, DebugCodeEnd - DebugCode - 3 - program + UserMem

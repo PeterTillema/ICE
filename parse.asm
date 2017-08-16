@@ -264,14 +264,14 @@ AddFunctionToStack:
 	inc	hl
 	ld	(stackPtr), hl
 	jp	ReturnToLoop
-StopParsing:                                                                ;    move stack to output
+StopParsing:				; move stack to output
 	call	MoveStackEntryToOutput
 	ld	hl, (outputPtr)
 	ld	de, output
 	or	a, a
 	sbc	hl, de
 	push	hl
-	pop	bc			;    BC / 4 is amount of elements in the stack
+	pop	bc			; BC / 4 is amount of elements in the stack
 	push	de
 	pop	hl
 	ld	a, OutputIsInHL
@@ -314,7 +314,7 @@ _:	pop	hl
 	inc	hl
 	jr	Loop
 ExpressFunction:
-	inc	hl			;    function = a
+	inc	hl			; function = a
 	ld	a, (hl)
 	dec	hl
 	push	bc
@@ -349,7 +349,7 @@ _:	pop	bc
 	or	a, a
 	sbc	hl, de
 	push	hl
-	pop	bc			;    BC = BC+DE-HL
+	pop	bc			; BC = BC+DE-HL
 	ld	a, b
 	or	a, c
 	cp	a, 4
@@ -445,7 +445,7 @@ ParseSingleArgument:
 	ld	hl, (hl)
 ParseSingleArgument2:
 	ld	a, 021h
-	jp	InsertAHL		;    ld hl, *
+	jp	InsertAHL		; ld hl, *
 ParseSingleNotNumber:
 	dec	a
 	jr	nz, ParseSingleNotVariable
@@ -466,20 +466,20 @@ ParseSingleNotFunction:
 	set	output_is_string, (iy+fExpression1)
 	push	hl
 	ld	a, 021h
-	call	InsertA			;    ld hl, *
+	call	InsertA			; ld hl, *
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (programDataDataPtr)
-	call	InsertHL		;    ld hl, XXXXXXX
+	call	InsertHL		; ld hl, XXXXXXX
 	pop	hl
 	inc	hl
-	ld	de, (hl)		;    hl points to string in string stack
+	ld	de, (hl)		; hl points to string in string stack
 	ld	hl, (hl)
 	ld	bc, -1
 	xor	a, a
 	cpir
 	sbc	hl, de
 	push	hl
-	pop	bc			;    bc = length of string
+	pop	bc			; bc = length of string
 	ex	de, hl
 	ld	de, (programDataDataPtr)
 	push	de

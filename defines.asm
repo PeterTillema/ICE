@@ -87,7 +87,7 @@ typeNumber              .equ 0
 typeVariable            .equ 1
 typeChainPush           .equ 2
 typeChainAns            .equ 3
-typeReturnValue         .equ 4                        ;    getKey, rand
+typeReturnValue         .equ 4                        ; getKey, rand
 typeList                .equ 5
 typeOSList              .equ 6
 typeString              .equ 7

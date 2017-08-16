@@ -2,7 +2,7 @@ FindNextGoodVar:
 	ld	de, (pTemp)
 	call	_CpHLDE
 	jr	nz, FindContinue
-	inc	a			;    return nz
+	inc	a			; return nz
 	ret
 FindContinue:
 	ld	a, (hl)

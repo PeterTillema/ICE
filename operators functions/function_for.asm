@@ -9,7 +9,7 @@ functionFor:
 	jp	c, functionForSmall
 	cp	ttheta+1-tA
 	jp	nc, functionForSmall
-;    loop variable
+; loop variable
 	ld	b, a
 	add	a, a
 	add	a, b
@@ -21,7 +21,7 @@ _:	jp	c, ErrorSyntax
 	cp	tComma
 	jp	nz, ErrorSyntax
 	call	_IncFetch
-;    loop start point
+; loop start point
 	ld	hl, (programPtr)
 	push	hl
 	ld	hl, tempArg1
@@ -32,7 +32,7 @@ _:	jp	c, ErrorSyntax
 	jp	z, ErrorSyntax
 ForVariable1 = $+3
 	ld	hl, 0002FDDh
-	call	InsertHL                                        ;    ld (ix+*), hl
+	call	InsertHL		; ld (ix+*), hl
 	call	_IncFetch
 	jr	c, -_
 	ld	hl, (programPtr)
@@ -43,16 +43,16 @@ ForVariable1 = $+3
 	pop	hl
 	ld	(programPtr), hl
 	push	de
-;    loop end point
+; loop end point
 	call	ParseExpression
 	bit	output_is_number, (iy+fExpression1)
 	jr	nz, ForEndPointIsNumber
 ForEndPointIsExpression:
 	ld	a, 022h
-	call	InsertA                                        ;    ld (******), hl
+	call	InsertA			; ld (******), hl
 	ld	hl, (programPtr)
 	ld	(ForEndPointExpression), hl
-	call	InsertHL                                        ;    ld (RANDOM), hl
+	call	InsertHL		; ld (RANDOM), hl
 	jr	ForGetStep
 ForEndPointIsNumber:
 	set	end_point_is_number, (iy+fFunction2)
@@ -68,7 +68,7 @@ ForGetStep:
 	bit	triggered_a_comma, (iy+fExpression3)
 	res	triggered_a_comma, (iy+fExpression3)
 	jr	nz, +_
-;    loop step
+; loop step
 	set	for_step_is_number, (iy+fFunction2)
 	ld	hl, 1
 	push	hl
@@ -89,16 +89,16 @@ ForGetStepVariable:
 	call	_CurFetch
 	sub	a, tA
 	ld	c, a
-	call	InsertHIXC                                        ;    ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	call	_NxtFetch
 	jp	c, ErrorSyntax
 	cp	tEnter
 	jp	nz, ErrorSyntax
 	ld	a, 022h
-	call	InsertA                                        ;    ld (*), hl
+	call	InsertA			; ld (*), hl
 	ld	hl, (programPtr)
 	push	hl
-	call	InsertHL                                    ;    ld (RANDOM), hl
+	call	InsertHL		; ld (RANDOM), hl
 	jr	ForStart
 ForGetStepNumber:
 	set	for_step_is_number, (iy+fFunction2)
@@ -140,7 +140,7 @@ ForInsertEndPointExpression:
 	ld	a, 037h
 _:	ld	(ForSetCarryFlag), a
 	ld	a, 011h
-	call	InsertA                                        ;    ld de, *
+	call	InsertA			; ld de, *
 	ld	hl, (programPtr)
 	ld	de, UserMem-program
 	add	hl, de
@@ -148,7 +148,7 @@ _:	ld	(ForSetCarryFlag), a
 ForEndPointExpression = $+1
 	ld	hl, 0
 	ld	(hl), de
-	call	InsertHL                                        ;    ld de, RANDOM
+	call	InsertHL		; ld de, RANDOM
 	jr	ForSkip
 ForInsertEndPointNumber:
 	ld	a, 011h
@@ -157,19 +157,19 @@ ForFixedEndPoint = $+1
 	bit	negative_for_step, (iy+fFunction2)
 	jr	nz, +_
 	inc	hl
-_:	call	InsertAHL                                        ;    ld de, *
+_:	call	InsertAHL		; ld de, *
 ForSkip:
 ForSetCarryFlag = $+1
 	ld	hl, 052EDB7h
-	call	InsertHL                                        ;    or a \ sbc hl, de
+	call	InsertHL		; or a \ sbc hl, de
 	ld	a, 0D2h
 	bit	negative_for_step, (iy+fFunction2)
 	jr	z, +_
 	add	a, 8
-_:	call	InsertA                                        ;    jp [n]c, *
+_:	call	InsertA			; jp [n]c, *
 	ld	hl, (programPtr)
 	push	hl
-	call	InsertHL                                    ;    jp [n]c, RANDOM
+	call	InsertHL		; jp [n]c, RANDOM
 	ld	b, (iy+fFunction2)
 	push	bc
 	call	ParseProgramUntilEnd
@@ -182,7 +182,7 @@ _:	call	InsertA                                        ;    jp [n]c, *
 	ld	a, (ix+9)
 	ld	hl, 00027DDh
 	call	_SetHLUToA
-	call	InsertHL                                    ;    ld hl, (ix+*)
+	call	InsertHL		; ld hl, (ix+*)
 	pop	bc
 	pop	de
 	pop	hl
@@ -203,18 +203,18 @@ InsertNumberChange:
 InsertVariableChange:
 	ex	de, hl
 	ld	a, 011h
-	call	InsertA                                        ;    ld de, *
+	call	InsertA			; ld de, *
 	ld	hl, (programPtr)
 	ld	bc, UserMem-program
 	add	hl, bc
 	ex	de, hl
 	ld	(hl), de
-	call	InsertHL                                        ;    ld de, RANDOM
+	call	InsertHL		; ld de, RANDOM
 	ld	a, 019h
 	ld	hl, 052EDB7h
 	bit	negative_for_step, (iy+fFunction2)
-	call	nz, InsertHL                                    ;    or a \ sbc hl, de
-	call	z, InsertA                                        ;    add hl, de
+	call	nz, InsertHL		; or a \ sbc hl, de
+	call	z, InsertA		; add hl, de
 InsertStop:
 	pop	bc
 	pop	de
@@ -222,7 +222,7 @@ InsertStop:
 	ld	a, l
 	ld	hl, 0002FDDh
 	call	_SetHLUToA
-	call	InsertHL                                                    ;    ld (ix+*), hl
+	call	InsertHL		; ld (ix+*), hl
 	or	a, a
 	sbc	hl, de
 	ld	a, h
@@ -240,7 +240,7 @@ ForBigLoop:
 	ld	a, 0D2h
 	ld	hl, UserMem-program
 	add	hl, de
-	call	InsertAHL                                                    ;    jp [nc], ******
+	call	InsertAHL		; jp [nc], ******
 	jr	ForLoopInsert
 ForSmallLoop:
 	ld	ixl, a
@@ -248,9 +248,9 @@ ForSmallLoop:
 	bit	negative_for_step, (iy+fFunction2)
 	jr	z, $+4
 	ld	a, 030h
-	call	InsertA                                                    ;    jr [nc], **
+	call	InsertA			; jr [nc], **
 	ld	a, ixl
-	call	InsertA                                                    ;    jr [nc], **
+	call	InsertA			; jr [nc], **
 	ld	hl, (programPtr)
 ForLoopInsert:
 	ld	de, UserMem-program
@@ -271,17 +271,17 @@ functionForSmall:
 	ld	(programPtr), hl
 	dec	hl
 	dec	hl
-	ld	(hl), 06h                                                     ;    ld b, *
+	ld	(hl), 06h		; ld b, *
 	jr	++_
 _:	ld	a, 045h
-	call	InsertA                                                    ;    ld b, l
+	call	InsertA			; ld b, l
 _:	ld	hl, (programPtr)
 	push	hl
 	ld	a, 0C5h
-	call	InsertA                                                ;    push bc
+	call	InsertA			; push bc
 	call	ParseProgramUntilEnd
 	ld	a, 0C1h
-	call	InsertA                                                ;    pop bc
+	call	InsertA			; pop bc
 	pop	de
 	ld	hl, (programPtr)
 	or	a, a
@@ -296,6 +296,6 @@ _:	jp	nz, ErrorTooLargeLoop
 	jp	c, -_
 	ld	b, a
 	ld	a, 010h
-	call	InsertA                                                    ;    djnz *
+	call	InsertA			; djnz *
 	ld	a, b
-	jp	InsertA                                                        ;    djnz *
+	jp	InsertA			; djnz *

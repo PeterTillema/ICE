@@ -1,52 +1,52 @@
 operators_booleans:
-	.db	tStore, tAnd, tXor, tOr, tEQ, tLT, tGT, tLE, tGE, tNE, tMul, tDiv, tAdd, tSub, 0            ;    0 = temp +
+	.db tStore, tAnd, tXor, tOr, tEQ, tLT, tGT, tLE, tGE, tNE, tMul, tDiv, tAdd, tSub, 0            ; 0 = temp +
 operators_special:
-	.db	0, 1, 2, 3, 4, 5, 5, 5, 5, 4, 6, 6, 6, 7
+	.db 0, 1, 2, 3, 4, 5, 5, 5, 5, 4, 6, 6, 6, 7
     
 FunctionsWithReturnValue:
-	.db	tGetKey, trand, tLParen
+	.db tGetKey, trand, tLParen
 FunctionsWithReturnValueArguments:
-	.db	tMean, tMin, tMax, tNot, tExtTok, tSqr, tSqrt
+	.db tMean, tMin, tMax, tNot, tExtTok, tSqr, tSqrt
 FunctionsWithReturnValueEnd:
 
 FunctionsWithReturnValueStart:
-	.dl	functionRoot, functionSqrt, functionCE, functionNot, functionMax, functionMin, functionMean
+	.dl functionRoot, functionSqrt, functionCE, functionNot, functionMax, functionMin, functionMean
 
 FunctionsSingle:
-	.db	tOutput, tInput, tClLCD, tPause, tIf, tWhile, tRepeat, tDisp, tFor, tReturn, tVarOut, tLbl, tGoto, tii, tDet, tProg
+	.db tOutput, tInput, tClLCD, tPause, tIf, tWhile, tRepeat, tDisp, tFor, tReturn, tVarOut, tLbl, tGoto, tii, tDet, tProg
 FunctionsSingleEnd:
 
 FunctionsSingleStart:
-	.dl	functionPrgm, functionC, functionSkipLine, functionGoto, functionLbl, functionCustom, functionReturn, functionFor
-	.dl	functionDisp, functionRepeat, functionWhile, functionIf, functionPause, functionClrHome, functionInput, functionOutput
+	.dl functionPrgm, functionC, functionSkipLine, functionGoto, functionLbl, functionCustom, functionReturn, functionFor
+	.dl functionDisp, functionRepeat, functionWhile, functionIf, functionPause, functionClrHome, functionInput, functionOutput
     
 operator_start:
-	.dl	SubNumberXXX,    SubVariableXXX,    SubChainPushXXX,    SubChainAnsXXX,    SubFunctionXXX,    SubError
-	.dl	AddNumberXXX,    AddVariableXXX,    AddChainPushXXX,    AddChainAnsXXX,    AddFunctionXXX,    AddError
-	.dl	DivNumberXXX,    DivVariableXXX,    DivChainPushXXX,    DivChainAnsXXX,    DivFunctionXXX,    DivError
-	.dl	MulNumberXXX,    MulVariableXXX,    MulChainPushXXX,    MulChainAnsXXX,    MulFunctionXXX,    MulError
-	.dl	NEQNumberXXX,    NEQVariableXXX,    NEQChainPushXXX,    NEQChainAnsXXX,    NEQFunctionXXX,    NEQError
-	.dl	GLETNumberXXX,   GLETVariableXXX,   GLETChainPushXXX,   GLETChainAnsXXX,   GLETFunctionXXX,   GLETError
-	.dl	XORANDNumberXXX, XORANDVariableXXX, XORANDChainPushXXX, XORANDChainAnsXXX, XORANDFunctionXXX, XORANDError
-	.dl	StoNumberXXX,    StoVariableXXX,    StoChainPushXXX,    StoChainAnsXXX,    StoFunctionXXX,    StoListXXX
+	.dl SubNumberXXX,    SubVariableXXX,    SubChainPushXXX,    SubChainAnsXXX,    SubFunctionXXX,    SubError
+	.dl AddNumberXXX,    AddVariableXXX,    AddChainPushXXX,    AddChainAnsXXX,    AddFunctionXXX,    AddError
+	.dl DivNumberXXX,    DivVariableXXX,    DivChainPushXXX,    DivChainAnsXXX,    DivFunctionXXX,    DivError
+	.dl MulNumberXXX,    MulVariableXXX,    MulChainPushXXX,    MulChainAnsXXX,    MulFunctionXXX,    MulError
+	.dl NEQNumberXXX,    NEQVariableXXX,    NEQChainPushXXX,    NEQChainAnsXXX,    NEQFunctionXXX,    NEQError
+	.dl GLETNumberXXX,   GLETVariableXXX,   GLETChainPushXXX,   GLETChainAnsXXX,   GLETFunctionXXX,   GLETError
+	.dl XORANDNumberXXX, XORANDVariableXXX, XORANDChainPushXXX, XORANDChainAnsXXX, XORANDFunctionXXX, XORANDError
+	.dl StoNumberXXX,    StoVariableXXX,    StoChainPushXXX,    StoChainAnsXXX,    StoFunctionXXX,    StoListXXX
     
 CArguments:
-	.dl	CFunction0Args, CFunction1Arg, CFunction2Args, CFunction3Args, CFunction4Args, CFunction5Args, CFunction6Args
+	.dl CFunction0Args, CFunction1Arg, CFunction2Args, CFunction3Args, CFunction4Args, CFunction5Args, CFunction6Args
     
 functionCustomStart:
-	.dl	functionExecHex, functionDefineSprite, functionCall, functionCompilePrgm, functionSetBASICVar, functionGetBASICVar
+	.dl functionExecHex, functionDefineSprite, functionCall, functionCompilePrgm, functionSetBASICVar, functionGetBASICVar
     
 precedence:
-	.db	7, 4,4,5,5,3,3,3,3,3,3,1, 1,  2,  0
-    ;   t+ - + / * ≠ ≥ ≤ > < = or xor and →
+	.db 7, 4,4,5,5,3,3,3,3,3,3,1, 1,  2,  0
+    ; t+ - + / * ≠ ≥ ≤ > < = or xor and →
 precedence2:
-	.db	0, 4,4,5,5,3,3,3,3,3,3,1, 1,  2,  6
+	.db 0, 4,4,5,5,3,3,3,3,3,3,1, 1,  2,  6
 
 lists:
-	.dl	L1, L2, L3, L4, L5, L6
+	.dl L1, L2, L3, L4, L5, L6
     
 hexadecimals:
-	.db	tF, tE, tD, tC, tB, tA, t9, t8, t7, t6, t5, t4, t3, t2, t1, t0
+	.db tF, tE, tD, tC, tB, tA, t9, t8, t7, t6, t5, t4, t3, t2, t1, t0
     
 stackPtr:               .dl stack
 outputPtr:              .dl output
@@ -73,78 +73,78 @@ ExprOutput2             .db 0
 AmountOfSubPrograms     .db 0
 
 ICEAppvar:
-	.db	AppVarObj, "ICEAPPV", 0
+	.db AppVarObj, "ICEAPPV", 0
 ICEProgram:
-	.db	ProtProgObj, "ICE", 0
+	.db ProtProgObj, "ICE", 0
 ErrorMessageStandard:
-	.db	"Invalid arguments for '", 0
+	.db "Invalid arguments for '", 0
 EndErrorMessage:
-	.db	"Too many Ends!", 0
+	.db "Too many Ends!", 0
 GoodCompileMessage:
-	.db	"Succesfully compiled!", 0
+	.db "Succesfully compiled!", 0
 NoProgramsMessage:
-	.db	"No programs found!", 0
+	.db "No programs found!", 0
 InvalidTokenMessage:
-	.db	"Unsupported token!", 0
+	.db "Unsupported token!", 0
 InvalidListArgumentMessage:
-	.db	"Only integers in lists supported!", 0
+	.db "Only integers in lists supported!", 0
 InvalidNameLengthMessage:
-	.db	"Program name too long!", 0
+	.db "Program name too long!", 0
 SameNameMessage:
-	.db	"Output name is the same as input name!", 0
+	.db "Output name is the same as input name!", 0
 WrongSpriteDataMessgae:
-	.db	"Invalid sprite data!", 0
+	.db "Invalid sprite data!", 0
 FunctionFunctionMessage:
-	.db	"You can't use a function in a function!", 0
+	.db "You can't use a function in a function!", 0
 NotFoundMessage:
-	.db	"Program not found!", 0
+	.db "Program not found!", 0
 ImplementMessage:
-	.db	"This function has not been implemented yet!", 0
+	.db "This function has not been implemented yet!", 0
 SyntaxErrorMessage:
-	.db	"Invalid arguments entered!", 0
+	.db "Invalid arguments entered!", 0
 TooLargeLoopMessage:
-	.db	"Too large anonymous loop!", 0
+	.db "Too large anonymous loop!", 0
 UsedCodeMessage:
-	.db	"You can't use code before DefineSprite()!", 0
+	.db "You can't use code before DefineSprite()!", 0
 LineNumber:
-	.db	"Error on line ", 0
+	.db "Error on line ", 0
 MismatchErrorMessage:
-	.db	"Mismatched parenthesis!", 0
+	.db "Mismatched parenthesis!", 0
 UnknownMessage:
-	.db	"Something went wrong! Please report it!", 0
+	.db "Something went wrong! Please report it!", 0
 NotEnoughMem:
-	.db	"Not enough free RAM!", 0
+	.db "Not enough free RAM!", 0
 LabelErrorMessage:
-	.db	"Can't find label ", 0
+	.db "Can't find label ", 0
 StartParseMessage:
-	.db	"Compiling program ", 0
+	.db "Compiling program ", 0
 ICEName:
-	.db	"ICE Compiler v1.5 - By Peter \"PT_\" Tillema", 0
+	.db "ICE Compiler v1.5 - By Peter \"PT_\" Tillema", 0
 PressKey:
-	.db	"[Press any key to exit]", 0
+	.db "[Press any key to exit]", 0
     
 ;MulTable:
-;  1 + log2(x) + popcnt(x) - (popcnt(x) == 1)
+; 1 + log2(x) + popcnt(x) - (popcnt(x) == 1)
 ; https://gist.github.com/jacobly0/049c51a353632d7fa284364f4b6244b6
-;    .db 1 \ add hl, hl \ .db 0,0,0,0,0,0,0,0                                                                    ; 2
-;    .db 4 \ push hl \ pop de \ add hl, hl \ add hl, de \ .db 0,0,0,0,0                                            ; 3
-;    .db 2 \ add hl, hl \ add hl, hl \ .db 0,0,0,0,0,0,0                                ; 4
-;    .db 5 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, de \ .db 0,0,0,0                    ; 5
-;    .db 5 \ add hl, hl \ push hl \ pop de \ add hl, hl \ add hl, de \ .db 0,0,0,0                    ; 6
-;    .db 6 \ push hl \ pop de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ .db 0,0,0            ; 7
-;    .db 3 \ add hl, hl \ add hl, hl \ add hl, hl \ .db 0,0,0,0,0,0                            ; 8
-;    .db 6 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, de \ .db 0,0,0            ; 9
-;    .db 6 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ .db 0,0,0            ; 10
-;    .db 7 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ .db 0,0             ; 11
-;    .db 6 \ add hl, hl \ add hl, hl \ push hl \ pop de \ add hl, hl \ add hl, de \ .db 0,0,0                        ; 12
-;    .db 7 \ push hl \ pop de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, hl \ add hl, de \ .db 0,0        ; 13
-;    .db 7 \ push hl \ pop de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ add hl, hl \ .db 0,0             ; 14
-;    .db 8 \    push hl \ pop de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ .db 0    ; 15
-;    .db 4 \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, hl \ .db 0,0,0,0,0                                       ; 16
-;    .db 7 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, de \ .db 0,0             ; 17
-;    .db 7 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ .db 0,0             ; 18
-;    .db 8 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ .db 0    ; 19
-;    .db 7 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ add hl, hl \ .db 0,0             ; 20
+; .db 1 \ add hl, hl \ .db 0,0,0,0,0,0,0,0                                                                    ; 2
+; .db 4 \ push hl \ pop de \ add hl, hl \ add hl, de \ .db 0,0,0,0,0                                            ; 3
+; .db 2 \ add hl, hl \ add hl, hl \ .db 0,0,0,0,0,0,0                                ; 4
+; .db 5 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, de \ .db 0,0,0,0                    ; 5
+; .db 5 \ add hl, hl \ push hl \ pop de \ add hl, hl \ add hl, de \ .db 0,0,0,0                    ; 6
+; .db 6 \ push hl \ pop de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ .db 0,0,0            ; 7
+; .db 3 \ add hl, hl \ add hl, hl \ add hl, hl \ .db 0,0,0,0,0,0                            ; 8
+; .db 6 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, de \ .db 0,0,0            ; 9
+; .db 6 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ .db 0,0,0            ; 10
+; .db 7 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ .db 0,0             ; 11
+; .db 6 \ add hl, hl \ add hl, hl \ push hl \ pop de \ add hl, hl \ add hl, de \ .db 0,0,0                        ; 12
+; .db 7 \ push hl \ pop de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, hl \ add hl, de \ .db 0,0        ; 13
+; .db 7 \ push hl \ pop de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ add hl, hl \ .db 0,0             ; 14
+; .db 8 \    push hl \ pop de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ .db 0    ; 15
+; .db 4 \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, hl \ .db 0,0,0,0,0                                       ; 16
+; .db 7 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, de \ .db 0,0             ; 17
+; .db 7 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ .db 0,0             ; 18
+; .db 8 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ add hl, de \ .db 0    ; 19
+; .db 7 \ push hl \ pop de \ add hl, hl \ add hl, hl \ add hl, de \ add hl, hl \ add hl, hl \ .db 0,0             ; 20
     
 InputRoutine:
 	call	_ClrScrn
@@ -226,7 +226,7 @@ DispStringRoutine:
 	call	_PutS
 	call	_NewLine
 
-PauseRoutine:                       ; Time including call/ret: HL*48000000 + 44
+PauseRoutine:				; Time including call/ret: HL*48000000 + 44
 	dec	hl			; 4
 PauseRoutine2:
 	ld	c, 110			; 8

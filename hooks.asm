@@ -19,7 +19,7 @@ _:	ld	hl, Hooks_end - KeyHook_start
 	call	_OP4ToOP1
 	call	_Arc_Unarc
 	call	_ChkFindSym
-	ld	hl, 19			;    archived program header+VAT entry
+	ld	hl, 19			; archived program header+VAT entry
 	add	hl, de
 	call	_SetGetKeyHook
     
@@ -275,7 +275,7 @@ MoveCursorOnce:
 	jr	MoveCursorOnce
 ReturnToEditor:
 	call	_CursorOn
-	inc	a			;    reset zero flag
+	inc	a			; reset zero flag
 	ld	a, 0
 	ret
 CustomTokensData:

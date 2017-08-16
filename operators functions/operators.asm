@@ -22,15 +22,15 @@ ExecuteOperator:
 	set	ans_set_z_flag, (iy+fExpression1)
 _:	ld	b, 18
 	mlt	bc
-	ld	hl, operator_start	;	start of bunch jumps
-	add	hl, bc			;	start of right operator
+	ld	hl, operator_start	; start of bunch jumps
+	add	hl, bc			; start of right operator
 	ld	a, (ix-8)
 	ld	c, a
 	cp	6
 	jp	nc, ErrorSyntax
 	ld	b, 3
 	mlt	bc
-	add	hl, bc			;	start of right subelement
+	add	hl, bc			; start of right subelement
 	ld	hl, (hl)
 	pop	bc
 	jp	(hl)
@@ -54,9 +54,9 @@ ListElementNumber:
 	add	hl, de
 	add	hl, de
 	add	hl, de
-	jp	InsertAHL		;	ld hl, (*)
+	jp	InsertAHL		; ld hl, (*)
 ListElementVariable:
-	call	InsertIXE		;	ld de, (ix+*)
+	call	InsertIXE		; ld de, (ix+*)
 	jr	+_
 ListElementChainPush:
 	jp	UnknownError
@@ -66,11 +66,11 @@ _:	ld	a, 021h
 	push	bc
 	pop	de
 	ld	hl, 0191919h
-	call	InsertADEHL		;	ld hl, * \ add hl, de \ add hl, de \ add hl, de
+	call	InsertADEHL		; ld hl, * \ add hl, de \ add hl, de \ add hl, de
 	ld	a, 0EDh
-	call	InsertA			;	ld hl, (hl) (1)
+	call	InsertA			; ld hl, (hl) (1)
 	ld	a, 027h
-	jp	InsertA			;	ld hl, (hl) (2)
+	jp	InsertA			; ld hl, (hl) (2)
 ListElementFunction:
 	ld	a, e
 	ld	b, OutputInDE
@@ -102,7 +102,7 @@ SubNumberVariable:
 	ld	a, 021h
 	push	bc
 	pop	hl
-	call	InsertAHL		;	ld hl, *
+	call	InsertAHL		; ld hl, *
 	jp	SubChainAnsVariable
 SubNumberChainPush:
 	jp	UnknownError
@@ -112,7 +112,7 @@ SubNumberChainAns:
 	push	bc
 	pop	de
 	ld	hl, 052EDB7h
-	jp	InsertADEHL		;	ld hl, * \ or a \ sbc hl, de
+	jp	InsertADEHL		; ld hl, * \ or a \ sbc hl, de
 SubNumberFunction:
 	ld	a, e
 	push	bc
@@ -121,7 +121,7 @@ SubNumberFunction:
 	ld	a, 021h
 	pop	de
 	ld	hl, 052EDB7h
-	jp	InsertADEHL		;	ld hl, * \ or a \ sbc hl, de
+	jp	InsertADEHL		; ld hl, * \ or a \ sbc hl, de
 SubVariableXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -136,7 +136,7 @@ SubVariableXXX:
 	jp	z, SubVariableFunction
 	jp	SubError
 SubVariableNumber:
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	SubChainAnsNumber
 SubVariableVariable:
 	ld	a, c
@@ -148,22 +148,22 @@ SubVariableVariable:
 	inc	hl
 	ld	(hl), de
 	ret
-_:	call	InsertHIXC		;	ld hl, (ix+*)
+_:	call	InsertHIXC		; ld hl, (ix+*)
 	jp	SubChainAnsVariable
 SubVariableChainPush:
 	jp	UnknownError
 SubVariableChainAns:
 	call	MaybeChangeHLToDE
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	ld	hl, 052EDB7h
-	jp	InsertHL		;	or a \ sbc hl, de
+	jp	InsertHL		; or a \ sbc hl, de
 SubVariableFunction:
 	ld	a, e
 	ld	b, OutputInDE
 	call	GetFunction
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	ld	hl, 052EDB7h
-	jp	InsertHL		;	or a \ sbc hl, de
+	jp	InsertHL		; or a \ sbc hl, de
 SubChainPushXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -179,11 +179,11 @@ SubChainPushXXX:
 	jp	SubError
 SubChainPushNumber:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	SubChainAnsNumber
 SubChainPushVariable:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	SubChainAnsVariable
 SubChainPushChainPush:
 	jp	UnknownError
@@ -191,10 +191,10 @@ SubChainPushChainAns:
 	call	MaybeChangeHLToDE
 	ld	a, 0E1h
 	ld	hl, 052EDB7h
-	jp	InsertAHL		;	pop hl \ or a \ sbc hl, de
+	jp	InsertAHL		; pop hl \ or a \ sbc hl, de
 SubChainPushFunction:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	SubChainAnsFunction
 SubChainAnsXXX:
 	ld	a, (ix-4)
@@ -224,7 +224,7 @@ SubChainAnsNumber:
 	or	a, a
 	jr	z, ++_
 	ld	a, 02Bh
-_:	call	InsertA			;	dec hl/de
+_:	call	InsertA			; dec hl/de
 	djnz	-_
 	ret
 _:	ld	a, OutputIsInDE
@@ -239,14 +239,14 @@ SubHLDE:
 	ld	a, 011h
 	jr	nz, +_
 	ld	a, 021h
-_:	call	InsertAHL		;	ld hl/de, 16777215-*
+_:	call	InsertAHL		; ld hl/de, 16777215-*
 	ld	a, 019h
-	jp	InsertA			;	add hl, de
+	jp	InsertA			; add hl, de
 SubChainAnsVariable:
 	call	MaybeChangeDEToHL
-	call	InsertIXE		;	ld de, (ix+*)
+	call	InsertIXE		; ld de, (ix+*)
 	ld	hl, 052EDB7h
-	jp	InsertHL		;	or a \ sbc hl, de
+	jp	InsertHL		; or a \ sbc hl, de
 SubChainAnsChainPush:
 	jp	UnknownError
 SubChainAnsChainAns:
@@ -258,13 +258,13 @@ SubChainAnsFunction:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, e
 	ld	b, OutputInDE
 	call	GetFunction
 	ld	a, 0E1h
 	ld	hl, 052EDB7h
-	jp	InsertAHL		;	pop hl \ or a \ sbc hl, de
+	jp	InsertAHL		; pop hl \ or a \ sbc hl, de
 SubFunctionXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -297,13 +297,13 @@ SubFunctionChainAns:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, c
 	ld	b, OutputInHL
 	call	GetFunction
 	ld	a, 0E1h
 	ld	hl, 052EDB7h
-	jp	InsertAHL		;	pop de \ or a \ sbc hl, de
+	jp	InsertAHL		; pop de \ or a \ sbc hl, de
 SubFunctionFunction:
 	ld	a, e
 	ld	b, OutputInHL
@@ -313,7 +313,7 @@ SubFunctionFunction:
 	set	need_push, (iy+fExpression1)
 	call	GetFunction
 	ld	hl, 052EDB7h
-	jp	InsertHL		;	or a \ sbc hl, de
+	jp	InsertHL		; or a \ sbc hl, de
 
 AddNumberXXX:
 	ld	a, (ix-4)
@@ -368,14 +368,14 @@ AddVariableXXX:
 	jp	z, AddVariableFunction
 	jp	AddError
 AddVariableNumber:
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	AddChainAnsNumber
 AddVariableVariable:
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	AddChainAnsVariable
 AddVariableChainPush:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	ld	e, c
 	jp	AddChainAnsVariable
 AddVariableChainAns:
@@ -386,9 +386,9 @@ AddVariableFunction:
 	ld	b, OutputInHL
 	call	GetFunction
 	ld	e, c
-	call	InsertIXE		;	ld de, (ix+*)
+	call	InsertIXE		; ld de, (ix+*)
 	ld	a, 019h
-	jp	InsertA			;	add hl, de
+	jp	InsertA			; add hl, de
 AddChainPushXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -404,11 +404,11 @@ AddChainPushXXX:
 	jp	AddError
 AddChainPushNumber:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	AddChainAnsNumber
 AddChainPushVariable:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	AddChainAnsVariable
 AddChainPushChainPush:
 	jp	UnknownError
@@ -418,12 +418,12 @@ AddChainPushChainAns:
 	ld	a, 0D1h
 	jr	nz, +_
 	ld	a, 0E1h
-_:	call	InsertA			;	pop hl/de
+_:	call	InsertA			; pop hl/de
 	ld	a, 019h
-	jp	InsertA			;	add hl, de
+	jp	InsertA			; add hl, de
 AddChainPushFunction:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	AddChainAnsFunction
 AddChainAnsXXX:
 	ld	a, (ix-4)
@@ -453,7 +453,7 @@ AddChainAnsNumber:
 	or	a, a
 	jr	z, ++_
 	ld	a, 023h
-_:	call	InsertA			;	inc hl/de
+_:	call	InsertA			; inc hl/de
 	djnz	-_
 	ret
 _:	ld	a, OutputIsInDE
@@ -467,9 +467,9 @@ AddHLDE:
 	ld	a, 011h
 	jr	nz, +_
 	ld	a, 021h
-_:	call	InsertAHL		;	ld hl/de, *
+_:	call	InsertAHL		; ld hl/de, *
 	ld	a, 019h
-	jp	InsertA			;	add hl, de
+	jp	InsertA			; add hl, de
 AddChainAnsVariable:
 	ld	h, 017h
 	ld	d, 3
@@ -481,9 +481,9 @@ AddChainAnsVariable:
 	or	a, a
 	jr	nz, +_
 	ld	h, 027h
-_:	call	InsertHL		;	ld hl/de, (ix+*)
+_:	call	InsertHL		; ld hl/de, (ix+*)
 	ld	a, 019h
-	jp	InsertA			;	add hl, de
+	jp	InsertA			; add hl, de
 AddChainAnsChainPush:
 	jp	UnknownError
 AddChainAnsChainAns:
@@ -495,14 +495,14 @@ AddChainAnsFunction:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, e
 	ld	b, OutputInHL
 	call	GetFunction
 	ld	a, 0D1h
-	call	InsertA			;	pop de
+	call	InsertA			; pop de
 	ld	a, 019h
-	jp	InsertA			;	add hl, de
+	jp	InsertA			; add hl, de
 AddFunctionXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -535,14 +535,14 @@ AddFunctionChainAns:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, c
 	ld	b, OutputInHL
 	call	GetFunction
 	ld	a, 0D1h
-	call	InsertA			;	pop de
+	call	InsertA			; pop de
 	ld	a, 019h
-	jp	InsertA			;	add hl, de
+	jp	InsertA			; add hl, de
 AddFunctionFunction:
 	ld	a, e
 	ld	b, OutputInHL
@@ -552,7 +552,7 @@ AddFunctionFunction:
 	set	need_push, (iy+fExpression1)
 	call	GetFunction
 	ld	a, 019h
-	jp	InsertA			;	add hl, de
+	jp	InsertA			; add hl, de
 	
 DivNumberXXX:
 	ld	a, (ix-4)
@@ -580,7 +580,7 @@ DivNumberVariable:
 	ld	a, 021h
 	push	bc
 	pop	hl
-	call	InsertAHL		;	ld hl, *
+	call	InsertAHL		; ld hl, *
 	jp	DivChainAnsVariable
 DivNumberChainPush:
 	jp	UnknownError
@@ -592,7 +592,7 @@ DivNumberChainAns:
 	or	a, a
 	jr	nz, +_
 	ld	e, 0D5h
-_:	call	InsertDEHL		;	push hl/de \ pop bc \ ld hl, *
+_:	call	InsertDEHL		; push hl/de \ pop bc \ ld hl, *
 	jr	DivInsert
 DivNumberFunction:
 	ld	a, e
@@ -601,7 +601,7 @@ DivNumberFunction:
 	call	GetFunction
 	ld	a, 021h
 	pop	hl
-	call	InsertAHL		;	ld hl, *
+	call	InsertAHL		; ld hl, *
 	jr	DivInsert
 DivVariableXXX:
 	ld	a, (ix-4)
@@ -617,7 +617,7 @@ DivVariableXXX:
 	jp	z, DivVariableFunction
 	jp	DivError
 DivVariableNumber:
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	DivChainAnsNumber
 DivVariableVariable:
 	ld	a, c
@@ -629,7 +629,7 @@ DivVariableVariable:
 	inc	hl
 	ld	(hl), de
 	ret
-_:	call	InsertHIXC		;	ld hl, (ix+*)
+_:	call	InsertHIXC		; ld hl, (ix+*)
 	jp	DivChainAnsVariable
 DivVariableChainPush:
 	jp	UnknownError
@@ -640,22 +640,22 @@ DivVariableChainAns:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, 0C1h
-	call	InsertA			;	pop bc
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertA			; pop bc
+	call	InsertHIXC		; ld hl, (ix+*)
 	jr	DivInsert
 DivVariableFunction:
 	ld	a, e
 	ld	b, OutputInBC
 	call	GetFunction
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 DivInsert:
 	ld	a, OutputIsInDE
 	ld	(ExprOutput2), a
 	ld	a, 0CDh
 	ld	hl, __idvrmu
-	jp	InsertAHL		;	call __idvrmu
+	jp	InsertAHL		; call __idvrmu
 DivChainPushXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -671,11 +671,11 @@ DivChainPushXXX:
 	jp	DivError
 DivChainPushNumber:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	DivChainAnsNumber
 DivChainPushVariable:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	DivChainAnsVariable
 DivChainPushChainPush:
 	jp	UnknownError
@@ -688,11 +688,11 @@ DivChainPushChainAns:
 	add	a, a
 	add	a, 0D5h
 	ld	l, a
-	call	InsertHL		;	push hl/de \ pop bc \ pop hl
+	call	InsertHL		; push hl/de \ pop bc \ pop hl
 _:	jr	DivInsert
 DivChainPushFunction:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	DivChainAnsFunction
 DivChainAnsXXX:
 	ld	a, (ix-4)
@@ -718,14 +718,14 @@ DivChainAnsNumber:
 	add	hl, de
 	ld	c, l
 	ld	a, 03Eh
-	call	InsertA			;	ld a, *
+	call	InsertA			; ld a, *
 	ld	a, c
-	call	InsertA			;	ld a, *
+	call	InsertA			; ld a, *
 	ld	a, 0CDh
 	ld	hl, _DivHLByA
-	jp	InsertAHL		;	call _DivHLByA
+	jp	InsertAHL		; call _DivHLByA
 _:	add	hl, de
-	call	InsertAHL		;	ld bc, *
+	call	InsertAHL		; ld bc, *
 _:	jr	---_
 DivChainAnsVariable:
 	call	MaybeChangeDEToHL
@@ -742,12 +742,12 @@ DivChainAnsFunction:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, e
 	ld	b, OutputInBC
 	call	GetFunction
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 _:	jr	--_
 DivFunctionXXX:
 	ld	a, (ix-4)
@@ -781,9 +781,9 @@ DivFunctionChainAns:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, 0C1h
-	call	InsertA			;	pop bc
+	call	InsertA			; pop bc
 	ld	a, c
 	ld	b, OutputInHL
 	call	GetFunction
@@ -850,14 +850,14 @@ MulVariableXXX:
 	jp	z, MulVariableFunction
 	jp	MulError
 MulVariableNumber:
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	MulChainAnsNumber
 MulVariableVariable:
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	MulChainAnsVariable
 MulVariableChainPush:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	ld	e, c
 	jp	MulChainAnsVariable
 MulVariableChainAns:
@@ -869,7 +869,7 @@ MulVariableFunction:
 	call	GetFunction
 	call	InsertIXC
 	ld	hl, __imulu
-	jp	InsertCallHL		;	call __imulu
+	jp	InsertCallHL		; call __imulu
 MulChainPushXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -885,24 +885,24 @@ MulChainPushXXX:
 	jp	MulError
 MulChainPushNumber:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	MulChainAnsNumber
 MulChainPushVariable:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jp	MulChainAnsVariable
 MulChainPushChainPush:
 	jp	UnknownError
 MulChainPushChainAns:
 	call	MaybeChangeDEToHL
 	ld	a, 0C1h
-	call	InsertA			;	pop bc
+	call	InsertA			; pop bc
 	ld	a, 0CDh
 	ld	hl, __imulu
-	jp	InsertAHL		;	call __imulu
+	jp	InsertAHL		; call __imulu
 MulChainPushFunction:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jp	MulChainAnsFunction
 MulChainAnsXXX:
 	ld	a, (ix-4)
@@ -975,10 +975,10 @@ _:	or	a, a
 	jr	-_
 MulChainAnsVariable:
 	call	MaybeChangeDEToHL
-	call	InsertIXC		;	ld bc, (ix+*)
+	call	InsertIXC		; ld bc, (ix+*)
 	ld	a, 0CDh
 	ld	hl, __imulu
-	jp	InsertAHL		;	call __imulu
+	jp	InsertAHL		; call __imulu
 MulChainAnsChainPush:
 	jp	UnknownError
 MulChainAnsChainAns:
@@ -990,15 +990,15 @@ MulChainAnsFunction:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, e
 	ld	b, OutputInBC
 	call	GetFunction
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	ld	a, 0CDh
 	ld	hl, __imulu
-	jp	InsertAHL		;	call __imulu
+	jp	InsertAHL		; call __imulu
 MulFunctionXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -1036,7 +1036,7 @@ MulFunctionFunction:
 	call	GetFunction
 	ld	a, 0CDh
 	ld	hl, __imulu
-	jp	InsertAHL		;	call __imulu
+	jp	InsertAHL		; call __imulu
 
 SwapLEToGE:
 	ld	a, tGE
@@ -1084,7 +1084,7 @@ GLETNumberVariable:
 	ld	a, 021h
 	push	bc
 	pop	hl
-	call	InsertAHL		;	ld hl, *
+	call	InsertAHL		; ld hl, *
 	jp	GLETChainAnsVariable
 GLETNumberChainPush:
 	jp	UnknownError
@@ -1093,7 +1093,7 @@ GLETNumberChainAns:
 	ld	a, 021h
 	push	bc
 	pop	hl
-	call	InsertAHL		;	ld hl, *
+	call	InsertAHL		; ld hl, *
 	jr	GLETInsert
 GLETNumberFunction:
 	ld	a, e
@@ -1102,7 +1102,7 @@ GLETNumberFunction:
 	call	GetFunction
 	ld	a, 021h
 	pop	hl
-	call	InsertAHL		;	ld hl, *
+	call	InsertAHL		; ld hl, *
 	jr	GLETInsert
 GLETVariableXXX:
 	ld	a, (ix-4)
@@ -1118,7 +1118,7 @@ GLETVariableXXX:
 	jp	z, GLETVariableFunction
 	jp	GLETError
 GLETVariableNumber:
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	GLETChainAnsNumber
 GLETVariableVariable:
 	ld	a, c
@@ -1135,19 +1135,19 @@ _:	ld	de, 0
 	inc	hl
 	ld	(hl), de
 	ret
-_:	call	InsertHIXC		;	ld hl, (ix+*)
+_:	call	InsertHIXC		; ld hl, (ix+*)
 	jp	GLETChainAnsVariable
 GLETVariableChainPush:
 	jp	UnknownError
 GLETVariableChainAns:
 	call	MaybeChangeHLToDE
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jr	GLETInsert
 GLETVariableFunction:
 	ld	a, e
 	ld	b, OutputInDE
 	call	GetFunction
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 GLETInsert:
 	ld	de, 052ED37h
 	ld	hl, 02362EDh
@@ -1155,7 +1155,7 @@ GLETInsert:
 	cp	tGT
 	jr	z, +_
 	ld	e, 0B7h
-_:	jp	InsertDEHL		;	scf/or a \ sbc hl, de \ sbc hl, hl \ inc hl
+_:	jp	InsertDEHL		; scf/or a \ sbc hl, de \ sbc hl, hl \ inc hl
 GLETChainPushXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -1171,25 +1171,25 @@ GLETChainPushXXX:
 	jp	GLETError
 GLETChainPushNumber:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	GLETChainAnsNumber
 GLETChainPushVariable:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	GLETChainAnsVariable
 GLETChainPushChainPush:
 	jp	UnknownError
 GLETChainPushChainAns:
 	call	MaybeChangeHLToDE
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	GLETInsert
 GLETChainPushFunction:
 	ld	a, e
 	ld	b, OutputInDE
 	call	GetFunction
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 _:	jr	GLETInsert
 GLETChainAnsXXX:
 	ld	a, (ix-4)
@@ -1215,11 +1215,11 @@ GLETChainAnsNumber:
 	ld	(hl), a
 _:	ld	a, 011h
 	ex	de, hl
-	call	InsertAHL		;	ld de, *
+	call	InsertAHL		; ld de, *
 	jr	--_
 GLETChainAnsVariable:
 	call	MaybeChangeDEToHL
-	call	InsertIXE		;	ld de, (ix+*)
+	call	InsertIXE		; ld de, (ix+*)
 	jr	--_
 GLETChainAnsChainPush:
 	jp	UnknownError
@@ -1232,12 +1232,12 @@ GLETChainAnsFunction:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, e
 	ld	b, OutputInDE
 	call	GetFunction
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 _:	jr	--_
 GLETFunctionXXX:
 	ld	a, (ix-4)
@@ -1271,12 +1271,12 @@ GLETFunctionChainAns:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, c
 	ld	b, OutputInHL
 	call	GetFunction
 	ld	a, 0D1h
-	call	InsertA			;	pop de
+	call	InsertA			; pop de
 	jr	-_
 GLETFunctionFunction:
 	ld	a, e
@@ -1353,7 +1353,7 @@ NEQVariableXXX:
 	jp	z, NEQVariableFunction
 	jp	NEQError
 NEQVariableNumber:
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	NEQChainAnsNumber
 NEQVariableVariable:
 	ld	a, c
@@ -1370,7 +1370,7 @@ _:	ld	de, 0
 	inc	hl
 	ld	(hl), de
 	ret
-_:	call	InsertHIXC		;	ld hl, (ix+*)
+_:	call	InsertHIXC		; ld hl, (ix+*)
 	jp	NEQChainAnsVariable
 NEQVariableChainPush:
 	jp	UnknownError
@@ -1381,10 +1381,10 @@ NEQVariableFunction:
 	ld	a, e
 	ld	b, OutputInDE
 	call	GetFunction
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 NEQInsert:
 	ld	hl, 052EDB7h
-	call	InsertHL		;	or a \ sbc hl, de
+	call	InsertHL		; or a \ sbc hl, de
 	ld	de, 0
 	ld	hl, 0230120h
 	ld	a, (tempToken)
@@ -1392,7 +1392,7 @@ NEQInsert:
 	jr	z, +_
 	ld	l, 028h
 _:	ld	a, 021h
-	jp	InsertADEHL		;	ld hl, 0 \ jr [n]z, $+3 \ inc hl
+	jp	InsertADEHL		; ld hl, 0 \ jr [n]z, $+3 \ inc hl
 NEQChainPushXXX:
 	ld	a, (ix-4)
 	or	a, a
@@ -1408,11 +1408,11 @@ NEQChainPushXXX:
 	jp	NEQError
 NEQChainPushNumber:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	NEQChainAnsNumber
 NEQChainPushVariable:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	NEQChainAnsVariable
 NEQChainPushChainPush:
 	jp	UnknownError
@@ -1422,14 +1422,14 @@ NEQChainPushChainAns:
 	ld	a, 0D1h
 	jr	nz, +_
 	ld	a, 0E1h
-_:	call	InsertA			;	pop hl/de
+_:	call	InsertA			; pop hl/de
 	jr	NEQInsert
 NEQChainPushFunction:
 	ld	a, e
 	ld	b, OutputInHL
 	call	GetFunction
 	ld	a, 0D1h
-	call	InsertA			;	pop de
+	call	InsertA			; pop de
 _:	jr	NEQInsert
 NEQChainAnsXXX:
 	ld	a, (ix-4)
@@ -1457,7 +1457,7 @@ _:	ld	a, (ExprOutput)
 	jr	nz, $+4
 	ld	a, 021h
 	ex	de, hl
-	call	InsertAHL		;	ld hl/de, *
+	call	InsertAHL		; ld hl/de, *
 	jr	--_
 NEQChainAnsVariable:
 	ld	h, 017h
@@ -1470,7 +1470,7 @@ NEQChainAnsVariable:
 	or	a, a
 	jr	nz, $+4
 	ld	h, 027h
-	call	InsertHL		;	ld hl/de, (ix+*)
+	call	InsertHL		; ld hl/de, (ix+*)
 	jr	--_
 NEQChainAnsChainPush:
 	jp	UnknownError
@@ -1483,12 +1483,12 @@ NEQChainAnsFunction:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, e
 	ld	b, OutputInHL
 	call	GetFunction
 	ld	a, 0D1h
-	call	InsertA			;	pop de
+	call	InsertA			; pop de
 _:	jp	NEQInsert
 NEQFunctionXXX:
 	ld	a, (ix-4)
@@ -1610,7 +1610,7 @@ XORANDVariableXXX:
 	jp	z, XORANDVariableFunction
 	jp	XORANDError
 XORANDVariableNumber:
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 	jp	XORANDChainAnsNumber
 XORANDVariableVariable:
 	ld	a, c
@@ -1627,7 +1627,7 @@ _:	ld	de, 0
 	inc	hl
 	ld	(hl), de
 	ret
-_:	call	InsertHIXC		;	ld hl, (ix+*)
+_:	call	InsertHIXC		; ld hl, (ix+*)
 	jp	XORANDChainAnsVariable
 XORANDVariableChainPush:
 	jp	UnknownError
@@ -1638,7 +1638,7 @@ XORANDVariableFunction:
 	ld	a, e
 	ld	b, OutputInDE
 	call	GetFunction
-	call	InsertHIXC		;	ld hl, (ix+*)
+	call	InsertHIXC		; ld hl, (ix+*)
 XORANDInsert:
 	ld	de, (programPtr)
 	ld	hl, XORANDData
@@ -1671,24 +1671,24 @@ XORANDChainPushXXX:
 	jp	XORANDError
 XORANDChainPushNumber:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	XORANDChainAnsNumber
 XORANDChainPushVariable:
 	ld	a, 0E1h
-	call	InsertA			;	pop hl
+	call	InsertA			; pop hl
 	jr	XORANDChainAnsVariable
 XORANDChainPushChainPush:
 	jp	UnknownError
 XORANDChainPushChainAns:
 	ld	a, 0D1h
-	call	InsertA			;	pop de
+	call	InsertA			; pop de
 	jr	XORANDInsert
 XORANDChainPushFunction:
 	ld	a, e
 	ld	b, OutputInHL
 	call	GetFunction
 	ld	a, 0D1h
-	call	InsertA			;	pop de
+	call	InsertA			; pop de
 _:	jr	XORANDInsert
 XORANDChainAnsXXX:
 	ld	a, (ix-4)
@@ -1710,7 +1710,7 @@ XORANDChainAnsNumber:
 	jr	nz, +_
 	ld	a, 021h
 _:	ex	de, hl
-	call	InsertAHL		;	ld hl/de, *
+	call	InsertAHL		; ld hl/de, *
 	jr	--_
 XORANDChainAnsVariable:
 	ld	h, 017h
@@ -1723,7 +1723,7 @@ XORANDChainAnsVariable:
 	or	a, a
 	jr	nz, $+4
 	ld	h, 027h
-	call	InsertHL		;	ld hl/de, (ix+*)
+	call	InsertHL		; ld hl/de, (ix+*)
 	jr	--_
 XORANDChainAnsChainPush:
 	jp	UnknownError
@@ -1736,12 +1736,12 @@ XORANDChainAnsFunction:
 	add	a, a
 	add	a, a
 	add	a, 0D5h
-	call	InsertA			;	push hl/de
+	call	InsertA			; push hl/de
 	ld	a, e
 	ld	b, OutputInHL
 	call	GetFunction
 	ld	a, 0D1h
-	call	InsertA			;	pop de
+	call	InsertA			; pop de
 _:	jr	---_
 XORANDFunctionXXX:
 	ld	a, (ix-4)
@@ -1793,11 +1793,11 @@ _:	call	StoTestStoToListElement
 	ld	a, 011h
 	push	bc
 	pop	hl
-	call	InsertAHL		;	ld de, *
+	call	InsertAHL		; ld de, *
 	ld	a, 0EDh
-	call	InsertA			;	ld (hl), de (1)
+	call	InsertA			; ld (hl), de (1)
 	ld	a, 01Fh
-	call	InsertA			;	ld (hl), de (2)
+	call	InsertA			; ld (hl), de (2)
 	ld	a, OutputIsInDE
 	ld	(ExprOutput2), a
 	ret
@@ -1812,8 +1812,8 @@ _:	ld	hl, 0002FDDh
 	ld	a, 021h
 	jr	nz, +_
 	ld	de, 062EDB7h
-	jp	InsertDEHL		;	or a \ sbc hl, hl \ ld (ix+*), hl
-_:	jp	InsertADEHL		;	ld hl, * \ ld (ix+*), hl
+	jp	InsertDEHL		; or a \ sbc hl, hl \ ld (ix+*), hl
+_:	jp	InsertADEHL		; ld hl, * \ ld (ix+*), hl
 StoVariableXXX:
 	ld	a, (ix-4)
 	cp	typeChainAns
@@ -1824,11 +1824,11 @@ StoVariableXXX:
 _:	call	StoTestStoToListElement
 	jp	nz, UnknownError
 	ld	e, c
-	call	InsertIXE		;	ld de, (ix+*)
+	call	InsertIXE		; ld de, (ix+*)
 	ld	a, 0EDh
-	call	InsertA			;	ld (hl), de (1)
+	call	InsertA			; ld (hl), de (1)
 	ld	a, 01Fh
-	call	InsertA			;	ld (hl), de (2)
+	call	InsertA			; ld (hl), de (2)
 	ld	a, OutputIsInDE
 	ld	(ExprOutput2), a
 	ret
@@ -1838,7 +1838,7 @@ _:	call	InsertHIXC
 	mlt	de
 	ld	a, e
 	call	_SetHLUToA
-	jp	InsertHL		;	ld ld (ix+*), hl
+	jp	InsertHL		; ld ld (ix+*), hl
 StoChainPushXXX:
 	ld	a, (ix-4)
 	cp	typeChainAns
@@ -1846,7 +1846,7 @@ _:	jp	nz, UnknownError
 	call	StoTestStoToListElement
 	jr	nz, -_
 	ld	hl, 01FEDD1h
-	call	InsertHL		;	pop de \ ld (hl), de
+	call	InsertHL		; pop de \ ld (hl), de
 	ld	a, OutputIsInDE
 	ld	(ExprOutput2), a
 	ret
@@ -1864,7 +1864,7 @@ _:	ld	hl, 0002FDDh
 	jr	nz, $+4
 	ld	h, 01Fh
 	ld	(ExprOutput2), a
-	jp	InsertHL		;	ld (ix+*), hl/de
+	jp	InsertHL		; ld (ix+*), hl/de
 StoFunctionXXX:
 	ld	a, (ix-4)
 	cp	typeChainAns
@@ -1879,9 +1879,9 @@ _:	call	StoTestStoToListElement
 	set	need_push, (iy+fExpression1)
 	call	GetFunction
 	ld	a, 0EDh
-	call	InsertA			;	ld (hl), de (1)
+	call	InsertA			; ld (hl), de (1)
 	ld	a, 01Fh
-	call	InsertA			;	ld (hl), de (2)
+	call	InsertA			; ld (hl), de (2)
 	ld	a, OutputIsInDE
 	ld	(ExprOutput2), a
 	ret
@@ -1893,29 +1893,29 @@ _:	ld	a, c
 	mlt	de
 	ld	a, e
 	call	_SetHLUToA
-	jp	InsertHL		;	ld (ix+*), hl
+	jp	InsertHL		; ld (ix+*), hl
 StoListXXX:
 	ld	a, (ix-4)
 	cp	typeOSList
 	jp	nz, StoError
 	ld	a, 021h
-	call	InsertA			;	ld hl, *
+	call	InsertA			; ld hl, *
 	call	InsertProgramPtrToDataOffset
 	ld	hl, (programDataDataPtr)
-	call	InsertHL		;	ld hl, RANDOM
+	call	InsertHL		; ld hl, RANDOM
 	ld	a, 011h
 	push	de
 	pop	hl
-	call	InsertAHL		;	ld de, OSList
+	call	InsertAHL		; ld de, OSList
 	ld	a, 01h
-	call	InsertA			;	ld bc, *
+	call	InsertA			; ld bc, *
 	push	bc
 	pop	hl
 	ld	(StartData), hl
 	ld	hl, (hl)
 	push	hl
 	pop	bc
-	call	InsertHL		;	ld bc, LENGTH
+	call	InsertHL		; ld bc, LENGTH
 	ld	de, (programDataDataPtr)
 StartData = $+1
 	ld	hl, 0
@@ -1925,9 +1925,9 @@ StartData = $+1
 	ldir
 	ld	(programDataDataPtr), de
 	ld	a, 0EDh
-	call	InsertA			;	ldir (1)
+	call	InsertA			; ldir (1)
 	ld	a, 0B0h
-	jp	InsertA			;	ldir (2)
+	jp	InsertA			; ldir (2)
 	
 StoTestStoToListElement:
 	ld	hl, (programPtr)
