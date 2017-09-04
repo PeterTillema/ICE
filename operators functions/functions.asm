@@ -1332,11 +1332,34 @@ functionC:
 	add	hl, bc
 	ld	hl, (hl)
 	ld	(CFunctionArgsSMC), a
-	jp	(hl)
+	call	_JumpHL
+	ld	a, (CFunctionArgsSMC)
+	cp	a, 7
+	ret	nz
+	call	_NxtFetch
+	cp	a, tStore
+	ret	nz
+	call	_IncFetch
+	call	_IncFetch
+	sub	a, tA
+	jr	c, +_
+	cp	a, ttheta - tA + 1
+	jr	nc, +_
+	ld	b, a
+	ld	a, 0B7h
+	ld	hl, 06F62EDh
+	call	InsertAHL
+	ld	c, 3
+	mlt	bc
+	ld	a, c
+	ld	hl, 0002FDDh
+	call	_SetHLUToA
+	jp	InsertHL
+_:	jp	ErrorSyntax
 
 functionCustom:
 	call	_IncFetch
-	sub	10
+	sub	a, 10
 	jp	c, ErrorSyntax
 	cp	AMOUNT_OF_CUSTOM_TOKENS + 1
 	jp	nc, ErrorSyntax
@@ -1346,6 +1369,7 @@ functionCustom:
 	ld	hl, functionCustomStart
 	add	hl, bc
 	ld	hl, (hl)
+_JumpHL:
 	jp	(hl)
     
 functionExecHex:

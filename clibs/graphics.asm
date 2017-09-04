@@ -14,7 +14,7 @@ SetDefaultPalette:             .db 000000000b
 SetPalette:                    .db 011100000b
 FillScreen:                    .db 000110000b
 SetPixel:                      .db 001001000b
-GetPixel:                      .db 011100000b
+GetPixel:                      .db 001001000b
 GetDraw:                       .db 011100000b
 SetDraw:                       .db 000110000b
 SwapDraw:                      .db 000000000b

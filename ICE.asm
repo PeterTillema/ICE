@@ -1,6 +1,6 @@
 #include "ti84pce.inc"
 #include "defines.asm"
-#include "app.inc"
+;#include "app.inc"
 
 .db tExtTok, tAsm84CeCmp
 .org UserMem
@@ -55,7 +55,8 @@ _:	ld	d, b
 	ldir
 	set	good_compilation, (iy+fProgram1)
 	res	modified_iy, (iy+fAlways1)
-	res	debug_on, (iy+fAlways1)	; ld	hl, ICEName
+	res	debug_on, (iy+fAlways1)
+	ld	hl, ICEName
 	ld	a, 1
 	ld	(TextYPos_ASM), a
 	add	a, 20

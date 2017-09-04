@@ -25,10 +25,10 @@ _:	add	hl, de
 	ld	a, b
 	or	a, a
 	ret	z
-	ld	a, 0E1h
+	ld	a, 0C1h
 _:	call	InsertA
 	djnz	-_
-	ret				; pop hl
+	ret				; pop bc
     
 CFunction1Arg:
 	bit	triggered_a_comma, (iy+fExpression3)
