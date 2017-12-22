@@ -3,21 +3,25 @@ segment data
 .def _RunPrgm
 
 _RunPrgm:
-	scf
-	sbc	hl, hl
-	ld	(hl), 2
+	ld	a, 2
+	ld	(-1), a
 	ld	iy, 0D00080h		; flags
 	;call	0021A3Ch		; _DrawStatusBar
 	call	00004F0h		; _usb_DisableTimer
-	pop	de
-	pop	hl
-	ld	de, 0D0065Bh		; progToEdit
-	ld	bc, 8
-	ldir
+	
 	ld	de, 0D0EA1Fh		; plotSScreen
 	ld	hl, StartRunProgram
 	ld	bc, EndRunProgram - StartRunProgram
 	ldir
+	
+	inc	sp
+	inc	sp
+	inc	sp
+	pop	hl
+	ld	de, 0D0065Bh		; progToEdit
+	ld	c, 8
+	ldir
+	
 	jp	0D0EA1Fh		; plotSScreen
 	
 StartRunProgram:
