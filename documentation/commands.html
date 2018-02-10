@@ -4,11 +4,6 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <title>ICE Compiler Commands List</title>
         <script src="http://code.jquery.com/jquery-2.2.3.min.js"></script>
-        <script>
-            function scrollto(target) {
-            	$("body").animate({ scrollTop: $('#' + target).offset().top }, 1500);
-            }
-        </script>
         <style>
             body{
                 margin:0;
@@ -143,6 +138,10 @@
                             <tr>
                                 <td><code><span class="bl"><i>i</i></span></code></td>
                                 <td>If the imaginary <code><i>i</i></code> (not the lowercase i) is the first token of a line, this line will be ignored during compiling.</td>
+                            </tr>
+                            <tr>
+                                <td><code><span class="bl">SetBrightness(</span><span class="red">LEVEL</span><span class="bl">)</span></code></td>
+                                <td>Sets the brightness of the screne. 0=high (light), 255=low (dark).</td>
                             </tr>
                         </table>
                         <h3 id="math">Math</h3>
@@ -1078,15 +1077,15 @@
                 <div class="innertube">
                     <h3>Category</h3>
                     <ul>
-                        <li><a href="#" onClick="scrollto('system')">System</a></li>
-                        <li><a href="#" onClick="scrollto('math')">Math</a></li>
-                        <li><a href="#" onClick="scrollto('controls')">Controls</a></li>
-                        <li><a href="#" onClick="scrollto('labels')">Labels</a></li>
-                        <li><a href="#" onClick="scrollto('graphics')">Graphics</a></li>
-                        <li><a href="#" onClick="scrollto('fileioc')">File I/O</a></li>
-                        <li><a href="#" onClick="scrollto('memory')">Memory</a></li>
-                        <li><a href="#" onClick="scrollto('strings')">Strings</a></li>
-                        <li><a href="#" onClick="scrollto('text')">Text</a></li>
+                        <li><a href="#system">System</a></li>
+                        <li><a href="#math">Math</a></li>
+                        <li><a href="#controls">Controls</a></li>
+                        <li><a href="#labels">Labels</a></li>
+                        <li><a href="#graphics">Graphics</a></li>
+                        <li><a href="#fileioc">File I/O</a></li>
+                        <li><a href="#memory">Memory</a></li>
+                        <li><a href="#strings">Strings</a></li>
+                        <li><a href="#text">Text</a></li>
                     </ul>
                 </div>
             </nav>

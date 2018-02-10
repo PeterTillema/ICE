@@ -1762,9 +1762,13 @@ static uint8_t functionInput(int token) {
         if ((res = parseExpression(_getc())) != VALID) {
             return res;
         }
-        *(ice.programPtr - 2) = 0x7E;
+        *(ice.programPtr - 3) = 0x3E;
+        *(ice.programPtr - 2) = *(ice.programPtr - 1);
+        ice.programPtr--;
     } else {
-        *(ice.programPtr - 2) = 0x7E;
+        *(ice.programPtr - 3) = 0x3E;
+        *(ice.programPtr - 2) = *(ice.programPtr - 1);
+        ice.programPtr--;
         
         // FF0000 reads all zeroes, and that's important
         LD_HL_IMM(0xFF0000);

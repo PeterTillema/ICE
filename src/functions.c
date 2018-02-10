@@ -1216,7 +1216,14 @@ uint8_t parseFunction2Args(uint24_t index, uint8_t outputReturnRegister, uint8_t
     }
     
     if ((outputPrevPrevType & 0x7F) == TYPE_NUMBER) {
-        if (outputPrevType == TYPE_VARIABLE) {
+        if ((outputPrevType & 0x7F) == TYPE_NUMBER) {
+            LD_HL_IMM(outputPrevPrevOperand);
+            if (outputReturnRegister == REGISTER_BC) {
+                LD_BC_IMM(outputPrevOperand);
+            } else {
+                LD_DE_IMM(outputPrevOperand);
+            }
+        } else if (outputPrevType == TYPE_VARIABLE) {
             LD_HL_IMM(outputPrevPrevOperand);
             if (outputReturnRegister == REGISTER_DE) {
                 LD_DE_IND_IX_OFF(outputPrevOperand);
