@@ -371,7 +371,6 @@ Mar 14 00:12:27 <P_T>	**{}
 Mar 14 00:12:43 <Runer112>	yeah but that stuff immediately becomes deprecated
 Mar 14 00:13:03 <P_T>	And what about GetSize(), which always returns a 16-bits value?
 Mar 14 00:13:11 <P_T>	Pretend it's an int with "ex.s de, hl"? :P
-Mar 14 00:13:13 <saxjax>	[Cemetech] john35588 entered the room
 Mar 14 00:13:23 <Runer112>	something like that, yeah
 Mar 14 00:13:35 <P_T>	Wait what
 Mar 14 00:13:41 <P_T>	**{} doesn't become deprecated
@@ -380,7 +379,6 @@ Mar 14 00:13:52 <Runer112>	well, maybe not deprecated
 Mar 14 00:14:01 <Runer112>	but unsafe
 Mar 14 00:14:08 <P_T>	Unsafe for lists, yeah
 Mar 14 00:14:17 <Runer112>	so using it on lists is not proper any more
-Mar 14 00:14:17 <saxjax>	[Cemetech] KaneE. entered the room
 Mar 14 00:14:23 <P_T>	sure
 Mar 14 00:14:30 <P_T>	but nobody complaines if I do 5->**{A}
 Mar 14 00:14:35 <P_T>	complains*
