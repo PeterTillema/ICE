@@ -1,0 +1,471 @@
+Mar 13 22:22:58 <Runer112>	P_T: floats don't really need fixed tokens, I think
+Mar 13 22:23:18 <Runer112>	don't think there's any reason why there couldn't be arbitrarily many of them
+Mar 13 22:23:41 <P_T>	But what tokens would be a float then?
+Mar 13 22:23:50 <Runer112>	just normal variable names
+Mar 13 22:23:55 <Runer112>	except they'd have to declare as a float somehow
+Mar 13 22:24:17 <P_T>	^ that
+Mar 13 22:24:38 <Runer112>	how are variables currently declared
+Mar 13 22:24:43 <Runer112>	there are multi-letter vars, aren't there?
+Mar 13 22:24:46 <P_T>	Yes
+Mar 13 22:24:50 <P_T>	They are not declared
+Mar 13 22:24:50 <Runer112>	how do you declare them
+Mar 13 22:25:05 <Runer112>	they're just automagically allocated on first use?
+Mar 13 22:25:12 <iPhoenix>	Yes.
+Mar 13 22:25:12 <P_T>	Pretty much
+Mar 13 22:25:19 <P_T>	Well
+Mar 13 22:25:31 <P_T>	During compiling the first var gets offset -80, the next one -7D etc
+Mar 13 22:25:51 <Runer112>	(I assume you gracefully handle the case of more than 85 vars?)
+Mar 13 22:25:58 <Runer112>	err, 86?
+Mar 13 22:26:22 <Runer112>	or however many, I dunno
+Mar 13 22:26:27 <saxjax>	[Cemetech] Michael2_3B entered the room
+Mar 13 22:26:41 <Runer112>	anyway, you could just have people declare floats explicitly
+Mar 13 22:27:13 <P_T>	Yes, I do
+Mar 13 22:27:18 <P_T>	And what about auto-detecting?
+Mar 13 22:27:41 <Runer112>	seems like a bad idea
+Mar 13 22:27:48 <Runer112>	0->F
+Mar 13 22:27:49 <P_T>	i.e. if you store a float to A, all the expressions with A in it are floats too
+Mar 13 22:27:57 <Runer112>	F*0.5->F
+Mar 13 22:28:09 <Runer112>	well, that's a silly example because it's still 0
+Mar 13 22:28:10 <Runer112>	but you get the idea
+Mar 13 22:28:27 <P_T>	No, because it sees "0.5->F" so F would be a float
+Mar 13 22:28:42 <Runer112>	what about the 0->F before that
+Mar 13 22:28:47 *	Rico has quit (Quit: Going offline, see ya! (www.adiirc.com))
+Mar 13 22:28:56 <P_T>	That is all done during prescanning
+Mar 13 22:29:03 <P_T>	So the 0->F would be a float too
+Mar 13 22:29:11 <P_T>	You only need to prescan the program multiple times
+Mar 13 22:29:24 <Runer112>	"only"
+Mar 13 22:30:06 <saxjax>	[Cemetech] commandblockguy entered the room
+Mar 13 22:30:20 <Runer112>	I guess you'd have to keep scanning until variable types settle
+Mar 13 22:30:26 <P_T>	I guess a "SetFloat(" token would be better :P
+Mar 13 22:30:33 <P_T>	Yeah, something like that
+Mar 13 22:30:53 <P_T>	Prescanning until you don't use a float before the first float occurence or whatever
+Mar 13 22:31:28 <Runer112>	this would effectively disallow implicit downcasts from float to int
+Mar 13 22:31:40 <P_T>	Hmm?
+Mar 13 22:31:43 <Runer112>	but maybe that's okay
+Mar 13 22:31:49 <Runer112>	in C, you can do int x = 0.0f;
+Mar 13 22:31:54 <P_T>	It's like "F->A : 2.5->F"
+Mar 13 22:32:15 <Runer112>	or more realistically, int x = (some complicated float expression that you just want the int answer of)
+Mar 13 22:32:24 <P_T>	Then F is marked as a float, but you need to scan again, because F is used in an expression which is stored to A, which is not marked as a float
+Mar 13 22:32:40 <P_T>	Oh right, that's why you have int( :P
+Mar 13 22:33:06 <Runer112>	yes, I'm just making you aware that implicit downcasting would become impossible
+Mar 13 22:33:15 <Runer112>	unless you also add a way to explicitly declare int variables
+Mar 13 22:33:31 <P_T>	Sure, but there is no difference in downcasting floats to ints or using int(
+Mar 13 22:33:33 <Runer112>	it's a design choice. might be totally fine
+Mar 13 22:34:08 <P_T>	i.e. 2.5->A if A is an int is the same as int(2.5->A where A is an int
+Mar 13 22:34:11 <Runer112>	the implicit cast from float to int is kind of weird anyway
+Mar 13 22:34:18 <Runer112>	I mean
+Mar 13 22:34:23 <Runer112>	if you ever write 2.5->A
+Mar 13 22:34:27 <Runer112>	A *cannot* be an int
+Mar 13 22:34:32 <Runer112>	it will now be a float
+Mar 13 22:34:45 <P_T>	Depends on whether you defined it to be a float or not
+Mar 13 22:34:54 <P_T>	If not, it just truncates the floating part
+Mar 13 22:35:01 <Runer112>	I thought you were going with the automatic detection idea
+Mar 13 22:35:07 <P_T>	Hmm
+Mar 13 22:35:22 <P_T>	I feel like that is much more complicated than SetFloat(
+Mar 13 22:35:39 <Runer112>	well, it's more complicated to implement, sure
+Mar 13 22:35:46 <P_T>	it's cleaner though
+Mar 13 22:35:47 <Runer112>	but it might result in a nicer language
+Mar 13 22:36:07 <Runer112>	well, I wouldn't say it's objectively better
+Mar 13 22:36:09 <P_T>	Then what if you have int(F->A when F is a float; would A be a float or not?
+Mar 13 22:36:31 <Runer112>	I assume you'd make int() return an int
+Mar 13 22:36:59 <P_T>	OKay, if you have 5-2/int((A*3)/2)/2->F, where A is a float
+Mar 13 22:37:03 *	P_T runs
+Mar 13 22:37:11 <Runer112>	looks like an int to me
+Mar 13 22:37:31 <P_T>	Have fun detecting that >.<
+Mar 13 22:38:26 <iPhoenix>	How about you do a check if it is a whole number and call it a float if it is and call it an integer if it isn't. Why don't you just store the whole (integer) part as an integer, and a decimal part is stored in a different integer.
+Mar 13 22:38:49 <P_T>	Because a float is 4 bytes, 2 integers 6
+Mar 13 22:38:53 <Runer112>	that's not how floats work
+Mar 13 22:39:02 <P_T>	That's like complex numbers
+Mar 13 22:39:40 <P_T>	Okay, I will do this:
+Mar 13 22:39:42 <Runer112>	anyway, if it seems difficult to implement accurately, you can make it explicit at first
+Mar 13 22:39:52 <Runer112>	you can always add the implicit detection later
+Mar 13 22:39:58 <Runer112>	without breaking compatibility
+Mar 13 22:40:03 <Runer112>	probably
+Mar 13 22:40:15 <Runer112>	hmm, probably not actually
+Mar 13 22:40:35 <P_T>	scan the entire program, if you see a floating point number somewhere (i.e. anything with a decimal point in it), the variable would be marked as a float; then it scans the program again, and if that variable is anywhere used, the variable to which the expression is stored to is marked as a float too
+Mar 13 22:41:07 <Runer112>	well that's the basic idea, yes
+Mar 13 22:41:15 <Runer112>	but you have to accurately parse expressions like you gave
+Mar 13 22:41:22 <Runer112>	5-2/int((A*3)/2)/2->F, where A is a float
+Mar 13 22:41:55 <P_T>	Right; if the variable is used inside an int(, that part would be treated as an integer as well
+Mar 13 22:46:20 <Runer112>	for the record, it's also very possible to decide all the types in one pass
+Mar 13 22:48:27 <P_T>	How? Make them dependant of each other, i.e. A/2->F makes F dependant of A?
+Mar 13 22:48:34 <Runer112>	yes
+Mar 13 22:48:56 <jcgter777>	who thinks that iphoenix is using an auto-clicker?
+Mar 13 22:48:57 <P_T>	Then you don't need to scan a few times, but you need to store all the dependancies at parse them 
+Mar 13 22:49:09 <Runer112>	each variable has a set of types it must be equal to
+Mar 13 22:49:41 <Runer112>	where a set entry is int, float, or another variable
+Mar 13 22:49:45 <jcgter777>	P_T: don't click, and observe the clicking intervals when I click right after
+Mar 13 22:50:01 <P_T>	True
+Mar 13 22:50:04 <Runer112>	for your purposes, you could simplify it somewhat
+Mar 13 22:50:18 <Runer112>	where the only options are {float} or {variables...}
+Mar 13 22:50:35 <Runer112>	because float just overrides the only other option, int
+Mar 13 22:52:36 <P_T>	And what if it's dependant of 2 variables or more?
+Mar 13 22:52:47 <P_T>	i.e. A+B->C where A and B can be both floats or not
+Mar 13 22:53:00 <Runer112>	it's a float if any variable it's dependent on is a float
+Mar 13 22:53:16 <P_T>	Sure, but in this case C is dependant of 2 variables
+Mar 13 22:53:23 <Runer112>	yes
+Mar 13 22:53:41 <Runer112>	that's why you track a set of variables
+Mar 13 22:54:07 <Runer112>	in that case, the type of C would be recorded like {A, B}
+Mar 13 22:54:31 <P_T>	Yeah I get it
+Mar 13 22:54:43 <P_T>	And if it's A+int(B)->C it's only dependant of A
+Mar 13 22:54:52 <P_T>	dependent*
+Mar 13 22:54:59 <Runer112>	yes
+Mar 13 22:55:22 <saxjax>	[Cemetech] brizzly entered the room
+Mar 13 22:55:24 <iPhoenix>	I'm not autoclicking.
+Mar 13 22:55:29 <jcgter777>	Ok
+Mar 13 22:55:45 <Runer112>	also, if there are any operations that always returns a float, they would "override" other stuff
+Mar 13 22:56:01 <P_T>	Yeah, maybe sqrt(<int>)?
+Mar 13 22:56:21 <Runer112>	perhaps, yeah
+Mar 13 22:56:35 <Runer112>	integer square root is a thing that's used sometimes
+Mar 13 22:56:50 <Runer112>	but it's not part of C standard libraries or anything
+Mar 13 22:56:52 <P_T>	Then I need to detect int(sqrt( :P
+Mar 13 22:56:56 <P_T>	Nah
+Mar 13 22:57:31 <Runer112>	yeah, I think it's probably fine for sqrt to always be float->float
+Mar 13 22:57:39 <P_T>	Or int->float
+Mar 13 22:57:46 <Runer112>	and later if you want, you could add an optimization for int(sqrt(
+Mar 13 22:57:47 <P_T>	Okay I can do this! Runer112++
+Mar 13 22:58:58 <Runer112>	hrm
+Mar 13 22:59:19 <Runer112>	it might be a good idea to still add explicit type specifiers
+Mar 13 22:59:24 *	jcgter777 (uid266529@id-266529.stonehaven.irccloud.com) has left
+Mar 13 22:59:29 *	jcgter777 (uid266529@id-266529.stonehaven.irccloud.com) has joined
+Mar 13 22:59:33 <P_T>	Why so?
+Mar 13 22:59:35 *	Ivoah has quit (Quit: Connection closed for inactivity)
+Mar 13 23:00:03 <iPhoenix>	I understand that that's not how floats work. But this would be easier to convert to an integer if needed.
+Mar 13 23:00:11 <Runer112>	automatic type inference makes correct code look cleaner
+Mar 13 23:00:30 <Runer112>	but it can make incorrect code hard to debug
+Mar 13 23:00:48 <Runer112>	or you could have like
+Mar 13 23:00:56 <Runer112>	a float accidentally leak into something you meant to be an int
+Mar 13 23:01:06 <Runer112>	and then that pollutes a huge set of variables that were supposed to be ints
+Mar 13 23:01:14 <Runer112>	and performance tanks
+Mar 13 23:01:17 <Runer112>	and you have no idea why
+Mar 13 23:01:51 <P_T>	Then you can better add an option to view all the floats after compiling
+Mar 13 23:02:51 <Runer112>	yeah, but you'll still have no idea *why* your variables became floats
+Mar 13 23:03:16 <Runer112>	if you have like 20 interconnected variables that are all supposed to be ints with hundreds of operations between them
+Mar 13 23:03:20 <Runer112>	and one float snuck its way in
+Mar 13 23:03:33 <P_T>	hmm
+Mar 13 23:03:45 <P_T>	So you think SetFloat( and SetInt( are needed?
+Mar 13 23:04:22 <Runer112>	they're not strictly needed, but I think they're a good idea
+Mar 13 23:05:08 <saxjax>	[Cemetech] joshuawu518 entered the room
+Mar 13 23:05:25 <Runer112>	you'd also need to decide if assigning a float to an int results in an implicit cast (maybe with a warning) or an error
+Mar 13 23:05:49 <saxjax>	[Cemetech] 123outerme entered the room
+Mar 13 23:05:53 <P_T>	I would guess a warning is fine
+Mar 13 23:05:55 <Runer112>	I'm personally a fan of warning
+Mar 13 23:09:44 <saxjax>	[Cemetech] PT_ edited a post in [ICE Suggestions]( http://cemete.ch/p269173 )
+Mar 13 23:10:15 <Runer112>	heh, this is the kind of stuff I dreamed axe 2.0 would always be
+Mar 13 23:10:37 <P_T>	And what about <float> -> L1(...)?
+Mar 13 23:10:42 <P_T>	Would that be cast to an int?
+Mar 13 23:10:49 <Runer112>	er
+Mar 13 23:11:14 <P_T>	Or just write an int, and eventually overwriting the next element?
+Mar 13 23:11:16 <Runer112>	right, lists
+Mar 13 23:11:17 <P_T>	float*
+Mar 13 23:11:21 <Runer112>	well
+Mar 13 23:11:29 <Runer112>	how do lists work now
+Mar 13 23:11:39 <Runer112>	do they act as if they're lists of ints? or bytes?
+Mar 13 23:11:41 <saxjax>	[MateoConLechuga] sub should just be a strdup
+Mar 13 23:11:52 <P_T>	Just ints
+Mar 13 23:11:55 <P_T>	Well, no
+Mar 13 23:11:58 <P_T>	Bytes
+Mar 13 23:12:02 <Runer112>	d'oh
+Mar 13 23:12:09 <P_T>	You can do {L1}, but also *{L1}, all is fine
+Mar 13 23:12:12 <P_T>	It's just a pointer
+Mar 13 23:12:22 <Runer112>	yeah, but pointers are bad
+Mar 13 23:12:34 <Runer112>	when you don't have type information associated with them
+Mar 13 23:12:35 <P_T>	Mateo would disagree :P
+Mar 13 23:12:39 <P_T>	oh
+Mar 13 23:13:36 <Runer112>	I mean, in an ideal world, lists would have an element type
+Mar 13 23:13:46 <Runer112>	and all accesses would use that element type
+Mar 13 23:13:48 <P_T>	Sure
+Mar 13 23:14:07 <P_T>	I would say just store to that 'element', and don't care about types
+Mar 13 23:14:07 <Runer112>	but I'm not sure how to make that work with the current behavior of them acting like lists of bytes by default
+Mar 13 23:14:13 <iPhoenix>	Can't we have mixed element types? It's more complicated, but it could be more useful.
+Mar 13 23:14:14 <P_T>	i.e. if you store a float to it, it does overwrite 4 bytes
+Mar 13 23:14:24 <Runer112>	yeah but that's not really a list any more
+Mar 13 23:14:31 <Runer112>	that's just a pointer to a block of memory
+Mar 13 23:14:31 <P_T>	True
+Mar 13 23:15:05 <Runer112>	hmm
+Mar 13 23:15:06 <P_T>	Well if you want it to be a "list" you do need some typecasting or something
+Mar 13 23:15:24 <Runer112>	how bad would it be to change this behavior
+Mar 13 23:15:34 <P_T>	what?
+Mar 13 23:15:48 <P_T>	in fact, currently they are not really "lists"
+Mar 13 23:16:05 <P_T>	You can copy 1 byte values to it and fetch a 3-byte value
+Mar 13 23:16:36 <Runer112>	I'm wondering how bad it would be to throw out how lists currently work
+Mar 13 23:16:50 <Runer112>	and give them an element type
+Mar 13 23:16:50 <P_T>	Currently it's just a pointer to a block memory
+Mar 13 23:17:28 <Runer112>	yeah, but make it so L1 could be known to be a list of ints, for instance
+Mar 13 23:17:52 <Runer112>	and L1(5) would basically be *{5*3+L1}
+Mar 13 23:17:59 <Runer112>	or however you annotate fetch 3 bytes
+Mar 13 23:18:13 <Runer112>	admittedly I'm not up to date on ICE syntax
+Mar 13 23:19:16 <saxjax>	[Cemetech] Flip entered the room
+Mar 13 23:19:21 <P_T>	L1(5) is now ***{L1+5}
+Mar 13 23:19:48 <Runer112>	does that mean fetch 3 bytes?
+Mar 13 23:19:51 <P_T>	Yes
+Mar 13 23:19:59 <P_T>	But the offset is not multiplied by 3
+Mar 13 23:20:10 <Runer112>	eww
+Mar 13 23:20:17 <Runer112>	did mateo put you up to this
+Mar 13 23:20:24 <P_T>	Hmm no idea
+Mar 13 23:20:25 *	P_T hides
+Mar 13 23:20:47 <Runer112>	hrm
+Mar 13 23:21:00 <iPhoenix>	To me, ICE is a frankenstein's monster combination of C, Assembly (well, AFAIK), and TI-Basic. It's leaning closer towards the former two, which I like.
+Mar 13 23:21:18 <Runer112>	well, you could definitely do it safely if you required lists to be explicitly typed to be anything other than a list of bytes
+Mar 13 23:21:30 <NIKKYBOT>	right?
+Mar 13 23:21:50 <P_T>	To me ICE is a combination of C and BASIC, definitely not Assembly
+Mar 13 23:22:15 <iPhoenix>	Here's my logic.
+Mar 13 23:22:35 <P_T>	Well, there would be another problem with being explicitly typed:
+Mar 13 23:23:18 <iPhoenix>	I've dabbled a little in ICE, and found it interesting, but I didn't get too far. I've also dabbled in Assembly, I found it interesting, but I didn't get too far. Therefore, ICE is pretty close to Assembly.
+Mar 13 23:23:22 <P_T>	if you define it to be all floats, then every time you fetch an element of L1 it would be a float, even though the element is strictly an integer, so 2->L1(0) / L1(0)-B then B is a float
+Mar 13 23:23:35 <Runer112>	correct
+Mar 13 23:23:36 <P_T>	iPhoenix: that's like really weird
+Mar 13 23:23:43 <Runer112>	this is pretty normal for any language
+Mar 13 23:23:56 <Runer112>	any statically typed language, that is
+Mar 13 23:24:05 <iPhoenix>	It's extremely crappy reasoning, but it's still reasoning.
+Mar 13 23:24:16 <P_T>	"I've dabbled a little in Rust but didn't get too far, so ICE = Rust"
+Mar 13 23:24:25 <Runer112>	an array/list/vector always stores elements of a single type
+Mar 13 23:25:01 <Runer112>	if elements have different types, they're representing different things, so why would you be trying to cram them into one list
+Mar 13 23:25:01 <P_T>	And what about ***{L1} instead of L1(0). Would that be magically an int?
+Mar 13 23:25:22 <P_T>	Or would that fetch 3 bytes of the 4 bytes from the float
+Mar 13 23:25:23 <Runer112>	the pointer syntax would remain unchanged
+Mar 13 23:25:31 <Runer112>	it would do exactly what it always has
+Mar 13 23:25:42 <P_T>	that is super weird
+Mar 13 23:25:54 <P_T>	then 1->L1(0) / ***{L1} would return garbage
+Mar 13 23:26:05 <Runer112>	if L1 is a list of floats, yes, that's correct
+Mar 13 23:27:16 <P_T>	Then I like the idea of promoting L1(X) syntax over ***{L1} syntax, and make it a list of floats
+Mar 13 23:27:48 <Runer112>	yes
+Mar 13 23:28:03 <Runer112>	when lists have types, the sized pointer style access should be pretty much worthless
+Mar 13 23:28:17 <Runer112>	however, you'd probably want to keep it around for a while for backwards compatibility
+Mar 13 23:28:21 <P_T>	Sure, or useful for fetching seperate bytes of the float
+Mar 13 23:28:24 <Runer112>	but deprecate it
+Mar 13 23:28:39 <P_T>	Then each offset needs to be multiplied with 4?
+Mar 13 23:28:44 <Runer112>	for floats, yes
+Mar 13 23:28:48 <Runer112>	and for ints, 3 of course
+Mar 13 23:28:58 <P_T>	Well I guess floats are better
+Mar 13 23:29:17 <Runer112>	erm
+Mar 13 23:29:37 <MichaelB>	I prefer rootbeer floats
+Mar 13 23:29:41 *	MichaelB runs
+Mar 13 23:29:42 <Runer112>	well, the idea is that, like normal variables, lists would have a type
+Mar 13 23:30:20 <Runer112>	could be a list of ints or floats (or bytes, perhaps)
+Mar 13 23:30:31 <Runer112>	and they'd have an appropriate element size
+Mar 13 23:30:50 <Weregoose>	reindeer flotilla
+Mar 13 23:31:26 <P_T>	How would you define the list type?
+Mar 13 23:31:36 <Runer112>	if you want to support lists of bytes, which all lists currently are, then you'd definitely need explicit type declarataions
+Mar 13 23:31:50 <Runer112>	same thing
+Mar 13 23:31:56 <P_T>	SetType(<var>,<size>)?
+Mar 13 23:32:02 <Runer112>	no
+Mar 13 23:32:04 <P_T>	i.e. SetType(L1,4) = floats
+Mar 13 23:32:05 <Runer112>	SetFloat(L1)
+Mar 13 23:32:24 <P_T>	Then I need 3 custom tokens, SetFloat, SetInt and SetByte?
+Mar 13 23:32:59 <Runer112>	something like that, yes
+Mar 13 23:33:23 <Runer112>	or you could just have the type keywords 
+Mar 13 23:33:48 <Runer112>	and use some non-function-like syntax
+Mar 13 23:34:00 <Runer112>	like C just does float x
+Mar 13 23:34:27 <P_T>	I guess SetFloat would be more clear
+Mar 13 23:35:04 <Runer112>	it would
+Mar 13 23:35:16 <Runer112>	well
+Mar 13 23:35:21 <Runer112>	I don't even think it would
+Mar 13 23:35:33 <Runer112>	but in the future if you want to add C-like functions
+Mar 13 23:35:41 <P_T>	Then you could even do SetFloat(A,B,C to define multiple variables
+Mar 13 23:35:53 <Runer112>	sure, but you can do that in C with float A,B,C
+Mar 13 23:35:57 <Runer112>	not any harder
+Mar 13 23:35:58 <jcgter777>	tev: pm
+Mar 13 23:37:01 <P_T>	But that is C-like syntax, and I prefer BASIC-like syntax tbh
+Mar 13 23:38:26 <Runer112>	alright, but be aware of potentially getting stuck in the future by adhering to BASIC-like syntax 
+Mar 13 23:38:42 <saxjax>	[Cemetech] Michael2_3B entered the room
+Mar 13 23:38:50 <Runer112>	its syntax may not be amenable to features that BASIC doesn't have and therefore didn't need to fit into the syntax
+Mar 13 23:39:08 <P_T>	Like
+Mar 13 23:39:09 <P_T>	?
+Mar 13 23:39:51 <Runer112>	not sure
+Mar 13 23:41:18 <Runer112>	declaring functions is the main one that comes to mind, really
+Mar 13 23:44:29 <saxjax>	[Cemetech] mr womp womp entered the room
+Mar 13 23:44:50 *	P_T saves chat for later
+Mar 13 23:46:24 <Runer112>	I mean, what would a function declaration look like in ICE
+Mar 13 23:46:33 <P_T>	No idea
+Mar 13 23:46:36 <P_T>	I have no functions yet
+Mar 13 23:46:49 <Runer112>	I know
+Mar 13 23:47:05 <Runer112>	but it's a good idea to make decisions on current features that will align well with future features
+Mar 13 23:47:17 <P_T>	I would say Lbl X, where you can either call it with Call X or with arguments, X(1,2,3)
+Mar 13 23:47:33 <Runer112>	so, no signature?
+Mar 13 23:47:42 <P_T>	no?
+Mar 13 23:48:00 <P_T>	and always return float, like sqrt(
+Mar 13 23:48:11 <Runer112>	always return float? that's pretty bad lol
+Mar 13 23:48:16 <P_T>	heh
+Mar 13 23:48:28 <Runer112>	well, the return type could also be inferred
+Mar 13 23:48:38 <Runer112>	but like variables, it would still be nice to be able to explicitly declare it
+Mar 13 23:48:44 <P_T>	Or define that again with SetFloat(<label>)
+Mar 13 23:48:44 <saxjax>	[Cemetech] andressevilla entered the room
+Mar 13 23:49:10 <Runer112>	what about arguments
+Mar 13 23:49:23 <P_T>	X(1,2,3) and using global arguments r1-r6 I think
+Mar 13 23:49:48 <Runer112>	so functions couldn't have different types of arguments?
+Mar 13 23:49:55 <P_T>	darn
+Mar 13 23:49:58 <P_T>	shut up :P
+Mar 13 23:50:21 <Adriweb>	P_T / DrDnar etc. in case it wasnâ€™t clear: enabling PTT already removed all non-TI apps, so Cesium was gone anyway, thatâ€™s nothing new.
+Mar 13 23:50:23 <Runer112>	it's honestly not that hard to stack-allocate locals
+Mar 13 23:50:56 <Runer112>	Adriweb: wrong channel?
+Mar 13 23:51:04 <Adriweb>	Nope
+Mar 13 23:51:18 <Adriweb>	Just was from a Â«Â longÂ Â» time ago :P
+Mar 13 23:51:22 <P_T>	Then what you suggest might be the following:
+Mar 13 23:51:44 <Runer112>	get those french symbols out of my american IRC
+Mar 13 23:51:53 <P_T>	Use keywords "float ", "int " and "byte " and functions would look like this: "Lbl X(float A,int B,byte C)" ?
+Mar 13 23:52:07 <Runer112>	well that's how C does it anyway
+Mar 13 23:52:15 <P_T>	I know
+Mar 13 23:52:23 <Runer112>	I'm not saying it has to look like that, but I'm saying you probably want to be able to specify the types *somehow*
+Mar 13 23:52:42 <saxjax>	[Cemetech] Michael2_3B entered the room
+Mar 13 23:52:49 <Runer112>	and Lbl X(A,B,C) : SetFloat(A) : SetInt(B) : SetByte(C)
+Mar 13 23:52:53 <saxjax>	[Cemetech] PREDGEHAMMER entered the room
+Mar 13 23:52:55 <Runer112>	seems awfully silly
+Mar 13 23:52:59 <P_T>	True
+Mar 13 23:53:15 <Runer112>	although honestly more in line with how global variables currently work
+Mar 13 23:53:18 <P_T>	But I don't *really* like "Lbl X(float A,int B,byte C)"
+Mar 13 23:53:28 <Runer112>	that's fine
+Mar 13 23:53:32 <P_T>	It will be too complicated for the average BASIC user
+Mar 13 23:53:38 <Runer112>	you get to design it however you want :p
+Mar 13 23:54:00 <Runer112>	just try not to lock yourself into a bad function syntax in the future
+Mar 13 23:54:13 <jcgter777>	tev++
+Mar 13 23:54:41 <saxjax>	[Cemetech] matkeller19 entered the room
+Mar 13 23:55:37 <Runer112>	although honestly, the thing I said before isn't *that* bad
+Mar 13 23:55:42 <Runer112>	Lbl X(A,B,C) : SetFloat(A) : SetInt(B) : SetByte(C)
+Mar 13 23:56:02 <Runer112>	it's a bit verbose and information about the signature is spread out
+Mar 13 23:56:12 <Runer112>	but it does look BASIC-like, if that's the goal
+Mar 13 23:56:18 <P_T>	I like the idea of setting a return type for a function/Lbl with SetFloat (so labels can't have the same name as variables), but setting types for the arguments is too complicated
+Mar 13 23:56:23 <saxjax>	[TheLastMillennial] I'm never going to catch up, I've only got 3 hours :(
+Mar 13 23:56:32 <jcgter777>	:(
+Mar 13 23:56:32 <NIKKYBOT>	as long as it isn't IE, it's okay.
+Mar 13 23:56:34 <Runer112>	you can set types for the arguments just like that
+Mar 13 23:56:39 <Runer112>	same syntax as for globals
+Mar 13 23:56:40 <saxjax>	[TheLastMillennial] well, nearly 4
+Mar 13 23:56:45 <jcgter777>	TheLast: I need to beat iphoenix
+Mar 13 23:56:46 <jcgter777>	:P
+Mar 13 23:56:50 <jcgter777>	first tev
+Mar 13 23:56:54 *	jcgter777 hides
+Mar 13 23:57:12 <P_T>	Then the SetXXX( need to be directly after the Lbl definition, otherwise it would be really impossible to prescan and whatever
+Mar 13 23:57:22 <saxjax>	[TheLastMillennial] ICE 3.0??!!!
+Mar 13 23:57:25 <Runer112>	I don't think they have to be directly after
+Mar 13 23:57:26 <P_T>	Yes
+Mar 13 23:57:38 <saxjax>	[Cemetech] mr womp womp added a post in [Introduce Yourself!]( http://cemete.ch/p269174 )
+Mar 13 23:57:52 <saxjax>	[mr womp womp] I don't want to sound harsh but...
+Mar 13 23:58:18 <saxjax>	[TheLastMillennial] I can sound harsh
+Mar 13 23:58:25 <P_T>	Then a SetXXX( only applies from the previous label to the next definition?
+Mar 13 23:58:25 <saxjax>	[TheLastMillennial] <3
+Mar 13 23:58:32 <Runer112>	just keep track of the name as a combination of function name + variable name
+Mar 13 23:58:39 <saxjax>	[Cemetech] jcgter777 entered the room
+Mar 13 23:59:05 <Runer112>	well, you'd keep track of the name of the function you're in
+Mar 13 23:59:33 <Runer112>	so a variable would have a name and a function scope
+Mar 14 00:00:35 <P_T>	Then what would be the difference between a label and a function?
+Mar 14 00:01:19 <Runer112>	whether it's declared with an argument list
+Mar 14 00:01:27 <Runer112>	Lbl X versus Lbl X()
+Mar 14 00:01:36 <iPhoenix>	Why don't you just scrap ICE, and create an on-calc C compiler
+Mar 14 00:01:38 *	iPhoenix runs
+Mar 14 00:02:36 *	P_T 's head is confused
+Mar 14 00:02:51 <Runer112>	the former is a label, just like in BASIC
+Mar 14 00:02:54 <P_T>	Sure
+Mar 14 00:03:03 <Runer112>	it doesn't create a scope
+Mar 14 00:03:17 <Runer112>	and variable references inside it refer to the enclosing scope
+Mar 14 00:03:29 <Runer112>	the latter is a function
+Mar 14 00:04:08 <P_T>	and functions have their own scope
+Mar 14 00:04:14 <Runer112>	yes
+Mar 14 00:04:19 <Runer112>	but I guess that brings up the question of how to handle global versus locals
+Mar 14 00:04:27 <P_T>	yes
+Mar 14 00:05:01 <Runer112>	ideally you want functions to be able to name their variables whatever they want
+Mar 14 00:05:11 <Runer112>	and not worry about a global variable of the same name
+Mar 14 00:05:13 <NIKKYBOT>	enough I guess
+Mar 14 00:05:21 <Runer112>	but sometimes you want to refer to the global variable of the same name
+Mar 14 00:06:10 <Runer112>	anyway, this is super future talk
+Mar 14 00:06:28 <Runer112>	if you want the syntax to be BASIC-like, I think SetFloat() and SetInt() and SetByte() are all fine
+Mar 14 00:06:35 <saxjax>	[Cemetech] ad1406 entered the room
+Mar 14 00:06:51 <P_T>	Yeah :P
+Mar 14 00:07:18 <Runer112>	I imagine you can extrapolate the rules for inferring types to lists
+Mar 14 00:07:19 <P_T>	Just treat everything as globals is fine for now, I would say
+Mar 14 00:07:32 <Runer112>	it's basically the same anywayw
+Mar 14 00:07:45 <P_T>	"<Runer112> I imagine you can extrapolate the rules for inferring types to lists"?
+Mar 14 00:07:52 <P_T>	That's too much English :P
+Mar 14 00:08:01 <saxjax>	[Cemetech] mr womp womp added a post in [ICE Suggestions]( http://cemete.ch/p269175 )
+Mar 14 00:08:08 <Runer112>	I suggested how to infer types for single variables
+Mar 14 00:08:17 <Runer112>	you can do the same for lists rather easily
+Mar 14 00:08:25 <P_T>	So SetFloat(L1?
+Mar 14 00:08:29 <Runer112>	yes
+Mar 14 00:08:36 <P_T>	That was indeed my idea
+Mar 14 00:08:47 <Runer112>	and any store/load from a list at any index is of the list's type
+Mar 14 00:09:00 <P_T>	sure
+Mar 14 00:09:25 <P_T>	Side note, @iPhoenix, are you doing any different than clicking on that stupid button?
+Mar 14 00:09:50 <P_T>	Then **{L1{ etc is your own risk
+Mar 14 00:10:08 <P_T>	And everything defaults to int
+Mar 14 00:10:17 <P_T>	both variables and lists
+Mar 14 00:10:30 <Runer112>	well
+Mar 14 00:10:36 <iPhoenix>	Yes, I am.
+Mar 14 00:10:43 <iPhoenix>	I'm clicking on my phone with one hand
+Mar 14 00:10:48 <Runer112>	I'm not sure what's best for lists
+Mar 14 00:10:49 <iPhoenix>	and doing hw with the other.
+Mar 14 00:11:02 <NIKKYBOT>	not sure. what script you're referring to
+Mar 14 00:11:02 <iPhoenix>	Actually, I'm doing it with my foot
+Mar 14 00:11:06 <P_T>	bytes is the smalles :P
+Mar 14 00:11:09 <iPhoenix>	But we'll call it my hand.
+Mar 14 00:11:11 <Runer112>	defaulting to bytes will make current list access syntax be backwards compatible
+Mar 14 00:11:12 <P_T>	smallest*
+Mar 14 00:11:33 <P_T>	No word definition, i.e. 2 bytes?
+Mar 14 00:11:39 <P_T>	I guess that's useless
+Mar 14 00:11:45 <Runer112>	up to you
+Mar 14 00:11:49 <saxjax>	[Cemetech] TheLastMillennial added a post in [Introduce Yourself!]( http://cemete.ch/p269176 )
+Mar 14 00:11:50 *	DecBot3 waves.
+Mar 14 00:11:52 <P_T>	But oh well, the current ICE has it
+Mar 14 00:11:53 <P_T>	:/
+Mar 14 00:12:12 <Runer112>	the current ICE has what?
+Mar 14 00:12:24 <P_T>	16-bits expressions and stuff
+Mar 14 00:12:27 <P_T>	**{}
+Mar 14 00:12:39 <saxjax>	*TheLastMillennial takes **cake
+Mar 14 00:12:43 <Runer112>	yeah but that stuff immediately becomes deprecated
+Mar 14 00:13:03 <P_T>	And what about GetSize(), which always returns a 16-bits value?
+Mar 14 00:13:11 <P_T>	Pretend it's an int with "ex.s de, hl"? :P
+Mar 14 00:13:13 <saxjax>	[Cemetech] john35588 entered the room
+Mar 14 00:13:23 <Runer112>	something like that, yeah
+Mar 14 00:13:35 <P_T>	Wait what
+Mar 14 00:13:41 <P_T>	**{} doesn't become deprecated
+Mar 14 00:13:47 <P_T>	Because you can use it outside lists
+Mar 14 00:13:52 <Runer112>	well, maybe not deprecated
+Mar 14 00:13:53 <saxjax>	[Cemetech] TheLastMillennial edited a post in [Introduce Yourself!]( http://cemete.ch/p269176 )
+Mar 14 00:14:01 <Runer112>	but unsafe
+Mar 14 00:14:08 <P_T>	Unsafe for lists, yeah
+Mar 14 00:14:16 <saxjax>	*TheLastMillennial takes another *cake
+Mar 14 00:14:17 <Runer112>	so using it on lists is not proper any more
+Mar 14 00:14:17 <saxjax>	[Cemetech] KaneE. entered the room
+Mar 14 00:14:23 <P_T>	sure
+Mar 14 00:14:30 <P_T>	but nobody complaines if I do 5->**{A}
+Mar 14 00:14:35 <P_T>	complains*
+Mar 14 00:14:43 <saxjax>	*TheLastMillennial complains
+Mar 14 00:14:49 *	P_T slaps THeL
+Mar 14 00:14:50 <saxjax>	[TheLastMillennial] :P
+Mar 14 00:14:55 *	TC01 has quit (Read error: Operation timed out)
+Mar 14 00:15:00 <saxjax>	[TheLastMillennial] ouch
+Mar 14 00:15:04 <P_T>	Heh :D
+Mar 14 00:15:05 <saxjax>	[Cemetech] GetOutOfMyHead entered the room
+Mar 14 00:15:26 <saxjax>	[TheLastMillennial] Yeah PT_ get out of my head!
+Mar 14 00:15:27 <saxjax>	*TheLastMillennial runs
+Mar 14 00:15:48 <saxjax>	[Cemetech] SahilS entered the room
+Mar 14 00:15:57 <P_T>	Actually, going back to functions and arguments, nothing's wrong with global variables at all, because you can use whatever name you want
+Mar 14 00:16:04 <P_T>	If you were restricted to A-theta, sure
+Mar 14 00:16:15 <saxjax>	[Cemetech] SahilS deleted a post in [CC21: SahilS]
+Mar 14 00:16:16 *	TC01 (~quassel@venus.arosser.com) has joined
+Mar 14 00:16:35 <saxjax>	[SahilS] I dont have time to make a program for the contest D:
+Mar 14 00:16:44 <iPhoenix>	:(
+Mar 14 00:16:45 <saxjax>	[SahilS] if only there was one more week
+Mar 14 00:16:48 <iPhoenix>	^^
+Mar 14 00:16:56 <saxjax>	[TheLastMillennial] If a calculator somehow uninstalled it's OS, if you don't touch anything, is the data (programs etc) still in the RAM? Or is it already lost?
+Mar 14 00:17:00 <iPhoenix>	I'm pretty much done, but my program is a hefty 4.5kb
+Mar 14 00:17:01 <saxjax>	[TheLastMillennial] *its
+Mar 14 00:17:15 <P_T>	How would you ever uninstall your ROM? ;)
+Mar 14 00:17:23 <saxjax>	[TheLastMillennial] OS ;)
+Mar 14 00:17:30 <P_T>	OS*
+Mar 14 00:17:40 <P_T>	Very unlikely that your RAM will be saved
+Mar 14 00:17:40 <saxjax>	[TheLastMillennial] I dunno, it's happened...
+Mar 14 00:17:59 <iPhoenix>	It'd be really hard to read from, righr?
+Mar 14 00:18:01 <iPhoenix>	*right
+Mar 14 00:18:01 <saxjax>	[TheLastMillennial] Ok thanks :)
+Mar 14 00:18:56 <P_T>	I wonder how you will remove your OS though
+Mar 14 00:19:03 <P_T>	Then you do something very terrible wrong
+Mar 14 00:19:10 <saxjax>	[TheLastMillennial] Haha
+Mar 14 00:19:40 <Runer112>	P_T: the issue comes with shadowing
+Mar 14 00:19:59 <saxjax>	[TheLastMillennial] It happened with some YouTuber. He was doing something with MirageOS and borked TI-OS
+Mar 14 00:20:08 <Runer112>	I guess you could just disallow shadowing
+Mar 14 00:20:15 <P_T>	shadowing as in?
+Mar 14 00:20:21 <P_T>	Yeah, but that is MirageOS
+Mar 14 00:20:33 <Runer112>	same variable name in multiple scopes
+Mar 14 00:20:41 <saxjax>	[TheLastMillennial] is MirageOS an actual OS? I thought it was a shell?
+Mar 14 00:21:06 <P_T>	That is your problem, you had enough possibilities to rename the vars :P
+Mar 14 00:22:04 <Runer112>	yeah, you could just disallow shadowing then
