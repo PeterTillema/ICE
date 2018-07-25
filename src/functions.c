@@ -19,7 +19,7 @@ extern const uint8_t TimerData[];
 extern const uint8_t MallocData[];
 extern const uint8_t SincosData[];
 extern const uint8_t KeypadData[];
-extern const uint8_t RandIntData[];
+extern const uint8_t RandintData[];
 extern const uint8_t LoadspriteData[];
 extern const uint8_t LoadtilemapData[];
 #endif
