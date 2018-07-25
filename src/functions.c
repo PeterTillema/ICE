@@ -652,7 +652,7 @@ uint8_t parseFunction(uint24_t index) {
             }
         }
         
-        else if (function == tExtTok && function2 != tCompare) {
+        else if (function == tExtTok) {
             // LEFT(
             if (function2 == tLEFT) {
             }
@@ -766,7 +766,7 @@ uint8_t parseFunction(uint24_t index) {
             }
         }
         
-        else if (function == tVarOut) {
+        else if (function == tVarOut && function2 != tCompare) {
             // Alloc(
             if (function2 == tAlloc) {
                 if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID) {

@@ -92,7 +92,7 @@ bool comparePtrToTempStrings(uint24_t addr) {
 
 uint8_t getIndexOfOperator(uint8_t operator) {
     char *index;
-    if ((index = strchr(operators, operator))) {
+    if ((index = memchr(operators, operator, sizeof operators))) {
         return index - operators + 1;
     }
     return 0;

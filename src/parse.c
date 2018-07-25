@@ -27,7 +27,7 @@ element_t outputStack[400];
 element_t stack[50];
 
 uint8_t parseProgram(void) {
-    uint8_t currentGoto, currentLbl, ret;
+    uint8_t currentGoto, currentLbl, ret, *randAddr;
     
     LD_IX_IMM(IX_VARIABLES);
     
@@ -40,16 +40,17 @@ uint8_t parseProgram(void) {
     // Eventually seed the rand
     if (prescan.amountOfRandRoutines) {
         ice.programDataPtr -= SIZEOF_RAND_DATA;
-        ice.randAddr = (uint24_t)ice.programDataPtr;
+        randAddr = ice.programDataPtr;
+        ice.randAddr = (uint24_t)randAddr;
         memcpy(ice.programDataPtr, RandData, SIZEOF_RAND_DATA);
         
         // Write internal pointers
-        ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.randAddr + 2);
-        w24((uint8_t*)(ice.randAddr + 2), ice.randAddr + 102);
-        ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.randAddr + 6);
-        w24((uint8_t*)(ice.randAddr + 6), ice.randAddr + 105);
-        ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.randAddr + 19);
-        w24((uint8_t*)(ice.randAddr + 19), ice.randAddr + 102);
+        ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(randAddr + 2);
+        w24(randAddr + 2, ice.randAddr + 102);
+        ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(randAddr + 6);
+        w24(randAddr + 6, ice.randAddr + 105);
+        ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(randAddr + 19);
+        w24(randAddr + 19, ice.randAddr + 102);
 
         // Call seed rand
         LD_HL_IND(0xF30044);
@@ -376,14 +377,6 @@ stackToOutputReturn1:
                 }
             }
 
-            stackPrev = &stackPtr[stackElements - 1];
-            tempTok = stackPrev->operand.num;
-
-            // Closing tag should match it's open tag
-            if ((tok == tRBrace && (tempTok != token - 1)) || (tok == tRParen && tempTok != 0x0F && tempTok == tLBrace)) {
-                return E_SYNTAX;
-            }
-
             // No matching left parenthesis
             if (!stackElements) {
                 if (expr.inFunction) {
@@ -395,6 +388,14 @@ stackToOutputReturn1:
                 return E_EXTRA_RPAREN;
             }
             
+            stackPrev = &stackPtr[stackElements - 1];
+            tempTok = stackPrev->operand.num;
+
+            // Closing tag should match it's open tag
+            if ((tok == tRBrace && (tempTok != token - 1)) || (tok == tRParen && tempTok != 0x0F && tempTok == tLBrace)) {
+                return E_SYNTAX;
+            }
+
             index = GetIndexOfFunction(tempTok, stackPrev->operand.func.function2);
 
             // If it's a det, add an argument delimiter as well
@@ -489,7 +490,7 @@ stackToOutputReturn1:
             stackPrev = &stackPtr[stackElements - 1];
 
             token = grabString(&ice.programPtr, true);
-            if ((uint8_t)stackPrev->operand.num == tVarOut && stackPrev->operand.func.function2 == tDefineSprite) {
+            if (stackElements && (uint8_t)stackPrev->operand.num == tVarOut && stackPrev->operand.func.function2 == tDefineSprite) {
                 needWarning = false;
             }
             
@@ -682,7 +683,7 @@ stackToOutputReturn2:
 
                 // And remove everything
                 outputPtr[loopIndex - index].operand.num = temp;
-                memcpy(&outputPtr[loopIndex - index + 1], &outputPtr[loopIndex + 1], (outputElements - 1) * sizeof(element_t));
+                memmove(&outputPtr[loopIndex - index + 1], &outputPtr[loopIndex + 1], (outputElements - 1) * sizeof(element_t));
                 outputElements -= index;
                 loopIndex -= index - 1;
             }
@@ -1099,7 +1100,7 @@ bool JumpForward(uint8_t *startAddr, uint8_t *endAddr, uint24_t tempDataOffsetEl
         }
 
         if (ice.programPtr != startAddr) {
-            memcpy(startAddr, startAddr + 2, ice.programPtr - startAddr);
+            memmove(startAddr, startAddr + 2, ice.programPtr - startAddr);
         }
         ice.programPtr -= 2;
         
@@ -1764,18 +1765,22 @@ static uint8_t functionBB(int token) {
         prog_t *outputPrgm;
         
         outputPrgm = GetProgramName();
-        if (outputPrgm->errorCode != VALID) {
-            return outputPrgm->errorCode;
+        if ((res = outputPrgm->errorCode) != VALID) {
+            free(outputPrgm);
+            return res;
         }
 
 #ifndef CALCULATOR
-        if ((ice.inPrgm = _open(str_dupcat(outputPrgm->prog, ".8xp")))) {
+        char *inName = str_dupcat(outputPrgm->prog, ".8xp");
+        free(outputPrgm);
+        if ((ice.inPrgm = _open(inName))) {
             int tempProgSize = ice.programLength;
             
             fseek(ice.inPrgm, 0, SEEK_END);
             ice.programLength = ftell(ice.inPrgm);
             _rewind(ice.inPrgm);
-            fprintf(stdout, "Compiling subprogram %s\n", str_dupcat(outputPrgm->prog, ".8xp"));
+            fprintf(stdout, "Compiling subprogram %s\n", inName);
+            free(inName);
             fprintf(stdout, "Program size: %u\n", ice.programLength);
 
             // Compile it, and close
@@ -1788,6 +1793,7 @@ static uint8_t functionBB(int token) {
             ice.currentLine = currentLine;
             ice.programLength = tempProgSize;
         } else {
+            free(inName);
             res = E_PROG_NOT_FOUND;
         }
 #else
@@ -1798,6 +1804,7 @@ static uint8_t functionBB(int token) {
             sprintf(buf, "Compiling subprogram %s...", outputPrgm->prog);
             displayMessageLineScroll(buf);
             strcpy(ice.currProgName[ice.inPrgm], outputPrgm->prog);
+            free(outputPrgm);
 
             // Compile it, and close
             ice.currentLine = 0;
@@ -1810,6 +1817,7 @@ static uint8_t functionBB(int token) {
             displayMessageLineScroll("Return from subprogram...");
             ice.currentLine = currentLine;
         } else {
+            free(outputPrgm);
             res = E_PROG_NOT_FOUND;
         }
 #endif

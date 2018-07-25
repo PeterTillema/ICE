@@ -21,16 +21,16 @@ uint24_t getNextIndex(void) {
     return *(p2++);
 }
 
-uint24_t getIndexOffset(uint24_t offset) {
+uint24_t getIndexOffset(int24_t offset) {
     return *(p2 + offset);
 }
 
-void removeIndexFromStack(uint24_t index) {
-    memcpy(ice.stackStart + index, ice.stackStart + index + 1, (STACK_SIZE - index) * 3);
+void removeIndexFromStack(int24_t index) {
+    memmove(ice.stackStart + index, ice.stackStart + index + 1, (STACK_SIZE - index - 1) * sizeof(uint24_t));
     p2--;
 }
 
-uint24_t getCurrentIndex(void) {
+int24_t getCurrentIndex(void) {
     return p2 - ice.stackStart;
 }
 

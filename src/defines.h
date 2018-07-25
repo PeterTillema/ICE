@@ -46,6 +46,7 @@ uint32_t r24(void *x);
 void export_program(const char *name, uint8_t *data, size_t size);
 
 typedef FILE* ti_var_t;
+typedef int32_t int24_t;
 typedef uint32_t uint24_t;
 
 #define _rewind(x)   fseek(x, 0x4A, SEEK_SET)
