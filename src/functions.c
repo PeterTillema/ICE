@@ -24,17 +24,6 @@ extern const uint8_t LoadspriteData[];
 extern const uint8_t LoadtilemapData[];
 #endif
 
-/* First byte:  bit 7  : returns something in A
-                bit 6  : unimplemented
-                bit 5  : returns something in HL (16 bits)
-                bit 4  : deprecated
-                bit 2-0: amount of arguments needed
-   Second byte: bit 7  : first argument is small
-                bit 6  : second argument is small
-                bit 5  : third argument is small
-                ...
-*/
-
 static const c_function_t GraphxArgs[] = {
     {RET_NONE | 0, ARG_NORM},    // Begin
     {RET_NONE | 0, ARG_NORM},    // End
@@ -1038,8 +1027,6 @@ uint8_t parseFunction(NODE *top) {
                 smallArguments = GraphxArgs[function2].smallArgs;
             } else if (function == tSum) {
                 smallArguments = FileiocArgs[function2].smallArgs;
-            } else {
-                smallArguments = 0;
             }
             
             child = (child->sibling = reverseNode(child->sibling));

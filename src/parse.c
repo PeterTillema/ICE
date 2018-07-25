@@ -383,6 +383,7 @@ uint8_t parseExpression(int token) {
                 }
             }
             
+            // No matching left parenthesis
             if (stackNode == NULL) {
                 if (expr.inFunction) {
                     ice.tempToken = tok;
