@@ -1,27 +1,28 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define AMOUNT_OF_GRAPHX_FUNCTIONS 94
-#define AMOUNT_OF_FILEIOC_FUNCTIONS 34
-#define AMOUNT_OF_FUNCTIONS 33
+#define AMOUNT_OF_GRAPHX_FUNCTIONS 92
+#define AMOUNT_OF_FILEIOC_FUNCTIONS 21
+#define AMOUNT_OF_FUNCTIONS 35
 
 #define STACK_SIZE 500
-#define SIZEOF_DISP_DATA   26
-#define SIZEOF_KEYPAD_DATA 18
-#define SIZEOF_RAND_DATA   118
-#define SIZEOF_SRAND_DATA  17
-#define SIZEOF_SQRT_DATA   43
-#define SIZEOF_SINCOS_DATA 99
-#define SIZEOF_MEAN_DATA   24
-#define SIZEOF_OR_DATA     10
-#define SIZEOF_PRGM_DATA   40
-#define SIZEOF_AND_DATA    11
-#define SIZEOF_XOR_DATA    13
-#define SIZEOF_INPUT_DATA  96
-#define SIZEOF_PAUSE_DATA  20
-#define SIZEOF_MALLOC_DATA 21
-#define SIZEOF_TIMER_DATA  15
-#define SIZEOF_CHEADER     116
+#define SIZEOF_DISP_DATA     26
+#define SIZEOF_KEYPAD_DATA   18
+#define SIZEOF_RAND_DATA     118
+#define SIZEOF_SRAND_DATA    17
+#define SIZEOF_RANDINT_DATA  19
+#define SIZEOF_TOSTRING_DATA 34
+#define SIZEOF_SQRT_DATA     43
+#define SIZEOF_SINCOS_DATA   99
+#define SIZEOF_MEAN_DATA     24
+#define SIZEOF_OR_DATA       10
+#define SIZEOF_AND_DATA      11
+#define SIZEOF_XOR_DATA      13
+#define SIZEOF_INPUT_DATA    96
+#define SIZEOF_PAUSE_DATA    20
+#define SIZEOF_MALLOC_DATA   21
+#define SIZEOF_TIMER_DATA    15
+#define SIZEOF_CHEADER       116
 
 #define tDefineSprite      0x0A
 #define tCall              0x0B
@@ -75,8 +76,6 @@ typedef struct {
     uint24_t ForLoopSMCElements;                            // Amount of elements in above stack
     uint24_t currentLine;                                   // The amount of parsed lines, useful for displaying it when an error occurs
     uint24_t programSize;                                   // Size of the output program
-    uint24_t *stack[STACK_SIZE*5];                          // Stacks for compiling arguments
-    uint24_t *stackStart;                                   // Start of the stack
     uint24_t curLbl;                                        // Current label
     uint24_t curGoto;                                       // Current goto
     uint24_t programLength;                                 // Size of input program
@@ -129,6 +128,12 @@ typedef struct {
     
     bool     usedAlreadyPrgm;                               // Only once the prgm routine in the program data
     uint24_t PrgmAddr;                                      // Address of the prgm routine in the program data
+    
+    bool     usedAlreadyRandInt;                            // Only once the Disp routine in the program data
+    uint24_t RandIntAddr;                                   // Address of the Disp routine in the program data
+    
+    bool     usedAlreadyToString;                           // Only once the Disp routine in the program data
+    uint24_t ToStringAddr;                                  // Address of the Disp routine in the program data
 } ice_t;
 
 typedef struct {
@@ -229,12 +234,14 @@ void OrData(void);
 void AndData(void);
 void XorData(void);
 void RandData(void);
+void RandintData(void);
 void KeypadData(void);
 void GetKeyFastData(void);
 void GetKeyFastData2(void);
 void StringStoData(void);
 void InputData(void);
 void MallocData(void);
+void TostringData(void);
 void SincosData(void);
 void PrgmData(void);
 void TimerData(void);

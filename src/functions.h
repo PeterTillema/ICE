@@ -29,12 +29,13 @@
 #define TI_GETVATPTR_INDEX  30
 #define TI_GETNAME_INDEX    31
 
-uint8_t parseFunction(uint24_t);
-uint8_t parseFunction1Arg(uint24_t, uint8_t);
-uint8_t parseFunction2Args(uint24_t, uint8_t, bool);
+uint24_t executeFunction(NODE*);
+uint8_t parseFunction(NODE*);
+//uint8_t parseFunction1Arg(uint24_t, uint8_t);
+uint8_t parseFunction2Args(NODE*, NODE*, uint8_t, bool);
 void LoadVariableInReg(uint8_t, uint8_t);
-void LoadValueInReg(uint8_t, uint24_t);
-uint8_t InsertDataElements(uint8_t, uint24_t, uint8_t, uint8_t);
+void LoadValueInReg(uint8_t, uint24_t, uint8_t);
+uint8_t InsertDataElements(NODE*);
 void loadGetKeyFastData1(void);
 void loadGetKeyFastData2(void);
 void InsertMallocRoutine(void);

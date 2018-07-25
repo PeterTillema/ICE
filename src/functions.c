@@ -1,9 +1,8 @@
 #include "defines.h"
+#include "ast.h"
 #include "functions.h"
 
-#include "ast.h"
 #include "errors.h"
-#include "stack.h"
 #include "parse.h"
 #include "main.h"
 #include "output.h"
@@ -20,6 +19,7 @@ extern const uint8_t TimerData[];
 extern const uint8_t MallocData[];
 extern const uint8_t SincosData[];
 extern const uint8_t KeypadData[];
+extern const uint8_t RandIntData[];
 extern const uint8_t LoadspriteData[];
 extern const uint8_t LoadtilemapData[];
 #endif
@@ -183,6 +183,7 @@ const function_t implementedFunctions[AMOUNT_OF_FUNCTIONS] = {
     {tGetKey,   0,              255, 0, 0},
     {tRand,     0,              0,   0, 0},
     {tAns,      0,              0,   0, 0},
+    {tLog,      0,              1,   1, 0},
     {tLParen,   0,              1,   0, 0},
     {tLBrace,   0,              1,   0, 0},
     {tExtTok,   tRemainder,     2,   1, 0},
@@ -190,6 +191,7 @@ const function_t implementedFunctions[AMOUNT_OF_FUNCTIONS] = {
     {tExtTok,   tStartTmr,      0,   0, 0},
     {tExtTok,   tLEFT,          2,   1, 0},
     {tExtTok,   tRIGHT,         2,   1, 0},
+    {tExtTok,   tToString,      1,   0, 0},
     {t2ByteTok, tSubStrng,      3,   0, 0},
     {t2ByteTok, tLength,        1,   0, 0},
     {t2ByteTok, tFinDBD,        1,   0, 0},
@@ -203,28 +205,58 @@ const function_t implementedFunctions[AMOUNT_OF_FUNCTIONS] = {
     {tVarOut,   tCopyData,      255, 0, 0},
     {tVarOut,   tLoadData,      3,   0, 0},
     {tVarOut,   tSetBrightness, 1,   0, 0},
-    {tVarOut,   tCompare,       2,   0, 1}
+    {tVarOut,   tCompare,       2,   0, 1} 
 };
 
-extern uint8_t outputStack[400];
+uint24_t executeFunction(NODE *top) {
+    uint8_t function = top->data.operand.func.function;
+    uint8_t function2 = top->data.operand.func.function2;
+    uint24_t operand1 = top->child->data.operand.num;
+    uint24_t operand2 = top->child->sibling->data.operand.num;
+    
+    switch (function) {
+        case tNot:
+            return !operand1;
+        case tMin:
+            return operand1 < operand2 ? operand1 : operand2;
+        case tMax:
+            return operand1 > operand2 ? operand1 : operand2;
+        case tMean:
+            return ((long)operand1 + (long)operand2) / 2;
+        case tSqrt:
+            return sqrt(operand1);
+        case tLog:
+            return log10(operand1);
+        case tSin:
+            return 255 * sin((double)operand1 * (2 * M_PI / 256));
+        case tCos:
+            return 255 * cos((double)operand1 * (2 * M_PI / 256));
+        default:
+            if (function2 == tRemainder) {
+                return operand1 % operand2;
+            } else if (function2 == tLEFT) {
+                return operand1 << operand2;
+            } else {
+                return operand1 >> operand2;
+            }
+    }
+}
 
-uint8_t parseFunction(uint24_t index) {
-    element_t *outputPtr = (element_t*)outputStack, *outputPrev, *outputCurr, *outputPrevPrev, *outputPrevPrevPrev;
-    uint8_t function, function2, amountOfArguments, outputPrevType, outputPrevPrevType, res;
-    uint24_t outputPrevOperand, outputPrevPrevOperand;
-
-    outputPrevPrevPrev = &outputPtr[getIndexOffset(-4)];
-    outputPrevPrev     = &outputPtr[getIndexOffset(-3)];
-    outputPrev         = &outputPtr[getIndexOffset(-2)];
-    outputCurr         = &outputPtr[getIndexOffset(-1)];
-    function           = outputPtr[index].operand.func.function;
-    function2          = outputPtr[index].operand.func.function2;
-    amountOfArguments  = outputPtr[index].operand.func.amountOfArgs;
-
-    outputPrevOperand     = outputPrev->operand.num;
-    outputPrevType        = outputPrev->type;
-    outputPrevPrevType    = outputPrevPrev->type;
-    outputPrevPrevOperand = outputPrevPrev->operand.num;
+uint8_t parseFunction(NODE *top) {
+    NODE *child = top->child;
+    NODE *sibling = child->sibling;
+    uint24_t childOperand, siblingOperand;
+    uint8_t childType, siblingType;
+    uint8_t function, function2, amountOfArgs, res = VALID;
+    
+    childOperand = child->data.operand.num;
+    siblingOperand = sibling->data.operand.num;
+    childType = child->data.type;
+    siblingType = sibling->data.type;
+    
+    function = top->data.operand.func.function;
+    function2 = top->data.operand.func.function2;
+    amountOfArgs = top->data.operand.func.amountOfArgs;
     
     // (
     if (function == tLParen) {
@@ -233,10 +265,8 @@ uint8_t parseFunction(uint24_t index) {
     
     // not(
     else if (function == tNot) {
-        if ((res = parseFunction1Arg(index, REGISTER_HL_DE)) != VALID) {
-            return res;
-        }
-
+        res = parseNode(child);
+        
         if (expr.outputRegister == REGISTER_A) {
             OutputWrite2Bytes(OP_ADD_A, 255);
             OutputWrite2Bytes(OP_SBC_A_A, OP_INC_A);
@@ -259,7 +289,7 @@ uint8_t parseFunction(uint24_t index) {
             uint8_t *tempProgPtr = ice.programPtr;
             
             if (expr.outputRegister == REGISTER_HL) {
-                LD_DE_IMM(-1);
+                LD_DE_IMM(-1, TYPE_NUMBER);
             } else {
                 OutputWrite3Bytes(OP_SCF, 0xED, 0x62);
             }
@@ -281,33 +311,98 @@ uint8_t parseFunction(uint24_t index) {
             }
         }
     } else {
-        uint8_t temp, a;
-        uint24_t startIndex, endIndex;
-        
         ClearAnsFlags();
         
+        // sin(, cos(
+        if (function == tSin || function == tCos) {
+            res = parseNode(child);
+            AnsToHL();
+            
+            if (!ice.usedAlreadySinCos) {
+                ice.programDataPtr -= SIZEOF_SINCOS_DATA;
+                ice.SinCosAddr = (uintptr_t)ice.programDataPtr;
+                memcpy(ice.programDataPtr, SincosData, SIZEOF_SINCOS_DATA);
+
+                // 16 = distance from start of routine to "ld de, SinTable"
+                ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.programDataPtr + 16);
+
+                // This is the "ld de, SinTable", 18 is the distance from "ld de, SinTable" to "SinTable"
+                *(uint24_t*)(ice.programDataPtr + 16) = (uint24_t)ice.programDataPtr + 18 + 16;
+                ice.usedAlreadySinCos = true;
+            }
+
+            ProgramPtrToOffsetStack();
+            CALL(ice.SinCosAddr + (function == tSin ? 4 : 0));
+            ResetAllRegs();
+
+            expr.outputReturnRegister = REGISTER_DE;
+        }
+        
         // rand
-        if (function == tRand) {
+        else if (function == tRand) {
             ProgramPtrToOffsetStack();
             CALL(ice.randAddr + SIZEOF_SRAND_DATA);
 
             ice.modifiedIY = true;
             ResetAllRegs();
         }
-
-        // Ans
+        
+        // Ans - only works with numbers < 1000!
         else if (function == tAns) {
             CALL(_RclAns);
             CALL(_ConvOP1);
             ResetAllRegs();
             expr.outputReturnRegister = REGISTER_DE;
         }
+        
+        // sqrt(
+        else if (function == tSqrt) {
+            CallRoutine(&ice.usedAlreadySqrt, &ice.SqrtAddr, (uint8_t*)SqrtData, SIZEOF_SQRT_DATA);
+            ResetAllRegs();
 
+            expr.outputReturnRegister = REGISTER_DE;
+            ice.modifiedIY = true;
+        }
+        
+        // min(, max(
+        else if (function == tMin || function == tMax) {
+            if ((res = parseFunction2Args(child, sibling, REGISTER_DE, false)) != VALID) {
+                return res;
+            }
+
+            OR_A_SBC_HL_DE();
+            ADD_HL_DE();
+            if (function == tMin) {
+                OutputWrite2Bytes(OP_JR_C, 1);
+            } else {
+                OutputWrite2Bytes(OP_JR_NC, 1);
+            }
+            EX_DE_HL();
+            ResetHL();                 // DE is already reset because of "add hl, de \ ex de, hl"
+        }
+        
+        // mean(
+        else if (function == tMean) {
+            if ((res = parseFunction2Args(child, sibling, REGISTER_DE, false)) != VALID) {
+                return res;
+            }
+
+            CallRoutine(&ice.usedAlreadyMean, &ice.MeanAddr, (uint8_t*)MeanData, SIZEOF_MEAN_DATA);
+            ResetHL();
+            ResetBC();
+            ResetA();
+        }
+        
         // getKey / getKey(X)
         else if (function == tGetKey) {
-            if (amountOfArguments) {
-                if (outputPrevType == TYPE_NUMBER) {
-                    uint8_t key = outputPrevOperand;
+            if (amountOfArgs > 1) {
+                return E_ARGUMENTS;
+            }
+            if (amountOfArgs) {
+                if (childType == TYPE_STRING) {
+                    return E_SYNTAX;
+                } else if (childType == TYPE_NUMBER) {
+                    uint8_t key = childOperand;
                     uint8_t keyBit = 1;
                     
                     /* ((key-1)/8 & 7) * 2 =
@@ -322,13 +417,13 @@ uint8_t parseFunction(uint24_t index) {
                     }
 
                     LD_C(keyBit);
-                } else if (outputPrevType == TYPE_VARIABLE) {
-                    LD_A_IND_IX_OFF(outputPrevOperand);
-                } else if (outputPrevType != TYPE_CHAIN_ANS) {
-                    return E_SYNTAX;
+                } else if (childType == TYPE_VARIABLE) {
+                    LD_A_IND_IX_OFF(childOperand);
+                } else {
+                    parseNode(child->child);
                 }
 
-                if (outputPrevType != TYPE_NUMBER) {
+                if (childType != TYPE_NUMBER) {
                     if (expr.outputRegister == REGISTER_A) {
                         OutputWrite2Bytes(OP_DEC_A, OP_LD_D_A);
                         loadGetKeyFastData1();
@@ -360,127 +455,47 @@ uint8_t parseFunction(uint24_t index) {
             }
         }
         
-        // sqrt(
-        else if (function == tSqrt) {
-            if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID) {
-                return res;
-            }
-
-            CallRoutine(&ice.usedAlreadySqrt, &ice.SqrtAddr, (uint8_t*)SqrtData, SIZEOF_SQRT_DATA);
-            ResetAllRegs();
-
-            expr.outputReturnRegister = REGISTER_DE;
-            ice.modifiedIY = true;
-        }
-
-        // sin(, cos(
-        else if (function == tSin || function == tCos) {
-            if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID) {
-                return res;
-            }
-
-            if (!ice.usedAlreadySinCos) {
-                ice.programDataPtr -= SIZEOF_SINCOS_DATA;
-                ice.SinCosAddr = (uintptr_t)ice.programDataPtr;
-                memcpy(ice.programDataPtr, SincosData, SIZEOF_SINCOS_DATA);
-
-                // 16 = distance from start of routine to "ld de, SinTable"
-                ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.programDataPtr + 16);
-
-                // This is the "ld de, SinTable", 18 is the distance from "ld de, SinTable" to "SinTable"
-                w24(ice.programDataPtr + 16, (uint24_t)ice.programDataPtr + 18 + 16);
-                ice.usedAlreadySinCos = true;
-            }
-
-            ProgramPtrToOffsetStack();
-            CALL(ice.SinCosAddr + (function == tSin ? 4 : 0));
-            ResetAllRegs();
-
-            expr.outputReturnRegister = REGISTER_DE;
-        }
-
-        // min(, max(
-        else if (function == tMin || function == tMax) {
-            if ((res = parseFunction2Args(index, REGISTER_DE, false)) != VALID) {
-                return res;
-            }
-
-            OR_A_SBC_HL_DE();
-            ADD_HL_DE();
-            if (function == tMin) {
-                OutputWrite2Bytes(OP_JR_C, 1);
-            } else {
-                OutputWrite2Bytes(OP_JR_NC, 1);
-            }
-            EX_DE_HL();
-            ResetHL();                 // DE is already reset because of "add hl, de \ ex de, hl"
-        }
-
-        // mean(
-        else if (function == tMean) {
-            if ((res = parseFunction2Args(index, REGISTER_DE, false)) != VALID) {
-                return res;
-            }
-
-            CallRoutine(&ice.usedAlreadyMean, &ice.MeanAddr, (uint8_t*)MeanData, SIZEOF_MEAN_DATA);
-            ResetHL();
-            ResetBC();
-            ResetA();
-        }
-        
-        // {}
+        // {
         else if (function == tLBrace) {
-            /*****************************************************
-            * Inputs:
-            *  arg1: PTR
-            *
-            * Returns: 1-, 2- or 3-byte value at address PTR
-            *****************************************************/
-
-            if (outputPrevType == TYPE_NUMBER || outputPrev->isString) {
-                if (outputPrevType == TYPE_STRING && !comparePtrToTempStrings(outputPrevOperand)) {
+            uint8_t mask = function2;
+            
+            if (childType <= TYPE_NUMBER) {
+                if (childType == TYPE_STRING && !comparePtrToTempStrings(childOperand)) {
                     ProgramPtrToOffsetStack();
                 }
-                if (outputCurr->mask == TYPE_MASK_U8) {
-                    LD_A_ADDR(outputPrevOperand);
-                } else if (outputCurr->mask == TYPE_MASK_U16) {
-                    LD_HL_ADDR(outputPrevOperand);
-                    EX_S_DE_HL();
-                    expr.outputReturnRegister = REGISTER_DE;
+                if (mask == TYPE_MASK_U8) {
+                    LD_A_ADDR(childOperand);
                 } else {
-                    LD_HL_ADDR(outputPrevOperand);
+                    LD_HL_ADDR(childOperand);
                 }
-            } else if (outputPrevType == TYPE_VARIABLE) {
-                LD_HL_IND_IX_OFF(outputPrevOperand);
-                if (outputCurr->mask == TYPE_MASK_U8) {
+            } else if (childType == TYPE_VARIABLE) {
+                LD_HL_IND_IX_OFF(childOperand);
+                if (mask == TYPE_MASK_U8) {
                     LD_A_HL();
-                } else if (outputCurr->mask == TYPE_MASK_U16) {
-                    LD_HL_HL();
-                    EX_S_DE_HL();
-                    expr.outputReturnRegister = REGISTER_DE;
                 } else {
-                    LD_HL_HL();
-                }
-            } else if (outputPrevType == TYPE_CHAIN_ANS) {
-                if (outputCurr->mask == TYPE_MASK_U8) {
-                    if (expr.outputRegister == REGISTER_HL) {
-                        LD_A_HL();
-                    } else {
-                        LD_A_DE();
-                    }
-                } else if (outputCurr->mask == TYPE_MASK_U16) {
-                    AnsToHL();
-                    LD_HL_HL();
-                    EX_S_DE_HL();
-                    expr.outputReturnRegister = REGISTER_DE;
-                } else {
-                    AnsToHL();
                     LD_HL_HL();
                 }
             } else {
-                return E_SYNTAX;
+                res = parseNode(child);
+                MaybeAToHL();
+                if (mask == TYPE_MASK_U8) {
+                    if (expr.outputRegister == REGISTER_DE) {
+                        LD_A_DE();
+                    } else {
+                        LD_A_HL();
+                    }
+                } else {
+                    AnsToHL();
+                    LD_HL_HL();
+                }
             }
-            if (outputCurr->mask == TYPE_MASK_U8) {
+            
+            if (mask == TYPE_MASK_U16) {
+                EX_S_DE_HL();
+                expr.outputReturnRegister = REGISTER_DE;
+            }
+            
+            if (mask == TYPE_MASK_U8) {
                 expr.outputReturnRegister = REGISTER_A;
             }
         }
@@ -488,120 +503,46 @@ uint8_t parseFunction(uint24_t index) {
         else if (function == t2ByteTok && function2 != tInStrng) {
             // randInt(
             if (function2 == tRandInt) {
-                bool usedAlreadyRand = ice.usedAlreadyRand;
-                
-                if (outputPrevPrevType == TYPE_STRING || outputPrevType == TYPE_STRING) {
+                if (childType == TYPE_STRING || siblingType == TYPE_STRING) {
                     return E_SYNTAX;
                 }
-
-                if (outputPrevType == TYPE_CHAIN_ANS) {
-                    AnsToHL();
-                    if (outputPrevPrevType == TYPE_CHAIN_PUSH) {
-                        POP_DE();
-                    } else if (outputPrevPrevType == TYPE_NUMBER) {
-                        LD_DE_IMM(outputPrevPrevOperand - 1);
-                    }
+                
+                if ((res = parseFunction2Args(child, sibling, REGISTER_DE, true)) != VALID) {
+                    return res;
                 }
-                if (outputPrevPrevType == TYPE_CHAIN_ANS) {
-                    AnsToDE();
-                    if (outputPrevType == TYPE_VARIABLE) {
-                        LD_HL_IND_IX_OFF(outputPrevOperand);
-                    }
-                }
-                if (outputPrevPrevType == TYPE_VARIABLE) {
-                    LD_DE_IND_IX_OFF(outputPrevPrevOperand);
-                }
-                if (outputPrevType == TYPE_VARIABLE && outputPrevPrevType <= TYPE_VARIABLE) {
-                    LD_HL_IND_IX_OFF(outputPrevOperand);
-                }
-                if (outputPrevPrevType == TYPE_NUMBER && outputPrevType != TYPE_NUMBER) {
-                    LD_DE_IMM(outputPrevPrevOperand - 1);
-                }
-                if (outputPrevType == TYPE_NUMBER && outputPrevPrevType != TYPE_NUMBER) {
-                    LD_HL_IMM(outputPrevOperand + 1);
-                }
-
-                if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
-                    PUSH_DE();
-                    OR_A_SBC_HL_DE();
-                }
-                if (outputPrevPrevType != TYPE_NUMBER && outputPrevType != TYPE_NUMBER) {
-                    INC_HL();
-                }
-                if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
-                    PUSH_HL();
-                }
-
-                ProgramPtrToOffsetStack();
-                CALL(ice.randAddr + SIZEOF_SRAND_DATA);
-
-                if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
-                    POP_BC();
-                } else {
-                    LD_BC_IMM(outputPrevOperand - outputPrevPrevOperand + 1);
-                }
-                CALL(__idvrmu);
-                if (outputPrevType != TYPE_NUMBER || outputPrevPrevType != TYPE_NUMBER) {
-                    POP_DE();
-                } else {
-                    LD_DE_IMM(outputPrevPrevOperand);
-                }
-                if (outputPrevType == TYPE_NUMBER && outputPrevPrevType != TYPE_NUMBER) {
-                    INC_DE();
-                }
-                ADD_HL_DE();
-
-                ice.modifiedIY = true;
+                
+                CallRoutine(&ice.usedAlreadyRandInt, &ice.RandIntAddr, (uint8_t*)RandintData, SIZEOF_RANDINT_DATA);
+                ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.RandIntAddr + 8);
+                w24(ice.RandIntAddr + 8, ice.randAddr + SIZEOF_SRAND_DATA);
                 ResetHL();
-                ResetDE();
-                reg.AIsNumber = true;
-                reg.AIsVariable = false;
-                reg.AValue = 0;
+                ResetBC();
+                ResetA();
             }
             
             // sub(
             else if (function2 == tSubStrng) {
-                uint24_t outputPrevPrevPrevOperand = outputPrevPrevPrev->operand.num;
-                
-                // First argument should be a string
-                if (!outputPrevPrevPrev->isString) {
-                    return E_SYNTAX;
-                }
-
                 // Parse last 2 argument
-                if ((res = parseFunction2Args(index, REGISTER_BC, true)) != VALID) {
+                if ((res = parseFunction2Args(sibling, sibling->sibling, REGISTER_BC, true)) != VALID) {
                     return res;
                 }
 
                 // Get the string into DE
-                if (outputPrevPrevPrev->type == TYPE_STRING && !comparePtrToTempStrings(outputPrevPrevPrevOperand)) {
-                    ProgramPtrToOffsetStack();
-                }
-                LD_DE_IMM(outputPrevPrevPrevOperand);
+                LD_DE_IMM(childOperand, childType);
 
                 // Add the offset to the string, and copy!
                 ADD_HL_DE();
-                if (outputPrevPrevPrevOperand == prescan.tempStrings[TempString1]) {
-                    LD_DE_IMM(prescan.tempStrings[TempString2]);
+                if (childOperand == prescan.tempStrings[TempString1]) {
+                    LD_DE_IMM(prescan.tempStrings[TempString2], TYPE_STRING);
                 } else {
-                    LD_DE_IMM(prescan.tempStrings[TempString1]);
+                    LD_DE_IMM(prescan.tempStrings[TempString1], TYPE_STRING);
                 }
-                PUSH_DE();
-                LDIR();
+                OutputWrite3Bytes(OP_PUSH_DE, 0xED, 0xB0);
                 OutputWrite3Bytes(OP_EX_DE_HL, OP_LD_HL_C, OP_POP_HL);
             }
             
             // length(
             else if (function2 == tLength) {
-                if (outputPrevType == TYPE_STRING) {
-                    LD_HL_STRING(outputPrev->operand.num, TYPE_STRING);
-                } else {
-                    if ((res = parseFunction1Arg(index, REGISTER_HL_DE)) != VALID) {
-                        return res;
-                    }
-                    MaybeAToHL();
-                }
-
+                res = parseNode(child);
                 PushHLDE();
                 CALL(__strlen);
                 POP_BC();
@@ -635,78 +576,55 @@ uint8_t parseFunction(uint24_t index) {
             }
         }
         
-        else if (function == tExtTok) {
+        else if ((function == tExtTok || function == tLog) && function2 != tCompare) {
             // LEFT(
             if (function2 == tLEFT) {
+                const uint8_t mem[] = {OP_OR_A, OP_JR_Z, 4, OP_ADD_HL_HL, OP_DEC_A, OP_JR_NZ, -4, 0};
+                
+                OutputWriteMem(mem);
             }
             
             // RIGHT(
             else if (function2 == tRIGHT) {
-                bool shouldParseArguments = true;
-                bool shouldCallRoutine = true;
-                
-                if (outputPrevType == TYPE_NUMBER) {
-                    if (outputPrevPrevType == TYPE_VARIABLE) {
-                        LD_HL_IND_IX_OFF(outputPrevPrevOperand);
-                        shouldParseArguments = false;
-                        if (outputPrevOperand & 0xFF) {
-                            LD_A(outputPrevOperand);
-                        } else {
-                            shouldCallRoutine = false;
-                        }
-                    } else if (outputPrevPrevType == TYPE_CHAIN_ANS) {
-                        if (!outputPrevOperand) {
-                            shouldParseArguments = false;
-                            shouldCallRoutine = false;
-                            expr.outputReturnRegister = expr.outputRegister;
-                        }
-                    } else {
-                        return E_SYNTAX;
-                    }
+                if (childType == TYPE_STRING || siblingType == TYPE_STRING) {
+                    return E_SYNTAX;
                 }
                 
-                if (shouldParseArguments) {
-                    if ((res = parseFunction2Args(index, REGISTER_A, true)) != VALID) {
-                        return res;
-                    }
+                res = parseFunction2Args(child, sibling, REGISTER_A, true);
+                
+                OR_A_A();
+                
+                ProgramPtrToOffsetStack();
+                if (!ice.usedAlreadyMean) {
+                    ice.programDataPtr -= SIZEOF_MEAN_DATA;
+                    ice.MeanAddr = (uintptr_t)ice.programDataPtr;
+                    memcpy(ice.programDataPtr, (uint8_t*)MeanData, SIZEOF_MEAN_DATA);
+                    ice.usedAlreadyMean = true;
                 }
                 
-                if (shouldCallRoutine) {
-                    OR_A_A();
-                    
-                    ProgramPtrToOffsetStack();
-                    if (!ice.usedAlreadyMean) {
-                        ice.programDataPtr -= SIZEOF_MEAN_DATA;
-                        ice.MeanAddr = (uintptr_t)ice.programDataPtr;
-                        memcpy(ice.programDataPtr, (uint8_t*)MeanData, SIZEOF_MEAN_DATA);
-                        ice.usedAlreadyMean = true;
-                    }
-                    
-                    CALL_NZ(ice.MeanAddr + 3);
-                    ResetHL();
-                    ResetBC();
-                    ResetA();
-                }
+                CALL_NZ(ice.MeanAddr + 3);
+                ResetHL();
+                ResetBC();
+                ResetA();
             }
             
             // remainder(
             else if (function2 == tRemainder) {
-                if (outputPrevType == TYPE_NUMBER && outputPrevOperand <= 256 && !((uint8_t)outputPrevOperand & (uint8_t)(outputPrevOperand - 1))) {
-                    if (outputPrevPrevType == TYPE_VARIABLE) {
-                        LD_A_IND_IX_OFF(outputPrevPrevOperand);
-                    } else if (outputPrevPrevType == TYPE_CHAIN_ANS) {
-                        if (expr.outputRegister == REGISTER_HL) {
-                            LD_A_L();
-                        } else if (expr.outputRegister == REGISTER_DE) {
-                            LD_A_E();
-                        }
+                if (childType == TYPE_STRING || siblingType == TYPE_STRING) {
+                    return E_SYNTAX;
+                }
+                
+                if (siblingType == TYPE_NUMBER && siblingOperand <= 256 && !((uint8_t)siblingOperand & (uint8_t)(siblingOperand - 1))) {
+                    if (childType == TYPE_VARIABLE) {
+                        LD_A_IND_IX_OFF(childOperand);
                     } else {
-                        return E_SYNTAX;
+                        res = parseNode(child);
+                        AnsToA();
                     }
-                    if (outputPrevOperand == 256) {
+                    if (siblingOperand == 256) {
                         OR_A_A();
                     } else {
-                        AND_A(outputPrevOperand - 1);
+                        AND_A(siblingOperand - 1);
                     }
                     SBC_HL_HL();
                     LD_L_A();
@@ -715,7 +633,7 @@ uint8_t parseFunction(uint24_t index) {
                     reg.HLValue = reg.AValue;
                     reg.HLVariable = reg.AVariable;
                 } else {
-                    if ((res = parseFunction2Args(index, REGISTER_BC, true)) != VALID) {
+                    if ((res = parseFunction2Args(child, sibling, REGISTER_BC, true)) != VALID) {
                         return res;
                     }
                     CALL(__idvrmu);
@@ -734,33 +652,46 @@ uint8_t parseFunction(uint24_t index) {
             
             // checkTmr(
             else if (function2 == tCheckTmr) {
-                if (outputPrevType == TYPE_NUMBER) {
-                    LD_DE_IMM(outputPrevOperand);
-                } else if (outputPrevType == TYPE_VARIABLE) {
-                    LD_DE_IND_IX_OFF(outputPrevOperand);
-                } else if (outputPrevType == TYPE_CHAIN_ANS) {
-                    AnsToDE();
-                } else {
-                    return E_SYNTAX;
-                }
+                res = parseNode(child);
+                AnsToDE();
 
                 LD_HL_IND(0xF20000);
                 OR_A_SBC_HL_DE();
+            }
+            
+            // toString(
+            else if (function2 == tToString || function == tLog) {
+                res = parseNode(child);
+                AnsToHL();
+                
+                CallRoutine(&ice.usedAlreadyToString, &ice.ToStringAddr, (uint8_t*)TostringData, SIZEOF_TOSTRING_DATA);
+                ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.ToStringAddr + 1);
+                w24(ice.ToStringAddr + 1, ice.ToStringAddr + SIZEOF_TOSTRING_DATA);
+                if (function == tLog) {
+                    OutputWrite2Bytes(OP_PUSH_BC, OP_POP_HL);
+                } else {
+                    LD_DE_IMM(prescan.tempStrings[TempString1], TYPE_NUMBER);
+                    OutputWrite3Bytes(OP_PUSH_DE, 0xED, 0xB0);
+                    OutputWrite3Bytes(OP_EX_DE_HL, OP_LD_HL_C, OP_POP_HL);
+                }
+                ResetAllRegs();
             }
         }
         
         else if (function == tVarOut && function2 != tCompare) {
             // Alloc(
             if (function2 == tAlloc) {
-                if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID) {
-                    return res;
-                }
+                res = parseNode(child);
+                AnsToHL();
 
                 InsertMallocRoutine();
             }
             
             // DefineSprite(
             else if (function2 == tDefineSprite) {
+                uint8_t width = childOperand;
+                uint8_t height = siblingOperand;
+                
                 /*****************************************************
                 * Inputs:
                 *  arg1: sprite width
@@ -770,35 +701,31 @@ uint8_t parseFunction(uint24_t index) {
                 * Returns: PTR to sprite
                 *****************************************************/
 
-                if (amountOfArguments == 2) {
-                    uint8_t width = outputPrevPrevOperand;
-                    uint8_t height = outputPrev->operand.num;
-
-                    if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
+                if (amountOfArgs == 2) {
+                    if (childType != TYPE_NUMBER || siblingType != TYPE_NUMBER) {
                         return E_SYNTAX;
                     }
 
-                    LD_HL_IMM(width * height + 2);
+                    LD_HL_IMM(width * height + 2, TYPE_NUMBER);
                     InsertMallocRoutine();
                     OutputWrite2Bytes(OP_JR_NC, 6);
                     LD_HL_VAL(width);
                     INC_HL();
                     LD_HL_VAL(height);
                     DEC_HL();
-                } else if (amountOfArguments == 3) {
+                } else if (amountOfArgs == 3) {
                     uint8_t *a;
 
-                    if(outputPrevPrevPrev->type != TYPE_NUMBER || outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_STRING) {
+                    if(childType != TYPE_NUMBER || siblingType != TYPE_NUMBER || sibling->sibling->data.type != TYPE_STRING) {
                         return E_SYNTAX;
                     }
 
                     ice.programDataPtr -= 2;
-                    ProgramPtrToOffsetStack();
-                    LD_HL_IMM((uint24_t)ice.programDataPtr);
+                    LD_HL_IMM((uint24_t)ice.programDataPtr, TYPE_STRING);
                     ResetHL();
 
-                    *ice.programDataPtr = outputPrevPrevPrev->operand.num;
-                    *(ice.programDataPtr + 1) = outputPrevPrevOperand;
+                    *ice.programDataPtr = width;
+                    *(ice.programDataPtr + 1) = height;
                 } else {
                     return E_ARGUMENTS;
                 }
@@ -814,74 +741,89 @@ uint8_t parseFunction(uint24_t index) {
                 * Returns: PTR to data
                 ***********************************/
 
-                startIndex = -1 - amountOfArguments;
-
-                if ((res = InsertDataElements(amountOfArguments, startIndex, outputPtr[getIndexOffset(startIndex)].operand.num, 1)) != VALID) {
-                    return res;
-                }
+                res = InsertDataElements(child);
             }
             
             // Copy(
             else if (function2 == tCopy) {
+                NODE *sibling2 = sibling->sibling;
+                uint8_t sibling2Type;
+                uint24_t sibling2Operand;
+                
                 /*****************************************************
                 * Inputs:
                 *  arg1: PTR to destination
                 *  arg2: PTR to source
                 *  arg3: size in bytes
                 *****************************************************/
-
-                uint8_t outputPrevPrevPrevType = outputPrevPrevPrev->type;
-                uint24_t outputPrevPrevPrevOperand = outputPrevPrevPrev->operand.num;
-
-                if (amountOfArguments < 3 || amountOfArguments > 4) {
+                
+                if (amountOfArgs == 4) {
+                    child = sibling;
+                    sibling = sibling2;
+                    sibling2 = sibling->sibling;
+                    amountOfArgs--;
+                }
+                
+                if (amountOfArgs != 3) {
                     return E_ARGUMENTS;
                 }
-
-                if (outputPrevPrevPrevType <= TYPE_VARIABLE) {
-                    if (outputPrevPrevType == TYPE_CHAIN_PUSH) {
-                        if (outputPrevType != TYPE_CHAIN_ANS) {
-                            return E_ICE_ERROR;
-                        }
-                        AnsToBC();
-                        POP_HL();
+                
+                sibling2Type = sibling2->data.type;
+                sibling2Operand = sibling2->data.operand.num;
+                
+                if (sibling2Type > TYPE_VARIABLE) {
+                    if ((res = parseNode(sibling2)) != VALID) {
+                        return res;
                     }
-                    if (outputPrevPrevType == TYPE_CHAIN_ANS) {
-                        AnsToHL();
-                    }
-                    if (outputPrevType == TYPE_CHAIN_ANS && outputPrevPrevType != TYPE_CHAIN_PUSH) {
-                        AnsToBC();
-                    }
-                } else if (outputPrevPrevPrevType == TYPE_CHAIN_ANS) {
-                    AnsToDE();
-                } else if (outputPrevPrevPrevType == TYPE_CHAIN_PUSH) {
-                    if (outputPrevPrevType == TYPE_CHAIN_ANS) {
-                        AnsToHL();
-                    } else if (outputPrevType == TYPE_CHAIN_ANS) {
+                    if (childType <= TYPE_VARIABLE && siblingType <= TYPE_VARIABLE) {
                         AnsToBC();
                     } else {
-                        return E_SYNTAX;
+                        PushHLDE();
                     }
-                    POP_DE();
-                } else {
-                    return E_SYNTAX;
+                }
+                
+                if (childType > TYPE_VARIABLE) {
+                    if ((res = parseNode(child)) != VALID) {
+                        return res;
+                    }
+                    if (siblingType <= TYPE_VARIABLE) {
+                        AnsToDE();
+                    } else {
+                        PushHLDE();
+                    }
+                }
+                
+                if (siblingType > TYPE_VARIABLE) {
+                    if ((res = parseNode(sibling)) != VALID) {
+                        return res;
+                    }
+                    AnsToHL();
+                    if (childType > TYPE_VARIABLE) {
+                        POP_DE();
+                    }
+                }
+                
+                if (sibling2Type > TYPE_VARIABLE) {
+                    POP_BC();
                 }
 
-                if (outputPrevPrevPrevType == TYPE_NUMBER) {
-                    LD_DE_IMM(outputPrevPrevPrevOperand);
-                } else if (outputPrevPrevPrevType == TYPE_VARIABLE) {
-                    LD_DE_IND_IX_OFF(outputPrevPrevPrevOperand);
+                if (childType <= TYPE_STRING) {
+                    LD_DE_IMM(childOperand, childType);
+                } else if (childType == TYPE_VARIABLE) {
+                    LD_DE_IND_IX_OFF(childOperand);
                 }
-                if (outputPrevPrevType == TYPE_NUMBER) {
-                    LD_HL_IMM(outputPrevPrevOperand);
-                } else if (outputPrevPrevType == TYPE_VARIABLE) {
-                    LD_HL_IND_IX_OFF(outputPrevPrevOperand);
+                if (siblingType <= TYPE_STRING) {
+                    LD_HL_IMM(siblingOperand, siblingType);
+                } else if (siblingType == TYPE_VARIABLE) {
+                    LD_HL_IND_IX_OFF(siblingOperand);
                 }
-                if (outputPrevType == TYPE_NUMBER) {
-                    LD_BC_IMM(outputPrevOperand);
-                } else if (outputPrevType == TYPE_VARIABLE) {
-                    LD_BC_IND_IX_OFF(outputPrevOperand);
+                if (sibling2Type <= TYPE_STRING) {
+                    LD_BC_IMM(sibling2Operand, sibling2Type);
+                } else if (sibling2Type == TYPE_VARIABLE) {
+                    LD_BC_IND_IX_OFF(sibling2Operand);
                 }
-                if (amountOfArguments == 4) {
+                
+                if (amountOfArgs == 4) {
                     LDDR();
                 } else {
                     LDIR();
@@ -890,6 +832,9 @@ uint8_t parseFunction(uint24_t index) {
             
             // DefineTilemap(
             else if (function2 == tDefineSprite) {
+                uint8_t loop;
+                NODE *tmp = child;
+                
                 /****************************************************************
                 * C arguments:
                 *  - uint8_t *mapData (pointer to data)
@@ -924,89 +869,80 @@ uint8_t parseFunction(uint24_t index) {
                 * Returns: PTR to tilemap struct
                 ****************************************************************/
 
-                uint8_t *tempDataPtr = ice.programDataPtr - 18;                 // 18 = sizeof(tilemap_t)
-                element_t *outputTemp;
-                uint8_t a;
-
-                if (amountOfArguments < 11 || amountOfArguments > 12) {
+                if (amountOfArgs < 11 || amountOfArgs > 12) {
                     return E_ARGUMENTS;
                 }
                 
-                startIndex = -1 - amountOfArguments;
-                ice.programDataPtr -= 18;
-
-                // Fetch the 8 uint8_t variables
-                for (a = 0; a < 9; a++) {
-                    outputTemp = &outputPtr[getIndexOffset(startIndex + a)];
-                    if (outputTemp->type != TYPE_NUMBER) {
-                        return E_SYNTAX;
-                    }
-                    *(tempDataPtr + a + 6) = outputTemp->operand.num;
+                child = reverseNode(child);
+                
+                // Fetch map data
+                ice.programDataPtr -= 3;
+                if (amountOfArgs == 12) {
+                    LD_HL_IMM(child->data.operand.num, TYPE_STRING);
+                    ProgramPtrToOffsetStack();
+                    LD_ADDR_HL((uint24_t)ice.programDataPtr);
+                    child = child->sibling;
                 }
-
-                // Fetch the only uint24_t variable (X_LOC)
-                outputTemp = &outputPtr[getIndexOffset(startIndex + 9)];
-                if (outputTemp->type != TYPE_NUMBER) {
-                    return E_SYNTAX;
+                
+                // Fetch tiles data
+                ice.programDataPtr -= 3;
+                if (child->data.type != TYPE_VARIABLE) {
+                    res = E_SYNTAX;
                 }
-                *(uint24_t*)(tempDataPtr + 15) = outputTemp->operand.num;
-
-                // Fetch the tiles/sprites
-                outputTemp = &outputPtr[getIndexOffset(startIndex + 10)];
-                if (outputTemp->type != TYPE_VARIABLE) {
-                    return E_SYNTAX;
-                }
-
-                LD_HL_IND_IX_OFF(outputTemp->operand.var);
+                LD_HL_IND_IX_OFF(child->data.operand.num);
                 ProgramPtrToOffsetStack();
-                LD_ADDR_HL((uint24_t)tempDataPtr + 3);
-
-                // Fetch the tilemap
-                if (amountOfArguments > 11) {
-                    ProgramPtrToOffsetStack();
-                    LD_HL_IMM(outputPrevOperand);
-                    ProgramPtrToOffsetStack();
-                    LD_ADDR_HL((uint24_t)tempDataPtr);
+                LD_ADDR_HL((uint24_t)ice.programDataPtr);
+                child = child->sibling;
+                
+                // Fetch X_LOC
+                ice.programDataPtr -= 3;
+                if (child->data.type != TYPE_NUMBER) {
+                    res = E_SYNTAX;
                 }
+                w24(ice.programDataPtr, child->data.operand.num);
+                child = child->sibling;
+                
+                // Fetch the 9 small arguments
+                for (loop = 0; loop < 9; loop++) {
+                    ice.programDataPtr--;
+                    if (child->data.type != TYPE_NUMBER) {
+                        res = E_SYNTAX;
+                    }
+                    *ice.programDataPtr = child->data.operand.num;
+                    child = child->sibling;
+                }
+                
+                child = reverseNode(tmp);
 
                 // Build a new tilemap struct in the program data
-                ProgramPtrToOffsetStack();
-                LD_HL_IMM((uint24_t)tempDataPtr);
+                LD_HL_IMM((uint24_t)ice.programDataPtr, TYPE_STRING);
             }
             
             // CopyData(
             else if (function2 == tCopyData) {
+                uint8_t *prevProgDataPtr = ice.programDataPtr;
+                
                 /*****************************************************
                 * Inputs:
                 *  arg1: PTR to destination
                 *  arg2: size in bytes of each entry
                 *  arg3-argX: entries, constants
                 *****************************************************/
-
-                element_t *outputTemp;
-                uint8_t *prevProgDataPtr = ice.programDataPtr;
                 
-                startIndex = -1 - amountOfArguments;
-                outputTemp = &outputPtr[getIndexOffset(startIndex)];
-                if (outputTemp->type == TYPE_NUMBER) {
-                    LD_DE_IMM(outputTemp->operand.num);
-                } else if (outputTemp->type == TYPE_VARIABLE) {
-                    LD_DE_IND_IX_OFF(outputTemp->operand.var);
-                } else if (outputTemp->type == TYPE_CHAIN_ANS) {
-                    AnsToDE();
-                } else {
-                    return E_SYNTAX;
-                }
-
-                if ((res = InsertDataElements(amountOfArguments, startIndex, (&outputPtr[getIndexOffset(startIndex + 1)])->operand.num, 2)) != VALID) {
+                if ((res = parseNode(child)) != VALID) {
                     return res;
                 }
-                LD_BC_IMM(prevProgDataPtr - ice.programDataPtr);
+                AnsToDE();
+                res = InsertDataElements(sibling);
+                LD_BC_IMM(prevProgDataPtr - ice.programDataPtr, TYPE_NUMBER);
                 LDIR();
             }
             
             // LoadData(
             else if (function2 == tLoadData) {
+                NODE *sibling2 = sibling->sibling;
+                uint24_t sibling2Operand = sibling2->data.operand.num;
+                
                 /*****************************************************
                 * Inputs:
                 *  arg1: appvar name as string
@@ -1017,12 +953,12 @@ uint8_t parseFunction(uint24_t index) {
                 * Returns: PTR to sprite (sprite)
                 *****************************************************/
 
-                if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
+                if (siblingType != TYPE_NUMBER || sibling2->data.type != TYPE_NUMBER || !child->data.isString) {
                     return E_SYNTAX;
                 }
 
                 // Check if it's a sprite or a tilemap
-                if (outputPrev->operand.num == 3) {
+                if (sibling2Operand == 3) {
                     // Copy the LoadData( routine to the data section
                     if (!ice.usedAlreadyLoadSprite) {
                         ice.programDataPtr -= 32;
@@ -1032,14 +968,11 @@ uint8_t parseFunction(uint24_t index) {
                     }
 
                     // Set which offset
-                    LD_HL_IMM(outputPrevPrevOperand + 2);
+                    LD_HL_IMM(siblingOperand + 2, TYPE_NUMBER);
                     ProgramPtrToOffsetStack();
                     LD_ADDR_HL(ice.LoadSpriteAddr + 27);
 
-                    if (!outputPrevPrevPrev->isString) {
-                        return E_SYNTAX;
-                    }
-                    LD_HL_STRING(outputPrevPrevPrev->operand.num - 1, outputPrevPrevPrev->type);
+                    LD_HL_IMM(childOperand - 1, childType);
 
                     // Call the right routine
                     ProgramPtrToOffsetStack();
@@ -1059,25 +992,22 @@ uint8_t parseFunction(uint24_t index) {
                     }
 
                     // Set which offset
-                    LD_HL_IMM(outputPrevPrevOperand + 2);
+                    LD_HL_IMM(siblingOperand + 2, TYPE_NUMBER);
                     ProgramPtrToOffsetStack();
                     LD_ADDR_HL(ice.LoadTilemapAddr + 27);
 
                     // Set table base
-                    LD_HL_IMM(prescan.freeMemoryPtr);
-                    prescan.freeMemoryPtr += outputPrev->operand.num;
+                    LD_HL_IMM(prescan.freeMemoryPtr, TYPE_NUMBER);
+                    prescan.freeMemoryPtr += sibling2Operand;
                     ProgramPtrToOffsetStack();
                     LD_ADDR_HL(ice.LoadTilemapAddr + 40);
 
                     // Set amount of sprites
-                    LD_A(outputPrev->operand.num / 3);
+                    LD_A(sibling2Operand / 3);
                     ProgramPtrToOffsetStack();
                     LD_ADDR_A(ice.LoadTilemapAddr + 45);
 
-                    if (!outputPrevPrevPrev->isString) {
-                        return E_SYNTAX;
-                    }
-                    LD_HL_STRING(outputPrevPrevPrev->operand.num - 1, outputPrevPrevPrev->type);
+                    LD_HL_IMM(childOperand - 1, childType);
 
                     // Call the right routine
                     ProgramPtrToOffsetStack();
@@ -1091,94 +1021,37 @@ uint8_t parseFunction(uint24_t index) {
             
             // SetBrightness(
             else if (function2 == tSetBrightness) {
-                if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID) {
-                    return res;
-                }
-
-                if (expr.outputRegister == REGISTER_HL) {
-                    LD_A_L();
-                } else if (expr.outputRegister == REGISTER_DE) {
-                    LD_A_E();
-                }
+                res = parseNode(child);
+                AnsToA();
 
                 LD_IMM_A(mpBlLevel);
             }
         }
         
-        // det(, sum(, Compare(, inString(
+        // det(, sum(, Compare(
         else {
-            /*****************************************************
-            * Inputs:
-            *  arg1: which det( or sum( function
-            *  arg2-argX: arguments
-            *
-            * Returns: output of C function
-            *****************************************************/
-
-            uint8_t smallArguments;
-            uint8_t whichSmallArgument = 1 << (9 - amountOfArguments);
-            uint8_t *startProgramPtr = 0;
+            uint8_t temp = 0;
+            uint8_t smallArguments = 0;
+            uint8_t whichSmallArgument = 1 << (9 - amountOfArgs);
             
             if (function == tDet) {
-                smallArguments = GraphxArgs[function2].smallArgs;
+                smallArguments = GraphxArgs[childOperand * 2 + 1];
+                temp = GraphxArgs[childOperand * 2];
             } else if (function == tSum) {
-                smallArguments = FileiocArgs[function2].smallArgs;
-            } else {
-                smallArguments = 0;
+                smallArguments = FileiocArgs[childOperand * 2 + 1];
+                temp = FileiocArgs[childOperand * 2];
             }
-
-            endIndex = index;
-            startIndex = index;
-
-            // Get all the arguments
-            for (a = amountOfArguments; a >= 1; a--) {
-                uint24_t *tempP1, *tempP2;
-
-                a--;
-                temp = 0;
-                while (1) {
-                    uint8_t index;
-                    
-                    outputPrev = &outputPtr[--startIndex];
-                    outputPrevType = outputPrev->type;
-                    index = GetIndexOfFunction(outputPrev->operand.num, outputPrev->operand.func.function2);
-
-                    if (outputPrevType == TYPE_C_START) {
-                        if (!temp) {
-                            break;
-                        }
-                        temp--;
-                    }
-
-                    if (outputPrevType == TYPE_FUNCTION && index != 255 && implementedFunctions[index].pushBackwards) {
-                        temp++;
-                    }
-
-                    if (outputPrevType == TYPE_ARG_DELIMITER && !temp) {
-                        break;
-                    }
-                }
-
-                // Check if it's the first argument or not
-                if ((outputPrevType == TYPE_ARG_DELIMITER && !a) || (outputPrevType == TYPE_C_START && a)) {
-                    return E_ARGUMENTS;
-                }
-
-                // Setup a new stack
-                tempP1 = getStackVar(0);
-                tempP2 = getStackVar(1);
-                ice.stackDepth++;
-
-                startProgramPtr = ice.programPtr;
+            
+            child = (child->sibling = reverseNode(child->sibling));
+            
+            while (child != NULL) {
+                uint8_t *tempProgramPtr = ice.programPtr;
                 
-                // And finally grab the argument, and return if an error occured
-                if ((temp = parsePostFixFromIndexToIndex(startIndex + 1, endIndex - 1)) != VALID) {
-                    return temp;
+                if ((res = parseNode(child)) != VALID) {
+                    break;
                 }
-
-                // If the last (first) argument is fetched, it's the det( function, so ignore all the optimizations
-                // Ignore them too if it's optimized, like fetching variable A if it's already in register HL
-                if (ice.programPtr != startProgramPtr && a) {
+                
+                if (ice.programPtr != tempProgramPtr) {
                     // Write pea instead of lea
                     if (expr.outputIsNumber && expr.outputNumber >= IX_VARIABLES - 0x80 && expr.outputNumber <= IX_VARIABLES + 0x7F) {
                         *(ice.programPtr - 2) = 0x65;
@@ -1187,7 +1060,6 @@ uint8_t parseFunction(uint24_t index) {
                             if (expr.outputIsNumber) {
                                 ice.programPtr -= expr.SizeOfOutputNumber;
                                 LD_L(expr.outputNumber);
-                                ResetHL();
                             } else if (expr.outputIsVariable) {
                                 *(ice.programPtr - 2) = 0x6E;
                                 ResetHL();
@@ -1204,61 +1076,40 @@ uint8_t parseFunction(uint24_t index) {
                 } else {
                     PushHLDE();
                 }
-
-                ice.stackDepth--;
-
-                // And restore the stack
-                setStackValues(tempP1, tempP2);
-
-                endIndex = startIndex;
-                whichSmallArgument <<= 1;
-                a++;
-            }
-
-            if (function == tDet || function == tSum) {
-                ice.programPtr = startProgramPtr;
                 
-                // Wow, unknown C function?
-                if (function2 >= (function == tDet ? AMOUNT_OF_GRAPHX_FUNCTIONS : AMOUNT_OF_FILEIOC_FUNCTIONS)) {
-                    return E_UNKNOWN_C;
-                }
+                child = child->sibling;
+                whichSmallArgument <<= 1;
             }
-
-            // Get the amount of arguments, and call the function
-            if (function == tDet) {
-                temp = GraphxArgs[function2].retRegAndArgs;
-                CALL(prescan.GraphxRoutinesStack[function2] - (uint24_t)ice.programData + PRGM_START);
-            } else if (function == tSum) {
-                temp = FileiocArgs[function2].retRegAndArgs;
-                CALL(prescan.FileiocRoutinesStack[function2] - (uint24_t)ice.programData + PRGM_START);
+            top->child->sibling = reverseNode(top->child->sibling);
+            
+            if (function == tDet || function == tSum) {
+                if (childOperand >= (function == tDet ? AMOUNT_OF_GRAPHX_FUNCTIONS : AMOUNT_OF_FILEIOC_FUNCTIONS)) {
+                    res = E_UNKNOWN_C;
+                }
+                
+                if (function == tDet) {
+                    CALL(prescan.GraphxRoutinesStack[childOperand] - (uint24_t)ice.programData + PRGM_START);
+                } else {
+                    CALL(prescan.FileiocRoutinesStack[childOperand] - (uint24_t)ice.programData + PRGM_START);
+                }
+                
+                if ((temp & 7) != amountOfArgs - 1) {
+                    res = E_ARGUMENTS;
+                } else if (temp & UN) {
+                    res = E_UNKNOWN_C;
+                }
             } else {
-                temp = 0;
-                amountOfArguments++;
                 if (function == tVarOut) {
                     CALL(__strcmp);
                 } else {
                     CALL(__strstr);
                 }
             }
-
-            // Check if unimplemented function
-            if (function == tDet || function == tSum) {
-                if (temp & UN) {
-                    return E_UNKNOWN_C;
-                }
-
-                // Check the right amount of arguments
-                if ((temp & 7) != amountOfArguments - 1) {
-                    return E_ARGUMENTS;
-                }
-            }
-
-            // And pop the arguments
-            for (a = 1; a < amountOfArguments; a++) {
+            
+            while (--amountOfArgs) {
                 POP_BC();
             }
-
-            // Check if the output is 16-bits OR in A
+            
             if (function == tDet || function == tSum) {
                 if (temp & RET_A) {
                     expr.outputReturnRegister = REGISTER_A;
@@ -1267,7 +1118,7 @@ uint8_t parseFunction(uint24_t index) {
                     expr.outputReturnRegister = REGISTER_DE;
                 }
             }
-
+            
             ResetAllRegs();
             expr.outputIsNumber = expr.outputIsVariable = expr.outputIsString = false;
             ice.modifiedIY = true;
@@ -1275,53 +1126,32 @@ uint8_t parseFunction(uint24_t index) {
     }
     
     expr.outputRegister = expr.outputReturnRegister;
-
-    return VALID;
-}
-
-uint8_t parseFunction1Arg(uint24_t index, uint8_t outputRegister1) {
-    element_t *outputPtr = (element_t*)outputStack, *outputPrev;
-    uint8_t outputPrevType;
     
-    outputPrev = &outputPtr[getIndexOffset(-2)];
-    outputPrevType = outputPrev->type;
-
-    if (outputPrevType == TYPE_NUMBER) {
-        LD_HL_IMM(outputPrev->operand.num);
-    } else if (outputPrevType == TYPE_VARIABLE) {
-        LD_HL_IND_IX_OFF(outputPrev->operand.var);
-    } else if (outputPrevType == TYPE_CHAIN_ANS) {
-        if (outputRegister1 == REGISTER_HL) {
-            AnsToHL();
-        }
-    } else {
-        return E_SYNTAX;
-    }
-
-    return VALID;
+    return res;
 }
 
-void LoadVariableInReg(uint8_t reg, uint8_t var) {
-    if (reg == REGISTER_A) {
+
+void LoadVariableInReg(uint8_t reg2, uint8_t var) {
+    if (reg2 == REGISTER_A) {
         LD_A_IND_IX_OFF(var);
-    } else if (reg == REGISTER_BC) {
+    } else if (reg2 == REGISTER_BC) {
         LD_BC_IND_IX_OFF(var);
-    } else if (reg == REGISTER_DE) {
+    } else if (reg2 == REGISTER_DE) {
         LD_DE_IND_IX_OFF(var);
-    } else if (reg == REGISTER_HL) {
+    } else {
         LD_HL_IND_IX_OFF(var);
     }
 }
 
-void LoadValueInReg(uint8_t reg2, uint24_t val) {
+void LoadValueInReg(uint8_t reg2, uint24_t val, uint8_t type) {
     if (reg2 == REGISTER_A) {
         LD_A(val);
     } else if (reg2 == REGISTER_BC) {
-        LD_BC_IMM(val);
+        LD_BC_IMM(val, type);
     } else if (reg2 == REGISTER_DE) {
-        LD_DE_IMM(val);
-    } else if (reg2 == REGISTER_HL) {
-        LD_HL_IMM(val);
+        LD_DE_IMM(val, type);
+    } else {
+        LD_HL_IMM(val, type);
     }
 }
 
@@ -1332,147 +1162,140 @@ void AnsToReg(uint8_t reg2) {
         AnsToBC();
     } else if (reg2 == REGISTER_DE) {
         AnsToDE();
-    } else if (reg2 == REGISTER_HL) {
+    } else {
         AnsToHL();
     }
 }
 
-uint8_t parseFunction2Args(uint24_t index, uint8_t outputReturnRegister, bool orderDoesMatter) {
-    element_t *outputPtr = (element_t*)outputStack, *outputPrev, *outputPrevPrev;
-    uint8_t outputPrevType, outputPrevPrevType;
-    uint24_t outputPrevOperand, outputPrevPrevOperand;
+uint8_t parseFunction2Args(NODE *child, NODE *sibling, uint8_t outputReturnRegister, bool orderDoesMatter) {
+    uint8_t  childType      = child->data.type;
+    uint8_t  siblingType    = sibling->data.type;
+    uint24_t childOperand   = child->data.operand.num;
+    uint24_t siblingOperand = sibling->data.operand.num;
+    uint8_t res = VALID;
 
-    outputPrev            = &outputPtr[getIndexOffset(-2)];
-    outputPrevPrev        = &outputPtr[getIndexOffset(-3)];
-    outputPrevType        = outputPrev->type;
-    outputPrevOperand     = outputPrev->operand.num;
-    outputPrevPrevType    = outputPrevPrev->type;
-    outputPrevPrevOperand = outputPrevPrev->operand.num;
-
-    if (outputPrevPrevType == TYPE_NUMBER) {
-        if (outputPrevType == TYPE_NUMBER) {
-            LD_HL_IMM(outputPrevPrevOperand);
-            LoadValueInReg(outputReturnRegister, outputPrevOperand);
-        } else if (outputPrevType == TYPE_VARIABLE) {
-            LD_HL_IMM(outputPrevPrevOperand);
-            LoadVariableInReg(outputReturnRegister, outputPrevOperand);
-        } else if (outputPrevType == TYPE_CHAIN_ANS) {
+    if (childType <= TYPE_STRING) {
+        if (siblingType <= TYPE_STRING) {
+            LD_HL_IMM(childOperand, childType);
+            LoadValueInReg(outputReturnRegister, siblingOperand, siblingType);
+        } else if (siblingType == TYPE_VARIABLE) {
+            LD_HL_IMM(childOperand, childType);
+            LoadVariableInReg(outputReturnRegister, siblingOperand);
+        } else {
             if (orderDoesMatter) {
+                res = parseNode(sibling);
                 AnsToReg(outputReturnRegister);
-                LD_HL_IMM(outputPrevPrevOperand);
+                LD_HL_IMM(childOperand, childType);
             } else {
                 if (expr.outputRegister == REGISTER_HL) {
-                    LD_DE_IMM(outputPrevPrevOperand);
+                    LD_DE_IMM(childOperand, childType);
                 } else {
-                    LD_HL_IMM(outputPrevPrevOperand);
+                    LD_HL_IMM(childOperand, childType);
                 }
             }
-        } else {
-            return E_SYNTAX;
         }
-    } else if (outputPrevPrevType == TYPE_VARIABLE) {
-        if (outputPrevType == TYPE_NUMBER) {
+    } else if (childType == TYPE_VARIABLE) {
+        if (siblingType <= TYPE_STRING) {
             if (orderDoesMatter) {
-                LD_HL_IND_IX_OFF(outputPrevPrevOperand);
-                LoadValueInReg(outputReturnRegister, outputPrevOperand);
+                LD_HL_IND_IX_OFF(childOperand);
+                LoadValueInReg(outputReturnRegister, siblingOperand, siblingType);
             } else {
-                LD_HL_IMM(outputPrevOperand);
-                LD_DE_IND_IX_OFF(outputPrevPrevOperand);
+                LD_HL_IMM(siblingOperand, siblingType);
+                LD_DE_IND_IX_OFF(childOperand);
             }
-        } else if (outputPrevType == TYPE_VARIABLE) {
-            LD_HL_IND_IX_OFF(outputPrevPrevOperand);
-            LoadVariableInReg(outputReturnRegister, outputPrevOperand);
-        } else if (outputPrevType == TYPE_CHAIN_ANS) {
+        } else if (siblingType == TYPE_VARIABLE) {
+            LD_HL_IND_IX_OFF(childOperand);
+            LoadVariableInReg(outputReturnRegister, siblingOperand);
+        } else {
             if (orderDoesMatter) {
+                res = parseNode(sibling);
                 AnsToReg(outputReturnRegister);
-                LD_HL_IND_IX_OFF(outputPrevPrevOperand);
+                LD_HL_IND_IX_OFF(childOperand);
             } else {
                 if (expr.outputRegister == REGISTER_HL) {
-                    LD_DE_IND_IX_OFF(outputPrevPrevOperand);
+                    LD_DE_IND_IX_OFF(childOperand);
                 } else {
-                    LD_HL_IND_IX_OFF(outputPrevPrevOperand);
+                    LD_HL_IND_IX_OFF(childOperand);
                 }
-            }
-        } else {
-            return E_SYNTAX;
-        }
-    } else if (outputPrevPrevType == TYPE_CHAIN_ANS) {
-        if (outputPrevType == TYPE_NUMBER) {
-            AnsToHL();
-            if (orderDoesMatter) {
-                LoadValueInReg(outputReturnRegister, outputPrevOperand);
-            } else {
-                if (expr.outputRegister == REGISTER_HL) {
-                    LD_DE_IMM(outputPrevOperand);
-                } else {
-                    LD_HL_IMM(outputPrevOperand);
-                }
-            }
-        } else if (outputPrevType == TYPE_VARIABLE) {
-            AnsToHL();
-            if (orderDoesMatter) {
-                LoadVariableInReg(outputReturnRegister, outputPrevOperand);
-            } else {
-                if (expr.outputRegister == REGISTER_HL) {
-                    LD_DE_IND_IX_OFF(outputPrevOperand);
-                } else {
-                    LD_HL_IND_IX_OFF(outputPrevOperand);
-                }
-            }
-        } else {
-            return E_SYNTAX;
-        }
-    } else if (outputPrevPrevType == TYPE_CHAIN_PUSH) {
-        if (outputPrevType != TYPE_CHAIN_ANS) {
-            return E_ICE_ERROR;
-        }
-        if (orderDoesMatter) {
-            AnsToReg(outputReturnRegister);
-            POP_HL();
-        } else {
-            MaybeAToHL();
-            if (expr.outputRegister == REGISTER_HL) {
-                POP_DE();
-            } else {
-                POP_HL();
             }
         }
     } else {
-        return E_SYNTAX;
+        res = parseNode(child);
+        if (siblingType <= TYPE_STRING) {
+            AnsToHL();
+            if (orderDoesMatter) {
+                LoadValueInReg(outputReturnRegister, siblingOperand, siblingType);
+            } else {
+                if (expr.outputRegister == REGISTER_HL) {
+                    LD_DE_IMM(siblingOperand, siblingType);
+                } else {
+                    LD_HL_IMM(siblingOperand, siblingType);
+                }
+            }
+        } else if (siblingType == TYPE_VARIABLE) {
+            AnsToHL();
+            if (orderDoesMatter) {
+                LoadVariableInReg(outputReturnRegister, siblingOperand);
+            } else {
+                if (expr.outputRegister == REGISTER_HL) {
+                    LD_DE_IND_IX_OFF(siblingOperand);
+                } else {
+                    LD_HL_IND_IX_OFF(siblingOperand);
+                }
+            }
+        } else {
+            if (res != VALID) {
+                return res;
+            }
+            PushHLDE();
+            res = parseNode(sibling);
+            if (orderDoesMatter) {
+                AnsToReg(outputReturnRegister);
+                POP_HL();
+            } else {
+                MaybeAToHL();
+                if (expr.outputRegister == REGISTER_HL) {
+                    POP_DE();
+                } else {
+                    POP_HL();
+                }
+            }
+        }
     }
 
-    return VALID;
+    return res;
 }
 
-uint8_t InsertDataElements(uint8_t amountOfArguments, uint24_t startIndex, uint8_t dataSize, uint8_t startA) {
-    uint8_t a;
-    uint8_t *newProgramDataPtr;
-
-    ProgramPtrToOffsetStack();
-    ice.programDataPtr -= dataSize * (amountOfArguments - startA);
-    newProgramDataPtr = ice.programDataPtr;
-    LD_HL_IMM((uint24_t)newProgramDataPtr);
-
-    for (a = startA; a < amountOfArguments; a++) {
-        element_t *outputPtr = (element_t*)outputStack;
-        element_t *outputTemp = &outputPtr[getIndexOffset(startIndex + a)];
+uint8_t InsertDataElements(NODE *top) {
+    uint8_t size = top->data.operand.num;
+    NODE *tmp = top;
+    
+    top = (top->sibling = reverseNode(top->sibling));
+    
+    while (top != NULL) {
+        uint24_t operand = top->data.operand.num;
         
-        if (outputTemp->type != TYPE_NUMBER) {
+        if (top->data.type != TYPE_NUMBER) {
             return E_SYNTAX;
         }
-        memset(ice.programDataPtr, 0, dataSize);
-        if (dataSize == 1) {
-            *ice.programDataPtr = outputTemp->operand.num;
-        } else if (dataSize == 2) {
-            *(uint16_t*)ice.programDataPtr = outputTemp->operand.num;
+        
+        ice.programDataPtr -= size;
+        memset(ice.programDataPtr, 0, size);
+        
+        if (size == 1) {
+            *ice.programDataPtr = operand;
+        } else if (size == 2) {
+            *(uint16_t*)ice.programDataPtr = operand;
         } else {
-            w24(ice.programDataPtr, outputTemp->operand.num);
+            w24(ice.programDataPtr, operand);
         }
-        ice.programDataPtr += dataSize;
+        
+        top = top->sibling;
     }
-
-    ice.programDataPtr = newProgramDataPtr;
-
+    
+    LD_HL_IMM((uint24_t)ice.programDataPtr, TYPE_STRING);
+    top->sibling = reverseNode(top->sibling);
+    
     return VALID;
 }
 

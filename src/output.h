@@ -146,9 +146,9 @@
 #define LD_IY_IMM(val)        do { OutputWrite2Bytes(0xFD, 0x21); OutputWriteLong(val); } while (0)
 #define LEA_HL_IY_OFF(off)    do { OutputWrite2Bytes(0xED, 0x23); OutputWriteByte(off); ResetHL(); } while (0)
 
-#define LD_BC_IMM(val)        do { LoadRegValue(REGISTER_BC, val); } while (0)
-#define LD_DE_IMM(val)        do { LoadRegValue(REGISTER_DE, val); } while (0)
-#define LD_HL_IMM(val)        do { LoadRegValue(REGISTER_HL, val); } while (0)
+#define LD_BC_IMM(val,type)   do { LoadRegValue(REGISTER_BC, val, type); } while (0)
+#define LD_DE_IMM(val,type)   do { LoadRegValue(REGISTER_DE, val, type); } while (0)
+#define LD_HL_IMM(val,type)   do { LoadRegValue(REGISTER_HL, val, type); } while (0)
 #define LD_HL_IND(val)        do { OutputWriteByte(OP_LD_HL_IND); OutputWriteLong(val); ResetHL(); } while (0)
 #define LD_IMM_A(val)         do { OutputWriteByte(OP_LD_IMM_A); OutputWriteLong(val); } while (0)
 #define LD_SIS_IMM_HL(val)    do { OutputWrite2Bytes(0x40, 0x22); OutputWriteWord(val); } while (0)
