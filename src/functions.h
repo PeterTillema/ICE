@@ -40,4 +40,9 @@ typedef struct {
     uint8_t  pushBackwards;
 } function_t;
 
+typedef struct {
+    uint8_t retRegAndArgs;
+    uint8_t smallArgs;
+} c_function_t;
+
 #endif
