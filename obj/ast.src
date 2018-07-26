@@ -1,0 +1,244 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"..\SRC\AST.C"
+	.assume ADL=1
+	SEGMENT CODE
+;    1	#include "defines.h"
+;    2	#include "ast.h"
+;    3	
+;    4	#include "operator.h"
+;    5	#include "main.h"
+;    6	#include "functions.h"
+;    7	#include "errors.h"
+;    8	#include "stack.h"
+;    9	#include "output.h"
+;   10	#include "routines.h"
+;   11	#include "prescan.h"
+;   12	
+;   13	NODE *push2(NODE *top, element_t data) {
+_push2:
+	LD	HL,-3
+	CALL	__frameset
+;   14	    NODE *tempNode = (NODE*)calloc(1, sizeof(NODE));
+	LD	BC,15
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_calloc
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+;   15	    
+;   16	    tempNode->data = data;
+	LD	IY,(IX+-3)
+	LEA	DE,IY+0
+	LEA	HL,IX+9
+	LD	BC,6
+	LDIR	
+;   17	    tempNode->prev = top;
+	LD	BC,(IX+6)
+	LD	(IY+6),BC
+;   18	    top->sibling = tempNode;
+	LD	BC,(IX+-3)
+	LD	IY,(IX+6)
+	LD	(IY+12),BC
+;   19	    
+;   20	    return tempNode;
+	LD	HL,(IX+-3)
+;   21	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _push2 ***************************
+;Name                         Addr/Register   Size   Type
+;_calloc                             IMPORT  -----   function
+;tempNode                              IX-3      3   variable
+;data                                  IX+9      6   parameter
+;top                                   IX+6      3   parameter
+
+
+; Stack Frame Size: 18 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   22	
+;   23	NODE *insertData(NODE *top, element_t data, uint8_t index) {
+_insertData:
+	LD	HL,-4
+	CALL	__frameset
+;   24	    NODE *tempNode = (NODE*)calloc(1, sizeof(NODE));
+	LD	BC,15
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_calloc
+	POP	BC
+	POP	BC
+	LD	(IX+-4),HL
+;   25	    uint8_t temp;
+;   26	    
+;   27	    tempNode->data = data;
+	LD	IY,(IX+-4)
+	LEA	DE,IY+0
+	LEA	HL,IX+9
+	LD	BC,6
+	LDIR	
+;   28	    for (temp = 1; temp < index; temp++) {
+	LD	(IX+-1),1
+	JR	L_5
+L_3:
+;   29	        top = top->prev;
+	LD	IY,(IX+6)
+	LD	BC,(IY+6)
+	LD	(IX+6),BC
+;   30	        
+;   31	        if (top == NULL) {
+	LD	HL,BC
+	CALL	__icmpzero
+	JR	NZ,L_4
+	OR	A,A
+;   32	            return NULL;
+	SBC	HL,HL
+	JR	L_9
+;   33	        }
+;   34	    }
+L_4:
+	INC	(IX+-1)
+L_5:
+	LD	A,(IX+-1)
+	CP	A,(IX+15)
+	JR	C,L_3
+;   35	    if (top == NULL) {
+	LD	HL,(IX+6)
+	CALL	__icmpzero
+	JR	NZ,L_8
+	OR	A,A
+;   36	        return NULL;
+	SBC	HL,HL
+	JR	L_9
+;   37	    }
+L_8:
+;   38	    top->prev->sibling = tempNode;
+	LD	IY,(IX+6)
+	LD	IY,(IY+6)
+	LD	BC,(IX+-4)
+	LD	(IY+12),BC
+;   39	    tempNode->child = top;
+	LD	BC,(IX+6)
+	LD	IY,(IX+-4)
+	LD	(IY+9),BC
+;   40	    
+;   41	    return tempNode;
+	LD	HL,(IX+-4)
+;   42	}
+L_9:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _insertData ***************************
+;Name                         Addr/Register   Size   Type
+;_calloc                             IMPORT  -----   function
+;tempNode                              IX-4      3   variable
+;temp                                  IX-1      1   variable
+;index                                IX+15      1   parameter
+;data                                  IX+9      6   parameter
+;top                                   IX+6      3   parameter
+
+
+; Stack Frame Size: 22 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   43	
+;   44	NODE *parseNode(NODE *top) {
+_parseNode:
+	CALL	__frameset0
+	OR	A,A
+;   45	    return NULL;
+	SBC	HL,HL
+;   46	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _parseNode ***************************
+;Name                         Addr/Register   Size   Type
+;top                                   IX+6      3   parameter
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   47	
+;   48	NODE *reverseNode(NODE *top) {
+_reverseNode:
+	LD	HL,-9
+	CALL	__frameset
+;   49	    NODE *next = NULL;
+;   50	    NODE *curr = top;
+	LD	BC,(IX+6)
+	LD	(IX+-3),BC
+;   51	    NODE *prev = NULL;
+	LD	BC,0
+	LD	(IX+-6),BC
+;   52	    
+;   53	    while (curr != NULL) {
+	JR	L_11
+L_12:
+;   54	        next = curr->sibling;
+	LD	IY,(IX+-3)
+	LD	BC,(IY+12)
+	LD	(IX+-9),BC
+;   55	        curr->sibling = prev;
+	LD	BC,(IX+-6)
+	LD	(IY+12),BC
+;   56	        curr->prev = next;
+	LD	BC,(IX+-9)
+	LD	(IY+6),BC
+;   57	        prev = curr;
+	LD	BC,(IX+-3)
+	LD	(IX+-6),BC
+;   58	        curr = next;
+	LD	BC,(IX+-9)
+	LD	(IX+-3),BC
+;   59	    }
+L_11:
+	LD	HL,(IX+-3)
+	CALL	__icmpzero
+	JR	NZ,L_12
+;   60	    
+;   61	    return prev;
+	LD	HL,(IX+-6)
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _reverseNode ***************************
+;Name                         Addr/Register   Size   Type
+;next                                  IX-9      3   variable
+;prev                                  IX-6      3   variable
+;curr                                  IX-3      3   variable
+;top                                   IX+6      3   parameter
+
+
+; Stack Frame Size: 18 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	XREF _calloc:ROM
+	XREF __frameset0:ROM
+	XREF __frameset:ROM
+	XREF __icmpzero:ROM
+	XDEF _reverseNode
+	XDEF _parseNode
+	XDEF _insertData
+	XDEF _push2
+	END

@@ -88,18 +88,24 @@ void preScanProgram(void) {
                 } else if (tok == t2ByteTok) {
                     // AsmComp(
                     if (tok2 == tAsmComp) {
-                        ti_var_t tempProg = ice.inPrgm;
                         prog_t *newProg = GetProgramName();
-
+                        if (newProg->errorCode == VALID) {
+                            ti_var_t tempProg = ice.inPrgm;
 #ifdef CALCULATOR
-                        if ((ice.inPrgm = _open(newProg->prog))) {
+                            if ((ice.inPrgm = _open(newProg->prog))) {
 #else
-                        if ((ice.inPrgm = _open(str_dupcat(newProg->prog, ".8xp")))) {
+                            char *inName = str_dupcat(newProg->prog, ".8xp");
+			    if ((ice.inPrgm = _open(inName))) {
 #endif
-                            preScanProgram();
-                            _close(ice.inPrgm);
+                                preScanProgram();
+                                _close(ice.inPrgm);
+                            }
+#ifndef CALCULATOR
+                            free(inName);
+#endif
+                            ice.inPrgm = tempProg;
                         }
-                        ice.inPrgm = tempProg;
+                        free(newProg);
                         afterNewLine = true;
                     } else if (tok2 == tRandInt) {
                         prescan.amountOfRandRoutines++;
@@ -159,6 +165,7 @@ void preScanProgram(void) {
 }
 
 uint8_t getNameIconDescription(void) {
+    uint8_t res;
     prog_t *outputPrgm;
     
     if (_getc() != 0x2C) {
@@ -166,10 +173,12 @@ uint8_t getNameIconDescription(void) {
     }
     
     outputPrgm = GetProgramName();
-    if (outputPrgm->errorCode != VALID) {
-        return outputPrgm->errorCode;
+    if ((res = outputPrgm->errorCode) != VALID) {
+        free(outputPrgm);
+        return res;
     }
     strcpy(ice.outName, outputPrgm->prog);
+    free(outputPrgm);
     
     // Has icon
     if ((uint8_t)_getc() == tii && (uint8_t)_getc() == tString) {

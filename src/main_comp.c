@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
         // Display the size
         fprintf(stdout, "Succesfully compiled to %s.8xp!\n", ice.outName);
         fprintf(stdout, "Output size: %u bytes\n", totalSize);
-    } else {
+    } else if (res != W_VALID) {
         displayError(res);
     }
     return 0;

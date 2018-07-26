@@ -1,0 +1,260 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"..\SRC\STACK.C"
+	.assume ADL=1
+	SEGMENT BSS
+_p1:
+	DS	3
+_p2:
+	DS	3
+;    1	#include "defines.h"
+;    2	#include "stack.h"
+;    3	
+;    4	#include "ast.h"
+;    5	#include "parse.h"
+;    6	#include "main.h"
+;    7	#include "errors.h"
+;    8	#include "output.h"
+;    9	#include "operator.h"
+;   10	#include "functions.h"
+;   11	#include "routines.h"
+;   12	
+;   13	static uint24_t *p1;
+;   14	static uint24_t *p2;
+	SEGMENT CODE
+;   15	
+;   16	void push(uint24_t i) {
+_push:
+	CALL	__frameset0
+;   17	    *p1++ = i;
+	LD	HL,(_p1)
+	LD	BC,(IX+6)
+	LD	(HL),BC
+	LD	IY,(_p1)
+	LEA	BC,IY+3
+	LD	(_p1),BC
+;   18	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _push ***************************
+;Name                         Addr/Register   Size   Type
+;_p1                                 STATIC      3   variable
+;i                                     IX+6      3   parameter
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   19	
+;   20	uint24_t getNextIndex(void) {
+_getNextIndex:
+	LD	HL,-3
+	CALL	__frameset
+;   21	    return *(p2++);
+	LD	BC,(_p2)
+	LD	(IX+-3),BC
+	LD	IY,(_p2)
+	LEA	BC,IY+3
+	LD	(_p2),BC
+	LD	HL,(IX+-3)
+	LD	HL,(HL)
+;   22	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _getNextIndex ***************************
+;Name                         Addr/Register   Size   Type
+;_p2                                 STATIC      3   variable
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   23	
+;   24	uint24_t getIndexOffset(int24_t offset) {
+_getIndexOffset:
+	CALL	__frameset0
+;   25	    return *(p2 + offset);
+	LD	HL,(IX+6)
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,(_p2)
+	ADD	HL,BC
+	LD	HL,(HL)
+;   26	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _getIndexOffset ***************************
+;Name                         Addr/Register   Size   Type
+;_p2                                 STATIC      3   variable
+;offset                                IX+6      3   parameter
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   27	
+;   28	void removeIndexFromStack(int24_t index) {
+_removeIndexFromStack:
+	CALL	__frameset0
+;   29	    memmove(ice.stackStart + index, ice.stackStart + index + 1, (STACK_SIZE - index - 1) * sizeof(uint24_t));
+	LD	HL,(IX+6)
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,HL
+	LD	HL,500
+	OR	A,A
+	LD	DE,(IX+6)
+	SBC	HL,DE
+	LD	DE,HL
+	DEC	DE
+	LD	HL,DE
+	ADD	HL,HL
+	ADD	HL,DE
+	PUSH	HL
+	LD	HL,(_ice+10892)
+	LD	DE,BC
+	ADD	HL,DE
+	LD	IY,HL
+	LEA	DE,IY+3
+	PUSH	DE
+	LD	HL,(_ice+10892)
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_memmove
+	POP	BC
+	POP	BC
+	POP	BC
+;   30	    p2--;
+	LD	IY,(_p2)
+	LEA	BC,IY+-3
+	LD	(_p2),BC
+;   31	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _removeIndexFromStack ***************************
+;Name                         Addr/Register   Size   Type
+;_p2                                 STATIC      3   variable
+;_ice                                IMPORT  10958   variable
+;_memmove                            IMPORT  -----   function
+;index                                 IX+6      3   parameter
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   32	
+;   33	int24_t getCurrentIndex(void) {
+_getCurrentIndex:
+;   34	    return p2 - ice.stackStart;
+	LD	HL,(_p2)
+	LD	BC,(_ice+10892)
+	OR	A,A
+	SBC	HL,BC
+	LD	BC,3
+	CALL	__idivs
+;   35	}
+	RET	
+
+
+;**************************** _getCurrentIndex ***************************
+;Name                         Addr/Register   Size   Type
+;_ice                                IMPORT  10958   variable
+;_p2                                 STATIC      3   variable
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   36	
+;   37	uint24_t *getStackVar(uint8_t which) {
+_getStackVar:
+	CALL	__frameset0
+;   38	    if (which) {
+	LD	A,(IX+6)
+	OR	A,A
+	JR	Z,L_9
+;   39	        return p2;
+	LD	HL,(_p2)
+	JR	L_10
+;   40	    }
+L_9:
+;   41	    return p1;
+	LD	HL,(_p1)
+;   42	}
+L_10:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _getStackVar ***************************
+;Name                         Addr/Register   Size   Type
+;_p1                                 STATIC      3   variable
+;_p2                                 STATIC      3   variable
+;which                                 IX+6      1   parameter
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   43	
+;   44	void setStackValues(uint24_t* val1, uint24_t* val2) {
+_setStackValues:
+	CALL	__frameset0
+;   45	    p1 = val1;
+	LD	BC,(IX+6)
+	LD	(_p1),BC
+;   46	    p2 = val2;
+	LD	BC,(IX+9)
+	LD	(_p2),BC
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _setStackValues ***************************
+;Name                         Addr/Register   Size   Type
+;_p2                                 STATIC      3   variable
+;_p1                                 STATIC      3   variable
+;val2                                  IX+9      3   parameter
+;val1                                  IX+6      3   parameter
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	XREF _ice:ROM
+	XREF _memmove:ROM
+	XREF __idivs:ROM
+	XREF __frameset0:ROM
+	XREF __frameset:ROM
+	XDEF _setStackValues
+	XDEF _getStackVar
+	XDEF _getCurrentIndex
+	XDEF _removeIndexFromStack
+	XDEF _getIndexOffset
+	XDEF _getNextIndex
+	XDEF _push
+	END

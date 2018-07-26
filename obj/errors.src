@@ -1,0 +1,285 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"..\SRC\ERRORS.C"
+	.assume ADL=1
+	SEGMENT STRSECT
+L__0:
+	DB	"This token/function is not implemented (yet)"
+	DB	0
+L__1:
+	DB	"This token cannot be used at the start of the   line"
+	DB	0
+L__2:
+	DB	"This token doesn't have a condition"
+	DB	0
+L__3:
+	DB	"You used 'Else' outside an If-statement"
+	DB	0
+L__4:
+	DB	"You used 'End' outside a condition block"
+	DB	0
+L__5:
+	DB	"You have an invalid \")\", \",\", \"(\", \")\", \"}\" or \"]\""
+	DB	0
+L__6:
+	DB	"You have an invalid expression"
+	DB	0
+L__7:
+	DB	"Your icon should start with a quote"
+	DB	0
+L__8:
+	DB	"Invalid hexadecimal"
+	DB	0
+L__9:
+	DB	"ICE ERROR: please report it!"
+	DB	0
+L__10:
+	DB	"You have the wrong number or arguments"
+	DB	0
+L__11:
+	DB	"Unknown C function. If you are sure this              function exists, please contact me!"
+	DB	0
+L__12:
+	DB	"Subprogram not found"
+	DB	0
+L__13:
+	DB	"Compiling subprograms not supported"
+	DB	0
+L__14:
+	DB	"Invalid program name"
+	DB	0
+L__15:
+	DB	"Not enough memory for Lbl and Goto"
+	DB	0
+L__16:
+	DB	"Unable to open debug file"
+	DB	0
+L__17:
+	DB	"Error: not an ICE program"
+	DB	10,0
+L__18:
+	DB	"Error: not enough memory for variables"
+	DB	0
+L__19:
+	DB	"Warning: Unknown char in the string!"
+	DB	0
+L__20:
+	DB	"Warning: string has been automatically squish-ed!"
+	DB	0
+	SEGMENT DATA
+_errors:
+	DW24	L__0
+	DW24	L__1
+	DW24	L__2
+	DW24	L__3
+	DW24	L__4
+	DW24	L__5
+	DW24	L__6
+	DW24	L__7
+	DW24	L__8
+	DW24	L__9
+	DW24	L__10
+	DW24	L__11
+	DW24	L__12
+	DW24	L__13
+	DW24	L__14
+	DW24	L__15
+	DW24	L__16
+	DW24	L__17
+	DW24	L__18
+	DW24	L__19
+	DW24	L__20
+;    1	#include "defines.h"
+;    2	#include "errors.h"
+;    3	
+;    4	#include "ast.h"
+;    5	#include "stack.h"
+;    6	#include "parse.h"
+;    7	#include "main.h"
+;    8	#include "output.h"
+;    9	#include "operator.h"
+;   10	#include "functions.h"
+;   11	#include "routines.h"
+;   12	
+;   13	static const char *errors[] = {
+	SEGMENT CODE
+;   14	    "This token/function is not implemented (yet)",
+;   15	#ifdef CALCULATOR
+;   16	    "This token cannot be used at the start of the   line",
+;   17	#else
+;   18	    "This token cannot be used at the start of the line",
+;   19	#endif
+;   20	    "This token doesn't have a condition",
+;   21	    "You used 'Else' outside an If-statement",
+;   22	    "You used 'End' outside a condition block",
+;   23	    "You have an invalid \")\", \",\", \"(\", \")\", \"}\" or \"]\"",
+;   24	    "You have an invalid expression",
+;   25	    "Your icon should start with a quote",
+;   26	    "Invalid hexadecimal",
+;   27	    "ICE ERROR: please report it!",
+;   28	    "You have the wrong number or arguments",
+;   29	#ifdef CALCULATOR
+;   30	    "Unknown C function. If you are sure this              function exists, please contact me!",
+;   31	#else
+;   32	    "Unknown C function. If you are sure this function exists, please contact me!",
+;   33	#endif
+;   34	    "Subprogram not found",
+;   35	    "Compiling subprograms not supported",
+;   36	    "Invalid program name",
+;   37	    "Not enough memory for Lbl and Goto",
+;   38	    "Unable to open debug file",
+;   39	    "Error: not an ICE program\n",
+;   40	    "Error: not enough memory for variables",
+;   41	    "Warning: Unknown char in the string!",
+;   42	    "Warning: string has been automatically squish-ed!",
+;   43	};
+;   44	
+;   45	void displayLabelError(char *label) {
+_displayLabelError:
+	LD	HL,-30
+	CALL	__frameset
+;   46	    char buf[30];
+;   47	
+;   48	    sprintf(buf, "Label %.13s not found", label);
+	LD	BC,(IX+6)
+	PUSH	BC
+	LD	BC,L__21
+	PUSH	BC
+	PEA	IX+-30
+	CALL	_sprintf
+	POP	BC
+	POP	BC
+	POP	BC
+;   49	#ifdef CALCULATOR
+;   50	    gfx_SetTextFGColor(224);
+	LD	BC,224
+	PUSH	BC
+	CALL	_gfx_SetTextFGColor
+	POP	BC
+;   51	    displayMessageLineScroll(buf);
+	PEA	IX+-30
+	CALL	_displayMessageLineScroll
+	POP	BC
+;   52	#else
+;   53	    fprintf(stdout, "%s\n", buf);
+;   54	#endif
+;   55	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _displayLabelError ***************************
+;Name                         Addr/Register   Size   Type
+;_displayMessageLineScroll           IMPORT  -----   function
+;_gfx_SetTextFGColor                 IMPORT  -----   function
+;_sprintf                            IMPORT  -----   function
+;buf                                  IX-30     30   variable
+;label                                 IX+6      3   parameter
+
+
+; Stack Frame Size: 39 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	SEGMENT STRSECT
+L__21:
+	DB	"Label %.13s not found"
+	DB	0
+	SEGMENT CODE
+;   56	
+;   57	void displayError(uint8_t index) {
+_displayError:
+	LD	HL,-33
+	CALL	__frameset
+;   58	#ifdef CALCULATOR
+;   59	    char buf[30];
+;   60	    
+;   61	    gfx_SetTextFGColor(index < W_WRONG_CHAR ? 224 : 227);
+	LD	A,(IX+6)
+	CP	A,19
+	JR	NC,L_3
+	LD	BC,224
+	LD	(IX+-3),BC
+	JR	L_4
+L_3:
+	LD	BC,227
+	LD	(IX+-3),BC
+L_4:
+	LD	C,(IX+-3)
+	LD	B,0
+	PUSH	BC
+	CALL	_gfx_SetTextFGColor
+	POP	BC
+;   62	    displayMessageLineScroll(errors[index]);
+	LD	A,(IX+6)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_errors
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_displayMessageLineScroll
+	POP	BC
+;   63	
+;   64	    gfx_SetTextFGColor(0);
+	LD	BC,0
+	PUSH	BC
+	CALL	_gfx_SetTextFGColor
+	POP	BC
+;   65	    sprintf(buf, "Error at line %u", ice.currentLine);
+	LD	BC,(_ice+3386)
+	PUSH	BC
+	LD	BC,L__24
+	PUSH	BC
+	PEA	IX+-33
+	CALL	_sprintf
+	POP	BC
+	POP	BC
+	POP	BC
+;   66	    displayMessageLineScroll(buf);
+	PEA	IX+-33
+	CALL	_displayMessageLineScroll
+	POP	BC
+;   67	#else
+;   68	    fprintf(stdout, "%s\n", errors[index]);
+;   69	    fprintf(stdout, "Error at line %u\n", ice.currentLine);
+;   70	#endif
+;   71	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _displayError ***************************
+;Name                         Addr/Register   Size   Type
+;_ice                                IMPORT  10958   variable
+;_sprintf                            IMPORT  -----   function
+;_errors                             STATIC     63   variable
+;_displayMessageLineScroll           IMPORT  -----   function
+;_gfx_SetTextFGColor                 IMPORT  -----   function
+;buf                                  IX-33     30   variable
+;temp1                                 IX-3      3   variable
+;index                                 IX+6      1   parameter
+
+
+; Stack Frame Size: 42 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	SEGMENT STRSECT
+L__24:
+	DB	"Error at line %u"
+	DB	0
+	XREF _displayMessageLineScroll:ROM
+	XREF _ice:ROM
+	XREF _gfx_SetTextFGColor:ROM
+	XREF _sprintf:ROM
+	XREF __frameset:ROM
+	XDEF _displayError
+	XDEF _displayLabelError
+	END

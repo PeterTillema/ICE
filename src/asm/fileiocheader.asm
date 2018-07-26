@@ -3,4 +3,4 @@ segment data
 .def _FileiocheaderData
 
 _FileiocheaderData:
-	.db	0C0h, "FILEIOC", 0, 3
+	.db	0C0h, "FILEIOC", 0, 4

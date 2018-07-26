@@ -1,0 +1,6375 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"..\SRC\OPERATOR.C"
+	.assume ADL=1
+	SEGMENT TEXT
+_operators:
+	DB	4
+	DB	129
+	DB	128
+	DB	127
+	DB	64
+	DB	61
+	DB	60
+	DB	106
+	DB	107
+	DB	108
+	DB	109
+	DB	110
+	DB	111
+	DB	130
+	DB	131
+	DB	112
+	DB	113
+_operatorPrecedence:
+	DB	0
+	DB	6
+	DB	8
+	DB	8
+	DB	2
+	DB	1
+	DB	1
+	DB	3
+	DB	3
+	DB	3
+	DB	3
+	DB	3
+	DB	3
+	DB	5
+	DB	5
+	DB	4
+	DB	4
+_operatorPrecedence2:
+	DB	9
+	DB	6
+	DB	8
+	DB	8
+	DB	2
+	DB	1
+	DB	1
+	DB	3
+	DB	3
+	DB	3
+	DB	3
+	DB	3
+	DB	3
+	DB	5
+	DB	5
+	DB	4
+	DB	4
+_operatorCanSwap:
+	DB	0
+	DB	1
+	DB	1
+	DB	1
+	DB	1
+	DB	1
+	DB	1
+	DB	1
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	1
+	DB	1
+	DB	0
+	DB	1
+	DB	0
+	SEGMENT BSS
+_entry0:
+	DS	3
+_entry1:
+	DS	3
+_entry2:
+	DS	3
+_entry0_operand:
+	DS	3
+_entry1_operand:
+	DS	3
+_entry2_operand:
+	DS	3
+_oper:
+	DS	1
+_canOptimizeConcatenateStrings:
+	DS	1
+;    1	#include "defines.h"
+;    2	#include "parse.h"
+;    3	#include "ast.h"
+;    4	#include "operator.h"
+;    5	
+;    6	#include "parse.h"
+;    7	#include "main.h"
+;    8	#include "functions.h"
+;    9	#include "errors.h"
+;   10	#include "stack.h"
+;   11	#include "output.h"
+;   12	#include "routines.h"
+;   13	#include "prescan.h"
+;   14	
+;   15	#ifndef CALCULATOR
+;   16	extern const uint8_t AndData[];
+;   17	extern const uint8_t OrData[];
+;   18	extern const uint8_t XorData[];
+;   19	
+;   20	static uint8_t clz(uint24_t x) {
+;   21	    uint8_t n = 0;
+;   22	    if (!x) {
+;   23	        return 24;
+;   24	    }
+;   25	    while (!(x & (1 << 23))) {
+;   26	        n++;
+;   27	        x <<= 1;
+;   28	    }
+;   29	    return n;
+;   30	}
+;   31	
+;   32	void MultWithNumber(uint24_t num, uint8_t *programPtr, bool ChangeRegisters) {
+;   33	    (void)programPtr;
+;   34	    uint24_t bit;
+;   35	    uint8_t po2 = !(num & (num - 1));
+;   36	
+;   37	    if (24 - clz(num) + __builtin_popcount(num) - 2 * po2 < 10) {
+;   38	        if(!po2) {
+;   39	            if (!ChangeRegisters) {
+;   40	                PUSH_HL();
+;   41	                POP_DE();
+;   42	                SetRegHLToRegDE();
+;   43	            } else {
+;   44	                PUSH_DE();
+;   45	                POP_HL();
+;   46	                SetRegDEToRegHL();
+;   47	            }
+;   48	        }
+;   49	        for (bit = 1 << (22 - clz(num)); bit; bit >>= 1) {
+;   50	            ADD_HL_HL();
+;   51	            if(num & bit) {
+;   52	                ADD_HL_DE();
+;   53	            }
+;   54	        }
+;   55	    } else if (num < 0x100) {
+;   56	        if (ChangeRegisters) {
+;   57	            EX_DE_HL();
+;   58	        }
+;   59	        LD_A(num);
+;   60	        CALL(__imul_b);
+;   61	        ResetHL();
+;   62	    } else {
+;   63	        if (ChangeRegisters) {
+;   64	            EX_DE_HL();
+;   65	        }
+;   66	        LD_BC_IMM(num);
+;   67	        CALL(__imuls);
+;   68	        ResetHL();
+;   69	    }
+;   70	}
+;   71	#endif
+;   72	
+;   73	static void (*operatorFunctions[272])(void);
+;   74	static void (*operatorChainPushChainAnsFunctions[17])(void);
+;   75	const char operators[]              = {tStore, tDotIcon, tCrossIcon, tBoxIcon, tAnd, tXor, tOr, tEQ, tLT, tGT, tLE, tGE, tNE, tMul, tDiv, tAdd, tSub};
+;   76	const uint8_t operatorPrecedence[]  = {0, 6, 8, 8, 2, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 4, 4};
+;   77	const uint8_t operatorPrecedence2[] = {9, 6, 8, 8, 2, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 4, 4};
+;   78	const uint8_t operatorCanSwap[]     = {0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0}; // Used for operators which can swap the operands, i.e. A*B = B*A
+;   79	
+;   80	static element_t *entry0;
+;   81	static element_t *entry1;
+;   82	static element_t *entry2;
+;   83	static uint24_t entry0_operand;
+;   84	static uint24_t entry1_operand;
+;   85	static uint24_t entry2_operand;
+;   86	static uint8_t oper;
+;   87	static bool canOptimizeConcatenateStrings;
+	SEGMENT CODE
+;   88	
+;   89	bool comparePtrToTempStrings(uint24_t addr) {
+_comparePtrToTempStrings:
+	LD	HL,-3
+	CALL	__frameset
+;   90	    return (addr == prescan.tempStrings[TempString1] || addr == prescan.tempStrings[TempString2]);
+	LD	BC,(IX+6)
+	LD	HL,(_prescan+472)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_1
+	LD	HL,_prescan+475
+	LD	HL,(HL)
+	LD	BC,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_2
+L_1:
+;   91	}
+	LD	BC,1
+	LD	(IX+-3),BC
+	JR	L_3
+L_2:
+	LD	BC,0
+	LD	(IX+-3),BC
+L_3:
+	LD	A,(IX+-3)
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _comparePtrToTempStrings ***************************
+;Name                         Addr/Register   Size   Type
+;_prescan                            IMPORT   5833   variable
+;temp4                                 IX-3      3   variable
+;addr                                  IX+6      3   parameter
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   92	
+;   93	uint8_t getIndexOfOperator(uint8_t operator) {
+_getIndexOfOperator:
+	LD	HL,-3
+	CALL	__frameset
+;   94	    char *index;
+;   95	    if ((index = memchr(operators, operator, sizeof operators))) {
+	LD	BC,17
+	PUSH	BC
+	LD	A,(IX+6)
+	UEXT	HL
+	LD	L,A
+	PUSH	HL
+	LD	BC,_operators
+	PUSH	BC
+	CALL	_memchr
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+	CALL	__icmpzero
+	JR	Z,L_7
+;   96	        return index - operators + 1;
+	LD	BC,_operators
+	LD	HL,(IX+-3)
+	OR	A,A
+	SBC	HL,BC
+	INC	HL
+	LD	A,L
+	JR	L_8
+;   97	    }
+L_7:
+;   98	    return 0;
+	XOR	A,A
+;   99	}
+L_8:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _getIndexOfOperator ***************************
+;Name                         Addr/Register   Size   Type
+;_operators                          STATIC     17   variable
+;_memchr                             IMPORT  -----   function
+;index                                 IX-3      3   variable
+;operator                              IX+6      1   parameter
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  100	
+;  101	uint24_t executeOperator(uint24_t operand1, uint24_t operand2, uint8_t operator) {
+_executeOperator:
+	LD	HL,-12
+	CALL	__frameset
+;  102	    switch (operator) {
+	LD	A,(IX+12)
+	UEXT	HL
+	LD	L,A
+	CALL	__case8
+L__5:
+	DW	15
+	DB	60
+	DW24	L_19	
+
+	DB	61
+	DW24	L_25	
+
+	DB	106
+	DW24	L_18	
+
+	DB	107
+	DW24	L_17	
+
+	DB	108
+	DW24	L_16	
+
+	DB	109
+	DW24	L_15	
+
+	DB	110
+	DW24	L_14	
+
+	DB	111
+	DW24	L_13	
+
+	DB	112
+	DW24	L_9	
+
+	DB	113
+	DW24	L_10	
+
+	DB	127
+	DW24	L_36	
+
+	DB	128
+	DW24	L_35	
+
+	DB	129
+	DW24	L_34	
+
+	DB	130
+	DW24	L_11	
+
+	DB	131
+	DW24	L_12	
+
+	DW24	L_37	
+
+;  103	        case tAdd:
+L_9:
+;  104	            return operand1 + operand2;
+	LD	BC,(IX+9)
+	LD	HL,(IX+6)
+	ADD	HL,BC
+	JR	L_43
+;  105	        case tSub:
+L_10:
+;  106	            return operand1 - operand2;
+	LD	BC,(IX+9)
+	LD	HL,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JR	L_43
+;  107	        case tMul:
+L_11:
+;  108	            return operand1 * operand2;
+	LD	HL,(IX+6)
+	LD	BC,(IX+9)
+	CALL	__imulu
+	JR	L_43
+;  109	        case tDiv:
+L_12:
+;  110	            return operand1 / operand2;
+	LD	HL,(IX+6)
+	LD	BC,(IX+9)
+	CALL	__idivu
+	JR	L_43
+;  111	        case tNE:
+L_13:
+;  112	            return operand1 != operand2;
+	LD	BC,(IX+9)
+	LD	HL,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L__7
+	LD	B,1
+	JR	L__8
+L__7:
+	LD	B,0
+L__8:
+	LD	A,B
+	SEXT	HL
+	LD	L,B
+	JR	L_43
+;  113	        case tGE:
+L_14:
+;  114	            return operand1 >= operand2;
+	LD	BC,(IX+9)
+	LD	HL,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L__10
+	LD	B,1
+	JR	L__11
+L__10:
+	LD	B,0
+L__11:
+	LD	A,B
+	SEXT	HL
+	LD	L,B
+	JR	L_43
+;  115	        case tLE:
+L_15:
+;  116	            return operand1 <= operand2;
+	LD	BC,(IX+6)
+	LD	HL,(IX+9)
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L__13
+	LD	B,1
+	JR	L__14
+L__13:
+	LD	B,0
+L__14:
+	LD	A,B
+	SEXT	HL
+	LD	L,B
+	JR	L_43
+;  117	        case tGT:
+L_16:
+;  118	            return operand1 > operand2;
+	LD	BC,(IX+6)
+	LD	HL,(IX+9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L__16
+	LD	B,1
+	JR	L__17
+L__16:
+	LD	B,0
+L__17:
+	LD	A,B
+	SEXT	HL
+	LD	L,B
+	JR	L_43
+;  119	        case tLT:
+L_17:
+;  120	            return operand1 < operand2;
+	LD	BC,(IX+9)
+	LD	HL,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L__19
+	LD	B,1
+	JR	L__20
+L__19:
+	LD	B,0
+L__20:
+	LD	A,B
+	SEXT	HL
+	LD	L,B
+	JR	L_43
+;  121	        case tEQ:
+L_18:
+;  122	            return operand1 == operand2;
+	LD	BC,(IX+9)
+	LD	HL,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L__22
+	LD	B,1
+	JR	L__23
+L__22:
+	LD	B,0
+L__23:
+	LD	A,B
+	SEXT	HL
+	LD	L,B
+	JR	L_43
+;  123	        case tOr:
+L_19:
+;  124	            return operand1 || operand2;
+	LD	HL,(IX+6)
+	CALL	__icmpzero
+	JR	NZ,L_21
+	LD	HL,(IX+9)
+	CALL	__icmpzero
+	JR	Z,L_22
+L_21:
+;  125	        case tXor:
+	LD	BC,1
+	LD	(IX+-3),BC
+	JR	L_23
+L_22:
+	LD	BC,0
+	LD	(IX+-3),BC
+L_23:
+	LD	HL,(IX+-3)
+	JR	L_43
+L_25:
+;  126	            return !operand1 != !operand2;
+	LD	HL,(IX+6)
+	CALL	__icmpzero
+	JR	NZ,L_27
+	LD	BC,1
+	LD	(IX+-6),BC
+	JR	L_28
+L_27:
+	LD	BC,0
+	LD	(IX+-6),BC
+L_28:
+	LD	HL,(IX+9)
+	CALL	__icmpzero
+	JR	NZ,L_31
+	LD	BC,1
+	LD	(IX+-9),BC
+	JR	L_32
+L_31:
+	LD	BC,0
+	LD	(IX+-9),BC
+L_32:
+	LD	BC,(IX+-9)
+	LD	HL,(IX+-6)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L__29
+	LD	B,1
+	JR	L__30
+L__29:
+	LD	B,0
+L__30:
+	LD	A,B
+	SEXT	HL
+	LD	L,B
+	JR	L_43
+;  127	        case tDotIcon:
+L_34:
+;  128	            return operand1 & operand2;
+	LD	HL,(IX+6)
+	LD	BC,(IX+9)
+	CALL	__iand
+	JR	L_43
+;  129	        case tCrossIcon:
+L_35:
+;  130	            return operand1 | operand2;
+	LD	HL,(IX+6)
+	LD	BC,(IX+9)
+	CALL	__ior
+	JR	L_43
+;  131	        case tBoxIcon:
+L_36:
+;  132	            return operand1 ^ operand2;
+	LD	HL,(IX+6)
+	LD	BC,(IX+9)
+	CALL	__ixor
+	JR	L_43
+;  133	        default:
+L_37:
+;  134	            return operand1 && operand2;
+	LD	HL,(IX+6)
+	CALL	__icmpzero
+	JR	Z,L_40
+	LD	HL,(IX+9)
+	CALL	__icmpzero
+	JR	Z,L_40
+;  135	    }
+	LD	BC,1
+	LD	(IX+-12),BC
+	JR	L_41
+L_40:
+	LD	BC,0
+	LD	(IX+-12),BC
+L_41:
+	LD	HL,(IX+-12)
+;  136	}
+L_43:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _executeOperator ***************************
+;Name                         Addr/Register   Size   Type
+;temp42                               IX-12      3   variable
+;temp33                                IX-9      3   variable
+;temp29                                IX-6      3   variable
+;temp24                                IX-3      3   variable
+;operator                             IX+12      1   parameter
+;operand2                              IX+9      3   parameter
+;operand1                              IX+6      3   parameter
+
+
+; Stack Frame Size: 27 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  137	
+;  138	static void getEntryOperands() {
+_getEntryOperands:
+;  139	    entry0_operand = entry0->operand.num;
+	LD	IY,(_entry0)
+	LD	BC,(IY+3)
+	LD	(_entry0_operand),BC
+;  140	    entry1_operand = entry1->operand.num;
+	LD	IY,(_entry1)
+	LD	BC,(IY+3)
+	LD	(_entry1_operand),BC
+;  141	    entry2_operand = entry2->operand.num;
+	LD	IY,(_entry2)
+	LD	BC,(IY+3)
+	LD	(_entry2_operand),BC
+;  142	}
+	RET	
+
+
+;**************************** _getEntryOperands ***************************
+;Name                         Addr/Register   Size   Type
+;_entry2_operand                     STATIC      3   variable
+;_entry2                             STATIC      3   variable
+;_entry1_operand                     STATIC      3   variable
+;_entry1                             STATIC      3   variable
+;_entry0_operand                     STATIC      3   variable
+;_entry0                             STATIC      3   variable
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  143	
+;  144	static void swapEntries() {
+_swapEntries:
+	LD	HL,-3
+	CALL	__frameset
+;  145	    element_t *temp;
+;  146	
+;  147	    temp = entry1;
+	LD	BC,(_entry1)
+	LD	(IX+-3),BC
+;  148	    entry1 = entry2;
+	LD	BC,(_entry2)
+	LD	(_entry1),BC
+;  149	    entry2 = temp;
+	LD	BC,(IX+-3)
+	LD	(_entry2),BC
+;  150	    getEntryOperands();
+	CALL	_getEntryOperands
+;  151	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _swapEntries ***************************
+;Name                         Addr/Register   Size   Type
+;_entry2                             STATIC      3   variable
+;_entry1                             STATIC      3   variable
+;temp                                  IX-3      3   variable
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  152	
+;  153	uint8_t parseOperator(element_t *outputPrevPrevPrev, element_t *outputPrevPrev, element_t *outputPrev, element_t *outputCurr, bool canOptimizeStrings) {
+_parseOperator:
+	LD	HL,-4
+	CALL	__frameset
+;  154	    uint8_t type1, type2;
+;  155	    
+;  156	    type1 = outputPrevPrev->type;
+	LD	IY,(IX+9)
+	LD	A,(IY+1)
+	LD	(IX+-2),A
+;  157	    type2 = outputPrev->type;
+	LD	IY,(IX+12)
+	LD	A,(IY+1)
+	LD	(IX+-1),A
+;  158	    canOptimizeConcatenateStrings = canOptimizeStrings;
+	LD	A,(IX+18)
+	LD	(_canOptimizeConcatenateStrings),A
+;  159	
+;  160	    oper = outputCurr->operand.num;
+	LD	IY,(IX+15)
+	LD	A,(IY+3)
+	LD	(_oper),A
+;  161	
+;  162	    // Get the right arguments
+;  163	    entry0 = outputPrevPrevPrev;
+	LD	BC,(IX+6)
+	LD	(_entry0),BC
+;  164	    entry1 = outputPrevPrev;
+	LD	BC,(IX+9)
+	LD	(_entry1),BC
+;  165	    entry2 = outputPrev;
+	LD	BC,(IX+12)
+	LD	(_entry2),BC
+;  166	    getEntryOperands();
+	CALL	_getEntryOperands
+;  167	
+;  168	    ClearAnsFlags();
+	CALL	_ClearAnsFlags
+;  169	    
+;  170	    if (outputPrevPrev->isString && outputPrev->isString && type2 == TYPE_NUMBER && oper == tStore) {
+	LD	IY,(IX+9)
+	LD	A,(IY+0)
+	OR	A,A
+	JR	NZ,L__37
+	LD	A,1
+	JR	L__38
+L__37:
+	XOR	A,A
+L__38:
+	LD	(IX+-3),A
+	OR	A,A
+	JR	NZ,L_125
+	LD	IY,(IX+12)
+	LD	A,(IY+0)
+	OR	A,A
+	JR	Z,L_125
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_125
+	LD	A,(_oper)
+	CP	A,4
+	JR	NZ,L_125
+;  171	        StoStringString();
+	CALL	_StoStringString
+;  172	    } else if (outputPrevPrev->isString && outputPrev->isString && oper == tAdd) {
+	JR	L_126
+L_125:
+	LD	A,(IX+-3)
+	OR	A,A
+	JR	NZ,L_123
+	LD	IY,(IX+12)
+	LD	A,(IY+0)
+	OR	A,A
+	JR	Z,L_123
+	LD	A,(_oper)
+	CP	A,112
+	JR	NZ,L_123
+;  173	        AddStringString();
+	CALL	_AddStringString
+;  174	    } else if (outputPrevPrev->isString && type2 == TYPE_VARIABLE && oper == tStore) {
+	JR	L_126
+L_123:
+	LD	A,(IX+-3)
+	OR	A,A
+	JR	NZ,L_121
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_121
+	LD	A,(_oper)
+	CP	A,4
+	JR	NZ,L_121
+;  175	        StoStringVariable();
+	CALL	_StoStringVariable
+;  176	    } else {
+	JR	L_126
+L_121:
+;  177	        // Only call the function if both types are valid
+;  178	        if ((type1 == type2 && (type1 == TYPE_NUMBER || type1 == TYPE_CHAIN_ANS)) ||
+	LD	A,(IX+-2)
+	CP	A,(IX+-1)
+	JR	NZ,L_58
+	LD	A,(IX+-2)
+	OR	A,A
+	JR	Z,L_62
+	LD	A,(IX+-2)
+	CP	A,2
+	JR	Z,L_62
+L_58:
+;  179	            (oper == tStore && (type2 != TYPE_VARIABLE  && !(type2 == TYPE_FUNCTION && outputPrev->operand.num == 0x010108))) ||
+	LD	A,(_oper)
+	CP	A,4
+	JR	NZ,L_59
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	Z,L_59
+	LD	A,(IX+-1)
+	CP	A,127
+	JR	NZ,L_62
+	LD	IY,(IX+12)
+	LD	HL,(IY+3)
+	LD	BC,65800
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_62
+L_59:
+;  180	            (type2 == TYPE_CHAIN_PUSH) ||
+	LD	A,(IX+-1)
+	CP	A,3
+	JR	Z,L_62
+;  181	            (type1 == TYPE_STRING || type2 == TYPE_STRING)
+	LD	A,(IX+-2)
+	CP	A,4
+	JR	Z,L_62
+	LD	A,(IX+-1)
+	CP	A,4
+	JR	NZ,L_66
+;  182	        ) {
+L_62:
+;  183	            return E_SYNTAX;
+	LD	A,6
+	JR	L_127
+;  184	        }
+L_66:
+;  185	
+;  186	        // Store to a pointer
+;  187	        if (oper == tStore && type2 == TYPE_FUNCTION) {
+	LD	A,(_oper)
+	CP	A,4
+	JR	NZ,L_80
+	LD	A,(IX+-1)
+	CP	A,127
+	JR	NZ,L_80
+;  188	            type2 = TYPE_CHAIN_ANS;
+	LD	(IX+-1),2
+;  189	            type1 = outputPrevPrevPrev->type;
+	LD	IY,(IX+6)
+	LD	A,(IY+1)
+	LD	(IX+-2),A
+;  190	
+;  191	            // If string->pointer, do it immediately
+;  192	            if (type1 == TYPE_STRING) {
+	CP	A,4
+	JR	NZ,L_80
+;  193	                StoStringChainAns();
+	CALL	_StoStringChainAns
+;  194	                return VALID;
+	LD	A,255
+	JR	L_127
+;  195	            }
+;  196	        }
+L_80:
+;  197	
+;  198	        if (type1 == TYPE_CHAIN_PUSH) {
+	LD	A,(IX+-2)
+	CP	A,3
+	JR	NZ,L_79
+;  199	            if (type2 != TYPE_CHAIN_ANS) {
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	Z,L_68
+;  200	                return E_ICE_ERROR;
+	LD	A,9
+	JR	L_127
+;  201	            }
+L_68:
+;  202	
+;  203	            // Call the right CHAIN_PUSH | CHAIN_ANS function
+;  204	            (*operatorChainPushChainAnsFunctions[getIndexOfOperator(oper) - 1])();
+	LD	A,(_oper)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_getIndexOfOperator
+	POP	BC
+	UEXT	HL
+	LD	L,A
+	DEC	HL
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_operatorChainPushChainAnsFunctions
+	ADD	HL,BC
+	LD	IY,(HL)
+	CALL	__indcall
+;  205	        } else {
+	JR	L_87
+L_79:
+;  206	            // If you have something like "A or 1", the output is always 1, so we can remove the "ld hl, (ix+A)"
+;  207	            ice.programPtrBackup = ice.programPtr;
+	LD	BC,(_ice+60)
+	LD	(_ice+63),BC
+;  208	            ice.dataOffsetElementsBackup = ice.dataOffsetElements;
+	LD	BC,(_ice+3077)
+	LD	(_ice+3080),BC
+;  209	
+;  210	            // Swap operands for compiler optimizations
+;  211	            if (oper == tLE || oper == tLT || (operatorCanSwap[getIndexOfOperator(oper) - 1] && (type1 == TYPE_NUMBER || type2 == TYPE_CHAIN_ANS))) {
+	LD	A,(_oper)
+	CP	A,109
+	JR	Z,L_76
+	LD	A,(_oper)
+	CP	A,107
+	JR	Z,L_76
+	LD	A,(_oper)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_getIndexOfOperator
+	POP	BC
+	UEXT	HL
+	LD	L,A
+	DEC	HL
+	LD	BC,_operatorCanSwap
+	ADD	HL,BC
+	LD	A,(HL)
+	OR	A,A
+	JR	Z,L_77
+	LD	A,(IX+-2)
+	OR	A,A
+	JR	Z,L_76
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_77
+L_76:
+;  212	                uint8_t temp = type1;
+	LD	A,(IX+-2)
+	LD	(IX+-4),A
+;  213	
+;  214	                type1 = type2;
+	LD	A,(IX+-1)
+	LD	(IX+-2),A
+;  215	                type2 = temp;
+	LD	A,(IX+-4)
+	LD	(IX+-1),A
+;  216	                swapEntries();
+	CALL	_swapEntries
+;  217	                if (oper == tLE) {
+	LD	A,(_oper)
+	CP	A,109
+	JR	NZ,L_75
+;  218	                    oper = tGE;
+	LD	A,110
+	LD	(_oper),A
+;  219	                } else if (oper == tLT) {
+	JR	L_77
+L_75:
+	LD	A,(_oper)
+	CP	A,107
+	JR	NZ,L_77
+;  220	                    oper = tGT;
+	LD	A,108
+	LD	(_oper),A
+;  221	                }
+;  222	            }
+L_77:
+;  223	
+;  224	            // Call the right function!
+;  225	            (*operatorFunctions[((getIndexOfOperator(oper) - 1) * 9) + (type1 * 3) + type2])();
+	LD	A,(_oper)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_getIndexOfOperator
+	POP	BC
+	UEXT	HL
+	LD	L,A
+	DEC	HL
+	LD	A,9
+	CALL	__imul_b
+	LD	DE,HL
+	LD	A,(IX+-2)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,DE
+	LD	BC,HL
+	LD	A,(IX+-1)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,BC
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_operatorFunctions
+	ADD	HL,BC
+	LD	IY,(HL)
+	CALL	__indcall
+;  226	        }
+L_87:
+;  227	
+;  228	        // If the operator is /, the routine always ends with call __idvrmu \ expr.outputReturnRegister == REGISTER_DE
+;  229	        if (oper == tDiv && !(expr.outputRegister == REGISTER_A && entry2_operand == 1)) {
+	LD	A,(_oper)
+	CP	A,131
+	JR	NZ,L_96
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_86
+	LD	BC,1
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_96
+L_86:
+;  230	            CALL(__idvrmu);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,324
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  231	            ResetHL();
+	CALL	_ResetHL
+;  232	            ResetDE();
+	CALL	_ResetDE
+;  233	            reg.AIsNumber = true;
+	LD	A,1
+	LD	(_reg+6),A
+;  234	            reg.AIsVariable = 0;
+	XOR	A,A
+	LD	(_reg+7),A
+;  235	            reg.AValue = 0;
+	XOR	A,A
+	LD	(_reg+13),A
+;  236	            expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  237	        }
+L_96:
+;  238	
+;  239	        // If the operator is *, and both operands not a number, it always ends with call __imuls
+;  240	        if (oper == tMul && type1 != TYPE_NUMBER && type2 != TYPE_NUMBER && !(expr.outputRegister == REGISTER_A && entry2_operand < 256)) {
+	LD	A,(_oper)
+	CP	A,130
+	JR	NZ,L_114
+	LD	A,(IX+-2)
+	OR	A,A
+	JR	Z,L_114
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	Z,L_114
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_95
+	LD	BC,256
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_114
+L_95:
+;  241	            CALL(__imuls);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,340
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  242	            ResetHL();
+	CALL	_ResetHL
+;  243	        }
+L_114:
+;  244	
+;  245	        if (expr.outputRegister != REGISTER_A && !(type2 == TYPE_NUMBER && entry2_operand < 256)) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	Z,L_119
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_113
+	LD	BC,256
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_119
+L_113:
+;  246	            if (oper == tDotIcon) {
+	LD	A,(_oper)
+	CP	A,129
+	JR	NZ,L_112
+;  247	                CALL(__iand);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,308
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  248	                ResetHL();
+	CALL	_ResetHL
+;  249	            } else if (oper == tBoxIcon) {
+	JR	L_119
+L_112:
+	LD	A,(_oper)
+	CP	A,127
+	JR	NZ,L_110
+;  250	                CALL(__ixor);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,408
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  251	                ResetHL();
+	CALL	_ResetHL
+;  252	            } else if (oper == tCrossIcon) {
+	JR	L_119
+L_110:
+	LD	A,(_oper)
+	CP	A,128
+	JR	NZ,L_119
+;  253	                CALL(__ior);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,360
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  254	                ResetHL();
+	CALL	_ResetHL
+;  255	            }
+;  256	        }
+L_119:
+;  257	
+;  258	        // If the operator is -, and the second operand not a number, it always ends with or a, a \ sbc hl, de
+;  259	        if (oper == tSub && type2 != TYPE_NUMBER) {
+	LD	A,(_oper)
+	CP	A,113
+	JR	NZ,L_126
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	Z,L_126
+;  260	            OR_A_SBC_HL_DE();
+	LD	BC,5434807
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  261	        }
+;  262	    }
+L_126:
+;  263	
+;  264	    expr.outputRegister = expr.outputReturnRegister;
+	LD	A,(_expr+11)
+	LD	(_expr+10),A
+;  265	    return VALID;
+	LD	A,255
+;  266	}
+L_127:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _parseOperator ***************************
+;Name                         Addr/Register   Size   Type
+;_reg                                IMPORT     28   variable
+;_ResetDE                            IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_expr                               IMPORT     16   variable
+;_operatorFunctions                  STATIC    816   variable
+;_operatorCanSwap                    STATIC     17   variable
+;_ice                                IMPORT  10958   variable
+;_getIndexOfOperator                 IMPORT  -----   function
+;_operatorChainPushChainAnsFunctions      STATIC     51   variable
+;_StoStringChainAns                  IMPORT  -----   function
+;_StoStringVariable                  IMPORT  -----   function
+;_AddStringString                    IMPORT  -----   function
+;_StoStringString                    IMPORT  -----   function
+;_ClearAnsFlags                      IMPORT  -----   function
+;_entry2                             STATIC      3   variable
+;_entry1                             STATIC      3   variable
+;_entry0                             STATIC      3   variable
+;_oper                               STATIC      1   variable
+;_canOptimizeConcatenateStrings      STATIC      1   variable
+;temp                                  IX-4      1   variable
+;G_1                                   IX-3      1   variable
+;type1                                 IX-2      1   variable
+;type2                                 IX-1      1   variable
+;canOptimizeStrings                   IX+18      1   parameter
+;outputCurr                           IX+15      3   parameter
+;outputPrev                           IX+12      3   parameter
+;outputPrevPrev                        IX+9      3   parameter
+;outputPrevPrevPrev                    IX+6      3   parameter
+
+
+; Stack Frame Size: 25 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  267	
+;  268	void LD_HL_STRING(uint24_t stringPtr, uint8_t type) {
+_LD_HL_STRING:
+	CALL	__frameset0
+;  269	    if ((type == TYPE_STRING) && (stringPtr != prescan.tempStrings[TempString1] && stringPtr != prescan.tempStrings[TempString2])) {
+	LD	A,(IX+9)
+	CP	A,4
+	JR	NZ,L_133
+	LD	BC,(IX+6)
+	LD	HL,(_prescan+472)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_133
+	LD	HL,_prescan+475
+	LD	HL,(HL)
+	LD	BC,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_133
+;  270	        ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  271	    }
+L_133:
+;  272	    LD_HL_IMM(stringPtr);
+	LD	BC,(IX+6)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  273	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _LD_HL_STRING ***************************
+;Name                         Addr/Register   Size   Type
+;_LoadRegValue                       IMPORT  -----   function
+;_ProgramPtrToOffsetStack            IMPORT  -----   function
+;_prescan                            IMPORT   5833   variable
+;type                                  IX+9      1   parameter
+;stringPtr                             IX+6      3   parameter
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  274	
+;  275	void OperatorError(void) {
+_OperatorError:
+;  276	    // This *should* never be triggered
+;  277	    displayError(E_ICE_ERROR);
+	LD	BC,9
+	PUSH	BC
+	CALL	_displayError
+	POP	BC
+;  278	}
+	RET	
+
+
+;**************************** _OperatorError ***************************
+;Name                         Addr/Register   Size   Type
+;_displayError                       IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  279	void StoChainAnsVariable(void) {
+_StoChainAnsVariable:
+;  280	    MaybeAToHL();
+	CALL	_MaybeAToHL
+;  281	    if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_141
+;  282	        LD_IX_OFF_IND_HL(entry2_operand);
+	LD	BC,12253
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,1
+	LD	(_reg+1),A
+	LD	A,(_entry2_operand)
+	LD	(_reg+10),A
+	JR	L_142
+;  283	    } else {
+L_141:
+;  284	        LD_IX_OFF_IND_DE(entry2_operand);
+	LD	BC,8157
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,1
+	LD	(_reg+3),A
+	LD	A,(_entry2_operand)
+	LD	(_reg+11),A
+;  285	    }
+;  286	}
+L_142:
+	RET	
+
+
+;**************************** _StoChainAnsVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_reg                                IMPORT     28   variable
+;_entry2_operand                     STATIC      3   variable
+;_OutputWriteByte                    IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_MaybeAToHL                         IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  287	void StoNumberVariable(void) {
+_StoNumberVariable:
+;  288	    LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  289	    StoChainAnsVariable();
+	CALL	_StoChainAnsVariable
+;  290	}
+	RET	
+
+
+;**************************** _StoNumberVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegValue                       IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  291	void StoVariableVariable(void) {
+_StoVariableVariable:
+;  292	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  293	    StoChainAnsVariable();
+	CALL	_StoChainAnsVariable
+;  294	}
+	RET	
+
+
+;**************************** _StoVariableVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  295	void StoNumberChainAns(void) {
+_StoNumberChainAns:
+	LD	HL,-2
+	CALL	__frameset
+;  296	    uint8_t type = entry1->type;
+	LD	IY,(_entry1)
+	LD	A,(IY+1)
+	LD	(IX+-2),A
+;  297	    uint8_t mask = entry2->mask;
+	LD	IY,(_entry2)
+	LD	A,(IY+2)
+	LD	(IX+-1),A
+;  298	    
+;  299	    if (type == TYPE_NUMBER) {
+	LD	A,(IX+-2)
+	OR	A,A
+	JR	NZ,L_172
+;  300	        if (mask == TYPE_MASK_U8) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_166
+;  301	            LD_A(entry0_operand);
+	LD	BC,62
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry0_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,1
+	LD	(_reg+6),A
+	XOR	A,A
+;  302	            LD_ADDR_A(entry1_operand);
+	LD	BC,50
+	PUSH	BC
+	LD	(_reg+7),A
+	LD	A,(_entry0_operand)
+	LD	(_reg+13),A
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_188
+;  303	        } else if (mask == TYPE_MASK_U16) {
+L_166:
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_164
+;  304	            LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_188
+;  305	        } else {
+L_164:
+;  306	            LD_HL_IMM(entry0_operand);
+	LD	BC,(_entry0_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  307	            LD_ADDR_HL(entry1_operand);
+	LD	BC,34
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_188
+;  308	        }
+;  309	    } else if (type == TYPE_VARIABLE) {
+L_172:
+	LD	A,(IX+-2)
+	CP	A,1
+	JR	NZ,L_170
+;  310	        LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_188
+;  311	    } else {
+L_170:
+;  312	        AnsToHL();
+	CALL	_AnsToHL
+;  313	    }
+L_188:
+;  314	    if (type != TYPE_NUMBER) {
+	LD	A,(IX+-2)
+	OR	A,A
+	JR	Z,L_192
+;  315	        if (mask == TYPE_MASK_U8) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_186
+;  316	            LD_A(entry0_operand);
+	LD	BC,62
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry0_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,1
+	LD	(_reg+6),A
+	XOR	A,A
+;  317	            LD_HL_A();
+	LD	BC,119
+	PUSH	BC
+	LD	(_reg+7),A
+	LD	A,(_entry0_operand)
+	LD	(_reg+13),A
+	CALL	_OutputWriteByte
+	POP	BC
+	JR	L_192
+;  318	        } else if (mask == TYPE_MASK_U24) {
+L_186:
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_192
+;  319	            LD_DE_IMM(entry0_operand);
+	LD	BC,(_entry0_operand)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  320	            LD_HL_DE();
+	LD	BC,8173
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  321	            expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  322	        }
+;  323	    }
+L_192:
+;  324	    if (mask == TYPE_MASK_U16) {
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_193
+;  325	        LD_DE_IMM(entry0_operand);
+	LD	BC,(_entry0_operand)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  326	    }
+L_193:
+;  327	    StoToChainAns();
+	CALL	_StoToChainAns
+;  328	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _StoNumberChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_StoToChainAns                      IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+;_LoadRegVariable                    IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_entry1_operand                     STATIC      3   variable
+;_OutputWriteLong                    IMPORT  -----   function
+;_reg                                IMPORT     28   variable
+;_entry0_operand                     STATIC      3   variable
+;_OutputWriteByte                    IMPORT  -----   function
+;_entry2                             STATIC      3   variable
+;_entry1                             STATIC      3   variable
+;type                                  IX-2      1   variable
+;mask                                  IX-1      1   variable
+
+
+; Stack Frame Size: 8 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  329	void StoVariableChainAns(void) {
+_StoVariableChainAns:
+	LD	HL,-2
+	CALL	__frameset
+;  330	    uint8_t type = entry1->type;
+	LD	IY,(_entry1)
+	LD	A,(IY+1)
+	LD	(IX+-2),A
+;  331	    uint8_t mask = entry2->mask;
+	LD	IY,(_entry2)
+	LD	A,(IY+2)
+	LD	(IX+-1),A
+;  332	
+;  333	    if (type == TYPE_NUMBER) {
+	LD	A,(IX+-2)
+	OR	A,A
+	JR	NZ,L_216
+;  334	        if (mask == TYPE_MASK_U8) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_210
+;  335	            LD_A_IND_IX_OFF(entry0_operand);
+	LD	A,(_entry0_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,4
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  336	            LD_ADDR_A(entry1_operand);
+	LD	BC,50
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_232
+;  337	        } else if (mask == TYPE_MASK_U16) {
+L_210:
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_208
+;  338	            LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_232
+;  339	        } else {
+L_208:
+;  340	            LD_HL_IND_IX_OFF(entry0_operand);
+	LD	A,(_entry0_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  341	            LD_ADDR_HL(entry1_operand);
+	LD	BC,34
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_232
+;  342	        }
+;  343	    } else if (type == TYPE_VARIABLE) {
+L_216:
+	LD	A,(IX+-2)
+	CP	A,1
+	JR	NZ,L_214
+;  344	        LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_232
+;  345	    } else {
+L_214:
+;  346	        AnsToHL();
+	CALL	_AnsToHL
+;  347	    }
+L_232:
+;  348	    if (type != TYPE_NUMBER) {
+	LD	A,(IX+-2)
+	OR	A,A
+	JR	Z,L_236
+;  349	        if (mask == TYPE_MASK_U8) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_230
+;  350	            LD_A_IND_IX_OFF(entry0_operand);
+	LD	A,(_entry0_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,4
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  351	            LD_HL_A();
+	LD	BC,119
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	JR	L_236
+;  352	        } else if (mask == TYPE_MASK_U24) {
+L_230:
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_236
+;  353	            LD_DE_IND_IX_OFF(entry0_operand);
+	LD	A,(_entry0_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  354	            LD_HL_DE();
+	LD	BC,8173
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  355	            expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  356	        }
+;  357	    }
+L_236:
+;  358	    if (mask == TYPE_MASK_U16) {
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_237
+;  359	        LD_DE_IND_IX_OFF(entry0_operand);
+	LD	A,(_entry0_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  360	    }
+L_237:
+;  361	    StoToChainAns();
+	CALL	_StoToChainAns
+;  362	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _StoVariableChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_StoToChainAns                      IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+;_entry1_operand                     STATIC      3   variable
+;_OutputWriteLong                    IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_entry0_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_entry2                             STATIC      3   variable
+;_entry1                             STATIC      3   variable
+;type                                  IX-2      1   variable
+;mask                                  IX-1      1   variable
+
+
+; Stack Frame Size: 8 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  363	void StoChainPushChainAns(void) {
+_StoChainPushChainAns:
+	LD	HL,-1
+	CALL	__frameset
+;  364	    if (entry1->type == TYPE_CHAIN_ANS) {
+	LD	IY,(_entry1)
+	LD	A,(IY+1)
+	CP	A,2
+	JR	NZ,L_250
+;  365	        AnsToHL();
+	CALL	_AnsToHL
+;  366	        POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+;  367	        if (entry2->mask == TYPE_MASK_U8) {
+	LD	IY,(_entry2)
+	LD	A,(IY+2)
+	LD	(IX+-1),A
+	OR	A,A
+	JR	NZ,L_246
+;  368	            OutputWrite2Bytes(OP_LD_A_E, OP_LD_HL_A);
+	LD	BC,30587
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  369	        } else if (entry2->mask == TYPE_MASK_U24) {
+	JR	L_248
+L_246:
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_248
+;  370	            LD_HL_DE();
+	LD	BC,8173
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  371	            expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  372	        }
+L_248:
+;  373	        StoToChainAns();
+	CALL	_StoToChainAns
+;  374	    }
+;  375	}
+L_250:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _StoChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_StoToChainAns                      IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_entry2                             STATIC      3   variable
+;_ResetDE                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+;_entry1                             STATIC      3   variable
+;G_4                                   IX-1      1   variable
+
+
+; Stack Frame Size: 7 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  376	void StoChainAnsChainAns(void) {
+_StoChainAnsChainAns:
+	LD	HL,-2
+	CALL	__frameset
+;  377	    uint8_t type = entry1->type;
+	LD	IY,(_entry1)
+	LD	A,(IY+1)
+	LD	(IX+-2),A
+;  378	    uint8_t mask = entry2->mask;
+	LD	IY,(_entry2)
+	LD	A,(IY+2)
+	LD	(IX+-1),A
+;  379	
+;  380	    if (type == TYPE_NUMBER) {
+	LD	A,(IX+-2)
+	OR	A,A
+	JR	NZ,L_298
+;  381	        if (mask == TYPE_MASK_U8) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_273
+;  382	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_257
+;  383	                LD_A_L();
+	LD	BC,125
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_260
+;  384	            } else if (expr.outputRegister == REGISTER_DE) {
+L_257:
+	LD	A,(_expr+10)
+	CP	A,1
+	JR	NZ,L_260
+;  385	                LD_A_E();
+	LD	BC,123
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  386	            }
+L_260:
+;  387	            LD_ADDR_A(entry1_operand);
+	LD	BC,50
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_299
+;  388	        } else if (mask == TYPE_MASK_U16) {
+L_273:
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_271
+;  389	            AnsToDE();
+	CALL	_AnsToDE
+;  390	            LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_299
+;  391	        } else {
+L_271:
+;  392	            MaybeAToHL();
+	CALL	_MaybeAToHL
+;  393	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_268
+;  394	                LD_ADDR_HL(entry1_operand);
+	LD	BC,34
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_269
+;  395	            } else {
+L_268:
+;  396	                LD_ADDR_DE(entry1_operand);
+	LD	BC,21485
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  397	            }
+L_269:
+;  398	            expr.outputReturnRegister = expr.outputRegister;
+	LD	A,(_expr+10)
+	LD	(_expr+11),A
+;  399	        }
+;  400	    } else if (type == TYPE_VARIABLE) {
+	JR	L_299
+L_298:
+	LD	A,(IX+-2)
+	CP	A,1
+	JR	NZ,L_299
+;  401	        if (mask == TYPE_MASK_U8) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_295
+;  402	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_280
+;  403	                LD_A_L();
+	LD	BC,125
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_283
+;  404	            } else if (expr.outputRegister == REGISTER_DE) {
+L_280:
+	LD	A,(_expr+10)
+	CP	A,1
+	JR	NZ,L_283
+;  405	                LD_A_E();
+	LD	BC,123
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  406	            }
+L_283:
+;  407	            LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  408	            LD_HL_A();
+	LD	BC,119
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	JR	L_299
+;  409	        } else {
+L_295:
+;  410	            AnsToDE();
+	CALL	_AnsToDE
+;  411	            LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  412	            if (mask == TYPE_MASK_U24) {
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_299
+;  413	                LD_HL_DE();
+	LD	BC,8173
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  414	                expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  415	            }
+;  416	        }
+;  417	    }
+L_299:
+;  418	    StoToChainAns();
+	CALL	_StoToChainAns
+;  419	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _StoChainAnsChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_StoToChainAns                      IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_LoadRegVariable                    IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_MaybeAToHL                         IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_AnsToDE                            IMPORT  -----   function
+;_entry1_operand                     STATIC      3   variable
+;_OutputWriteLong                    IMPORT  -----   function
+;_ResetA                             IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_entry2                             STATIC      3   variable
+;_entry1                             STATIC      3   variable
+;type                                  IX-2      1   variable
+;mask                                  IX-1      1   variable
+
+
+; Stack Frame Size: 8 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  420	void StoStringChainAns(void) {
+_StoStringChainAns:
+	LD	HL,-5
+	CALL	__frameset
+;  421	    uint8_t type = entry1->type;
+	LD	IY,(_entry1)
+	LD	A,(IY+1)
+	LD	(IX+-2),A
+;  422	    uint8_t mask = entry2->mask;
+	LD	IY,(_entry2)
+	LD	A,(IY+2)
+	LD	(IX+-1),A
+;  423	
+;  424	    if (type == TYPE_NUMBER) {
+	LD	A,(IX+-2)
+	OR	A,A
+	JR	NZ,L_345
+;  425	        LD_HL_STRING(entry0_operand, entry0->type);
+	LD	IY,(_entry0)
+	LD	C,(IY+1)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(_entry0_operand)
+	PUSH	BC
+	CALL	_LD_HL_STRING
+	POP	BC
+	POP	BC
+;  426	        if (mask == TYPE_MASK_U24) {
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_316
+;  427	            LD_ADDR_HL(entry1_operand);
+	LD	BC,34
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_346
+;  428	        } else {
+L_316:
+;  429	            LD_A_L();
+	LD	BC,125
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  430	            LD_ADDR_A(entry1_operand);
+	LD	BC,50
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  431	            if (mask == TYPE_MASK_U16) {
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_346
+;  432	                LD_A_H();
+	LD	BC,124
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  433	                LD_ADDR_A(entry1_operand + 1);
+	LD	BC,50
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_entry1_operand)
+	INC	BC
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_346
+;  434	            }
+;  435	        }
+;  436	    } else if (type == TYPE_VARIABLE) {
+L_345:
+	LD	A,(IX+-2)
+	CP	A,1
+	JR	NZ,L_343
+;  437	        LD_HL_STRING(entry0_operand, entry0->type);
+	LD	IY,(_entry0)
+	LD	C,(IY+1)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(_entry0_operand)
+	PUSH	BC
+	CALL	_LD_HL_STRING
+	POP	BC
+	POP	BC
+;  438	        if (mask == TYPE_MASK_U24) {
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_326
+;  439	            LD_IX_OFF_IND_HL(entry1_operand);
+	LD	BC,12253
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,1
+	LD	(_reg+1),A
+	LD	A,(_entry1_operand)
+	LD	(_reg+10),A
+	JR	L_346
+;  440	        } else {
+L_326:
+;  441	            LD_IX_OFF_IND_L(entry1_operand);
+	LD	BC,30173
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  442	            if (mask == TYPE_MASK_U16) {
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_346
+;  443	                LD_IX_OFF_IND_H(entry1_operand + 1);
+	LD	BC,29917
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,(_entry1_operand)
+	INC	A
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+	JR	L_346
+;  444	            }
+;  445	        }
+;  446	    } else {
+L_343:
+;  447	        AnsToHL();
+	CALL	_AnsToHL
+;  448	        if ((entry0->type == TYPE_STRING) && (entry0_operand != prescan.tempStrings[TempString1] && entry0_operand != prescan.tempStrings[TempString2])) {
+	LD	IY,(_entry0)
+	LD	A,(IY+1)
+	CP	A,4
+	JR	NZ,L_332
+	LD	BC,_prescan+472
+	LD	(IX+-5),BC
+	LD	HL,BC
+	LD	BC,(HL)
+	LD	HL,(_entry0_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_332
+	LD	IY,(IX+-5)
+	LEA	HL,IY+3
+	LD	HL,(HL)
+	LD	BC,(_entry0_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_332
+;  449	            ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  450	        }
+L_332:
+;  451	        LD_DE_IMM(entry0_operand);
+	LD	BC,(_entry0_operand)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  452	        if (type == TYPE_MASK_U24) {
+	LD	A,(IX+-2)
+	CP	A,2
+	JR	NZ,L_340
+;  453	            LD_HL_DE();
+	LD	BC,8173
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+	JR	L_346
+;  454	        } else {
+L_340:
+;  455	            LD_HL_E();
+	LD	BC,115
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  456	            if (mask == TYPE_MASK_U16) {
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_346
+;  457	                OutputWrite2Bytes(OP_INC_HL, OP_LD_HL_D);
+	LD	BC,29219
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  458	                ResetHL();
+	CALL	_ResetHL
+;  459	            }
+;  460	        }
+;  461	    }
+;  462	}
+L_346:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _StoStringChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_LoadRegValue                       IMPORT  -----   function
+;_ProgramPtrToOffsetStack            IMPORT  -----   function
+;_prescan                            IMPORT   5833   variable
+;_AnsToHL                            IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_reg                                IMPORT     28   variable
+;_OutputWriteWord                    IMPORT  -----   function
+;_ResetA                             IMPORT  -----   function
+;_entry1_operand                     STATIC      3   variable
+;_OutputWriteLong                    IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_entry0_operand                     STATIC      3   variable
+;_entry0                             STATIC      3   variable
+;_LD_HL_STRING                       IMPORT  -----   function
+;_entry2                             STATIC      3   variable
+;_entry1                             STATIC      3   variable
+;G_5                                   IX-5      3   variable
+;type                                  IX-2      1   variable
+;mask                                  IX-1      1   variable
+
+
+; Stack Frame Size: 11 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  463	void StoToChainAns(void) {
+_StoToChainAns:
+	LD	HL,-1
+	CALL	__frameset
+;  464	    if (entry2->mask == TYPE_MASK_U8) {
+	LD	IY,(_entry2)
+	LD	A,(IY+2)
+	LD	(IX+-1),A
+	OR	A,A
+	JR	NZ,L_351
+;  465	        expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  466	    } else if (entry2->mask == TYPE_MASK_U16) {
+	JR	L_352
+L_351:
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_352
+;  467	        OutputWrite3Bytes(OP_LD_HL_E, OP_INC_HL, OP_LD_HL_D);
+	LD	BC,7480179
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  468	        ResetHL();
+	CALL	_ResetHL
+;  469	        EX_S_DE_HL();
+	LD	BC,60242
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_RegChangeHLDE
+;  470	    }
+;  471	}
+L_352:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _StoToChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_RegChangeHLDE                      IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_entry2                             STATIC      3   variable
+;G_6                                   IX-1      1   variable
+
+
+; Stack Frame Size: 7 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  472	void StoStringString(void) {
+_StoStringString:
+;  473	    LD_HL_STRING(entry1_operand, entry1->type);
+	LD	IY,(_entry1)
+	LD	C,(IY+1)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_LD_HL_STRING
+	POP	BC
+	POP	BC
+;  474	    PUSH_HL();
+	LD	BC,229
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  475	    LD_HL_IMM(entry2_operand);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  476	    PUSH_HL();
+	LD	BC,229
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  477	    CALL(__strcpy);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,204
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  478	    OutputWrite2Bytes(OP_POP_BC, OP_POP_BC);
+	LD	BC,49601
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  479	    ResetBC();
+	CALL	_ResetBC
+;  480	}
+	RET	
+
+
+;**************************** _StoStringString ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetBC                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_LoadRegValue                       IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_entry1_operand                     STATIC      3   variable
+;_entry1                             STATIC      3   variable
+;_LD_HL_STRING                       IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  481	void StoStringVariable(void) {
+_StoStringVariable:
+;  482	    LD_HL_STRING(entry1_operand, entry1->type);
+	LD	IY,(_entry1)
+	LD	C,(IY+1)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_LD_HL_STRING
+	POP	BC
+	POP	BC
+;  483	    LD_IX_OFF_IND_HL(entry2_operand);
+	LD	BC,12253
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,1
+	LD	(_reg+1),A
+	LD	A,(_entry2_operand)
+	LD	(_reg+10),A
+;  484	}
+	RET	
+
+
+;**************************** _StoStringVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_reg                                IMPORT     28   variable
+;_entry2_operand                     STATIC      3   variable
+;_OutputWriteByte                    IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_entry1_operand                     STATIC      3   variable
+;_entry1                             STATIC      3   variable
+;_LD_HL_STRING                       IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  485	void BitAndChainAnsNumber(void) {
+_BitAndChainAnsNumber:
+;  486	    if (expr.outputRegister == REGISTER_A) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_413
+;  487	        if (oper == tDotIcon) {
+	LD	A,(_oper)
+	CP	A,129
+	JR	NZ,L_378
+;  488	            AND_A(entry2_operand);
+	LD	BC,230
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_379
+;  489	        } else if (oper == tBoxIcon) {
+L_378:
+	LD	A,(_oper)
+	CP	A,127
+	JR	NZ,L_376
+;  490	            XOR_A(entry2_operand);
+	LD	BC,238
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_379
+;  491	        } else {
+L_376:
+;  492	            OR_A(entry2_operand);
+	LD	BC,246
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  493	        }
+L_379:
+;  494	        expr.AnsSetZeroFlag = true;
+	LD	A,1
+	LD	(_expr+5),A
+;  495	        expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  496	        expr.ZeroCarryFlagRemoveAmountOfBytes = 0;
+	XOR	A,A
+	LD	(_expr+9),A
+;  497	    } else {
+	JR	L_414
+L_413:
+;  498	        if (entry2_operand < 256) {
+	LD	BC,256
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_411
+;  499	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_385
+;  500	                LD_A_L();
+	LD	BC,125
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_396
+;  501	            } else {
+L_385:
+;  502	                LD_A_E();
+	LD	BC,123
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  503	            }
+L_396:
+;  504	            if (oper == tDotIcon) {
+	LD	A,(_oper)
+	CP	A,129
+	JR	NZ,L_395
+;  505	                AND_A(entry2_operand);
+	LD	BC,230
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_399
+;  506	            } else if (oper == tBoxIcon) {
+L_395:
+	LD	A,(_oper)
+	CP	A,127
+	JR	NZ,L_393
+;  507	                XOR_A(entry2_operand);
+	LD	BC,238
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_399
+;  508	            } else {
+L_393:
+;  509	                OR_A(entry2_operand);
+	LD	BC,246
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  510	            }
+L_399:
+;  511	            SBC_HL_HL();
+	LD	BC,25325
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  512	            LD_L_A();
+	LD	BC,111
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  513	            expr.AnsSetZeroFlag = true;
+	LD	A,1
+	LD	(_expr+5),A
+;  514	            expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
+	LD	A,3
+	LD	(_expr+9),A
+;  515	        } else {
+	JR	L_414
+L_411:
+;  516	            if (expr.outputRegister != REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	Z,L_409
+;  517	                EX_DE_HL();
+	LD	BC,235
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_RegChangeHLDE
+;  518	            }
+L_409:
+;  519	            LD_BC_IMM(entry2_operand);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  520	        }
+;  521	    }
+;  522	}
+L_414:
+	RET	
+
+
+;**************************** _BitAndChainAnsNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_LoadRegValue                       IMPORT  -----   function
+;_RegChangeHLDE                      IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_ResetA                             IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_OutputWriteByte                    IMPORT  -----   function
+;_oper                               STATIC      1   variable
+;_expr                               IMPORT     16   variable
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  523	void BitAndChainAnsVariable(void) {
+_BitAndChainAnsVariable:
+;  524	    AnsToHL();
+	CALL	_AnsToHL
+;  525	    LD_BC_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  526	}
+	RET	
+
+
+;**************************** _BitAndChainAnsVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry2_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  527	void BitAndVariableNumber(void) {
+_BitAndVariableNumber:
+;  528	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  529	    BitAndChainAnsNumber();
+	CALL	_BitAndChainAnsNumber
+;  530	}
+	RET	
+
+
+;**************************** _BitAndVariableNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  531	void BitAndVariableVariable(void) {
+_BitAndVariableVariable:
+;  532	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  533	    BitAndChainAnsVariable();
+	CALL	_BitAndChainAnsVariable
+;  534	}
+	RET	
+
+
+;**************************** _BitAndVariableVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  535	void BitAndChainPushChainAns(void) {
+_BitAndChainPushChainAns:
+;  536	    AnsToHL();
+	CALL	_AnsToHL
+;  537	    POP_BC();
+	LD	BC,193
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetBC
+;  538	}
+	RET	
+
+
+;**************************** _BitAndChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetBC                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  539	
+;  540	#define BitOrVariableNumber     BitAndVariableNumber
+;  541	#define BitOrVariableVariable   BitAndVariableVariable
+;  542	#define BitOrChainAnsNumber     BitAndChainAnsNumber
+;  543	#define BitOrChainAnsVariable   BitAndChainAnsVariable
+;  544	#define BitOrChainPushChainAns  BitAndChainPushChainAns
+;  545	
+;  546	#define BitXorVariableNumber    BitAndVariableNumber
+;  547	#define BitXorVariableVariable  BitAndVariableVariable
+;  548	#define BitXorChainAnsNumber    BitAndChainAnsNumber
+;  549	#define BitXorChainAnsVariable  BitAndChainAnsVariable
+;  550	#define BitXorChainPushChainAns BitAndChainPushChainAns
+;  551	
+;  552	void AndInsert(void) {
+_AndInsert:
+;  553	    if (oper == tOr) {
+	LD	A,(_oper)
+	CP	A,60
+	JR	NZ,L_432
+;  554	        memcpy(ice.programPtr, OrData, SIZEOF_OR_DATA);
+	LD	BC,10
+	PUSH	BC
+	LD	BC,_OrData
+	PUSH	BC
+	LD	BC,(_ice+60)
+	PUSH	BC
+	CALL	_memcpy
+	POP	BC
+	POP	BC
+	POP	BC
+;  555	        ice.programPtr += SIZEOF_OR_DATA;
+	LD	IY,(_ice+60)
+	LEA	BC,IY+10
+	LD	(_ice+60),BC
+;  556	    } else if (oper == tAnd) {
+	JR	L_433
+L_432:
+	LD	A,(_oper)
+	CP	A,64
+	JR	NZ,L_430
+;  557	        memcpy(ice.programPtr, AndData, SIZEOF_AND_DATA);
+	LD	BC,11
+	PUSH	BC
+	LD	BC,_AndData
+	PUSH	BC
+	LD	BC,(_ice+60)
+	PUSH	BC
+	CALL	_memcpy
+	POP	BC
+	POP	BC
+	POP	BC
+;  558	        ice.programPtr += SIZEOF_AND_DATA;
+	LD	IY,(_ice+60)
+	LEA	BC,IY+11
+	LD	(_ice+60),BC
+;  559	    } else {
+	JR	L_433
+L_430:
+;  560	        memcpy(ice.programPtr, XorData, SIZEOF_XOR_DATA);
+	LD	BC,13
+	PUSH	BC
+	LD	BC,_XorData
+	PUSH	BC
+	LD	BC,(_ice+60)
+	PUSH	BC
+	CALL	_memcpy
+	POP	BC
+	POP	BC
+	POP	BC
+;  561	        ice.programPtr += SIZEOF_XOR_DATA;
+	LD	IY,(_ice+60)
+	LEA	BC,IY+13
+	LD	(_ice+60),BC
+;  562	    }
+L_433:
+;  563	    expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  564	    expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
+	LD	A,3
+	LD	(_expr+9),A
+;  565	}
+	RET	
+
+
+;**************************** _AndInsert ***************************
+;Name                         Addr/Register   Size   Type
+;_expr                               IMPORT     16   variable
+;_XorData                            IMPORT  -----   function
+;_AndData                            IMPORT  -----   function
+;_ice                                IMPORT  10958   variable
+;_OrData                             IMPORT  -----   function
+;_memcpy                             IMPORT  -----   function
+;_oper                               STATIC      1   variable
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  566	void AndChainAnsNumber(void) {
+_AndChainAnsNumber:
+	LD	HL,-3
+	CALL	__frameset
+;  567	    if (expr.outputRegister == REGISTER_A && entry2_operand < 256) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_500
+	LD	BC,256
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_500
+;  568	        expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  569	        if (oper == tXor) {
+	LD	A,(_oper)
+	CP	A,61
+	JR	NZ,L_452
+;  570	            if (entry2_operand) {
+	LD	HL,(_entry2_operand)
+	CALL	__icmpzero
+	JR	Z,L_436
+;  571	                OutputWrite2Bytes(OP_ADD_A, 255);
+	LD	BC,65478
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  572	                OutputWrite2Bytes(OP_SBC_A_A, OP_INC_A);
+	LD	BC,15519
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  573	                ResetA();
+	CALL	_ResetA
+;  574	            } else {
+	JR	L_501
+;  575	                goto NumberNotZero1;
+;  576	            }
+;  577	        } else if (oper == tAnd) {
+L_452:
+	LD	A,(_oper)
+	CP	A,64
+	JR	NZ,L_450
+;  578	            if (entry2_operand) {
+	LD	HL,(_entry2_operand)
+	CALL	__icmpzero
+	JR	NZ,L_436
+;  579	                goto NumberNotZero1;
+;  580	            } else {
+;  581	                LD_HL_IMM(0);
+	LD	BC,0
+	PUSH	BC
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  582	                expr.outputReturnRegister = REGISTER_HL;
+	XOR	A,A
+	LD	(_expr+11),A
+;  583	            }
+;  584	        } else {
+	JR	L_501
+L_450:
+;  585	            if (!entry2_operand) {
+	LD	HL,(_entry2_operand)
+	CALL	__icmpzero
+	JR	NZ,L_448
+L_436:
+;  586	NumberNotZero1:
+;  587	                OutputWrite2Bytes(OP_SUB_A, 1);
+	LD	BC,470
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  588	                OutputWrite2Bytes(OP_SBC_A_A, OP_INC_A);
+	LD	BC,15519
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  589	                ResetA();
+	CALL	_ResetA
+;  590	            } else {
+	JR	L_501
+L_448:
+;  591	                ice.programPtr = ice.programPtrBackup;
+;  592	                ice.dataOffsetElements = ice.dataOffsetElementsBackup;
+;  593	                LD_HL_IMM(1);
+	LD	BC,1
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(_ice+63)
+	LD	(_ice+60),BC
+	LD	BC,(_ice+3080)
+	LD	(_ice+3077),BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  594	                expr.outputReturnRegister = REGISTER_HL;
+	XOR	A,A
+	LD	(_expr+11),A
+;  595	            }
+;  596	        }
+;  597	    } else {
+	JR	L_501
+L_500:
+;  598	        MaybeAToHL();
+	CALL	_MaybeAToHL
+;  599	        if (oper == tXor) {
+	LD	A,(_oper)
+	CP	A,61
+	JR	NZ,L_498
+;  600	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_458
+;  601	                LD_DE_IMM(-1);
+	LD	BC,16777215
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_461
+;  602	            } else {
+L_458:
+;  603	                LD_HL_IMM(-1);
+	LD	BC,16777215
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  604	            }
+L_461:
+;  605	            ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  606	            if (!entry2_operand) {
+	LD	HL,(_entry2_operand)
+	CALL	__icmpzero
+	JR	NZ,L_466
+;  607	                CCF();
+	LD	BC,63
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  608	                expr.AnsSetCarryFlagReversed = true;
+	LD	A,1
+	LD	(_expr+8),A
+;  609	            } else {
+	JR	L_470
+L_466:
+;  610	                expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  611	            }
+L_470:
+;  612	            SBC_HL_HL_INC_HL();
+	LD	BC,2319085
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  613	            expr.ZeroCarryFlagRemoveAmountOfBytes = 3 + !entry2_operand;
+	LD	HL,(_entry2_operand)
+	CALL	__icmpzero
+	JR	NZ,L_472
+	LD	BC,1
+	LD	(IX+-3),BC
+	JR	L_473
+L_472:
+	LD	BC,0
+	LD	(IX+-3),BC
+L_473:
+	LD	A,(IX+-3)
+	ADD	A,3
+	LD	(_expr+9),A
+;  614	        } else if (oper == tAnd) {
+	JR	L_501
+L_498:
+	LD	A,(_oper)
+	CP	A,64
+	JR	NZ,L_496
+;  615	            if (!entry2_operand) {
+	LD	HL,(_entry2_operand)
+	CALL	__icmpzero
+	JR	NZ,L_478
+;  616	                ice.programPtr = ice.programPtrBackup;
+;  617	                ice.dataOffsetElements = ice.dataOffsetElementsBackup;
+;  618	                LD_HL_IMM(0);
+	LD	BC,0
+	PUSH	BC
+	PUSH	BC
+	LD	BC,(_ice+63)
+	LD	(_ice+60),BC
+	LD	BC,(_ice+3080)
+	LD	(_ice+3077),BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_501
+;  619	            } else {
+;  620	                goto numberNotZero2;
+;  621	            }
+;  622	        } else {
+L_496:
+;  623	            if (!entry2_operand) {
+	LD	HL,(_entry2_operand)
+	CALL	__icmpzero
+	JR	NZ,L_494
+L_478:
+;  624	numberNotZero2:
+;  625	                MaybeAToHL();
+	CALL	_MaybeAToHL
+;  626	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_486
+;  627	                    LD_DE_IMM(-1);
+	LD	BC,16777215
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_487
+;  628	                } else {
+L_486:
+;  629	                    LD_HL_IMM(-1);
+	LD	BC,16777215
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  630	                }
+L_487:
+;  631	                OutputWrite2Bytes(OP_ADD_HL_DE, OP_CCF);
+	LD	BC,16153
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  632	                SBC_HL_HL_INC_HL();
+	LD	BC,2319085
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  633	                expr.ZeroCarryFlagRemoveAmountOfBytes = 4;
+	LD	A,4
+	LD	(_expr+9),A
+;  634	                expr.AnsSetCarryFlagReversed = true;
+	LD	A,1
+	LD	(_expr+8),A
+;  635	            } else {
+	JR	L_501
+L_494:
+;  636	                ice.programPtr = ice.programPtrBackup;
+;  637	                ice.dataOffsetElements = ice.dataOffsetElementsBackup;
+;  638	                LD_HL_IMM(1);
+	LD	BC,1
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(_ice+63)
+	LD	(_ice+60),BC
+	LD	BC,(_ice+3080)
+	LD	(_ice+3077),BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  639	            }
+;  640	        }
+;  641	    }
+;  642	}
+L_501:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _AndChainAnsNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_OutputWriteLong                    IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_MaybeAToHL                         IMPORT  -----   function
+;_ice                                IMPORT  10958   variable
+;_LoadRegValue                       IMPORT  -----   function
+;_ResetA                             IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_oper                               STATIC      1   variable
+;_entry2_operand                     STATIC      3   variable
+;_expr                               IMPORT     16   variable
+;temp474                               IX-3      3   variable
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  643	void AndChainAnsVariable(void) {
+_AndChainAnsVariable:
+;  644	    MaybeAToHL();
+	CALL	_MaybeAToHL
+;  645	    if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_507
+;  646	        LD_DE_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_508
+;  647	    } else {
+L_507:
+;  648	        LD_HL_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  649	    }
+L_508:
+;  650	    AndInsert();
+	CALL	_AndInsert
+;  651	}
+	RET	
+
+
+;**************************** _AndChainAnsVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry2_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_MaybeAToHL                         IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  652	void AndVariableNumber(void) {
+_AndVariableNumber:
+;  653	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  654	    AndChainAnsNumber();
+	CALL	_AndChainAnsNumber
+;  655	}
+	RET	
+
+
+;**************************** _AndVariableNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  656	void AndVariableVariable(void) {
+_AndVariableVariable:
+;  657	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  658	    AndChainAnsVariable();
+	CALL	_AndChainAnsVariable
+;  659	}
+	RET	
+
+
+;**************************** _AndVariableVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  660	void AndChainPushChainAns(void) {
+_AndChainPushChainAns:
+;  661	    MaybeAToHL();
+	CALL	_MaybeAToHL
+;  662	    if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_523
+;  663	        POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+	JR	L_524
+;  664	    } else {
+L_523:
+;  665	        POP_HL();
+	LD	BC,225
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  666	    }
+L_524:
+;  667	    AndInsert();
+	CALL	_AndInsert
+;  668	}
+	RET	
+
+
+;**************************** _AndChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetHL                            IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_MaybeAToHL                         IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  669	
+;  670	#define XorVariableNumber    AndVariableNumber
+;  671	#define XorVariableVariable  AndVariableVariable
+;  672	#define XorChainAnsNumber    AndChainAnsNumber
+;  673	#define XorChainAnsVariable  AndChainAnsVariable
+;  674	#define XorChainPushChainAns AndChainPushChainAns
+;  675	
+;  676	#define OrVariableNumber     AndVariableNumber
+;  677	#define OrVariableVariable   AndVariableVariable
+;  678	#define OrChainAnsNumber     AndChainAnsNumber
+;  679	#define OrChainAnsVariable   AndChainAnsVariable
+;  680	#define OrChainPushChainAns  AndChainPushChainAns
+;  681	
+;  682	void EQInsert() {
+_EQInsert:
+;  683	    OR_A_SBC_HL_DE();
+	LD	BC,5434807
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  684	    OutputWriteByte(OP_LD_HL);
+	LD	BC,33
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  685	    OutputWriteLong(0);
+	LD	BC,0
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  686	    if (oper == tEQ) {
+	LD	A,(_oper)
+	CP	A,106
+	JR	NZ,L_530
+;  687	        OutputWrite2Bytes(OP_JR_NZ, 1);
+	LD	BC,288
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  688	        expr.AnsSetZeroFlagReversed = true;
+	LD	A,1
+	LD	(_expr+6),A
+;  689	    } else {
+	JR	L_533
+L_530:
+;  690	        OutputWrite2Bytes(OP_JR_Z, 1);
+	LD	BC,296
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  691	        expr.AnsSetZeroFlag = true;
+	LD	A,1
+	LD	(_expr+5),A
+;  692	    }
+L_533:
+;  693	    INC_HL();
+	LD	BC,35
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  694	    expr.ZeroCarryFlagRemoveAmountOfBytes = 7;
+	LD	A,7
+	LD	(_expr+9),A
+;  695	}
+	RET	
+
+
+;**************************** _EQInsert ***************************
+;Name                         Addr/Register   Size   Type
+;_expr                               IMPORT     16   variable
+;_OutputWriteWord                    IMPORT  -----   function
+;_oper                               STATIC      1   variable
+;_OutputWriteByte                    IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  696	void EQChainAnsNumber(void) {
+_EQChainAnsNumber:
+	LD	HL,-3
+	CALL	__frameset
+;  697	    uint24_t number = entry2_operand;
+	LD	BC,(_entry2_operand)
+	LD	(IX+-3),BC
+;  698	
+;  699	    if (expr.outputRegister == REGISTER_A && entry2_operand < 256) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_587
+	LD	BC,256
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_587
+;  700	        if (oper == tNE) {
+	LD	A,(_oper)
+	CP	A,111
+	JR	NZ,L_544
+;  701	            ADD_A(255 - entry2_operand);
+	LD	BC,198
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	B,A
+	LD	A,255
+	SUB	A,B
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  702	            OutputWrite2Bytes(OP_ADD_A, 1);
+	LD	BC,454
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  703	            expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  704	            expr.ZeroCarryFlagRemoveAmountOfBytes = 2;
+	LD	A,2
+	LD	(_expr+9),A
+;  705	        } else {
+	JR	L_545
+L_544:
+;  706	            SUB_A(entry2_operand);
+	LD	BC,214
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  707	            OutputWrite2Bytes(OP_ADD_A, 255);
+	LD	BC,65478
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  708	            expr.AnsSetZeroFlagReversed = true;
+	LD	A,1
+	LD	(_expr+6),A
+;  709	            expr.ZeroCarryFlagRemoveAmountOfBytes = 4;
+	LD	A,4
+	LD	(_expr+9),A
+;  710	        }
+L_545:
+;  711	        OutputWrite2Bytes(OP_SBC_A_A, OP_INC_A);
+	LD	BC,15519
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  712	        expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  713	    } else {
+	JR	L_588
+L_587:
+;  714	        MaybeAToHL();
+	CALL	_MaybeAToHL
+;  715	        if (number && number < 6) {
+	LD	HL,(IX+-3)
+	CALL	__icmpzero
+	JR	Z,L_585
+	LD	BC,6
+	LD	HL,(IX+-3)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_585
+;  716	            do {
+L_553:
+;  717	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_552
+;  718	                    DEC_HL();
+	LD	BC,43
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+	JR	L_554
+;  719	                } else {
+L_552:
+;  720	                    DEC_DE();
+	LD	BC,27
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+;  721	                }
+;  722	            } while (--number);
+L_554:
+	LD	IY,(IX+-3)
+	LEA	IY,IY+-1
+	LD	(IX+-3),IY
+	LD	HL,(IX+-3)
+	CALL	__icmpzero
+	JR	NZ,L_553
+;  723	        }
+L_585:
+;  724	        if (!number) {
+	LD	HL,(IX+-3)
+	CALL	__icmpzero
+	JR	NZ,L_584
+;  725	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_561
+;  726	                LD_DE_IMM(-1);
+	LD	BC,16777215
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_564
+;  727	            } else {
+L_561:
+;  728	                LD_HL_IMM(-1);
+	LD	BC,16777215
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  729	            }
+L_564:
+;  730	            ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  731	            expr.ZeroCarryFlagRemoveAmountOfBytes = 0;
+	XOR	A,A
+	LD	(_expr+9),A
+;  732	            if (oper == tNE) {
+	LD	A,(_oper)
+	CP	A,111
+	JR	NZ,L_571
+;  733	                CCF();
+	LD	BC,63
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  734	                expr.ZeroCarryFlagRemoveAmountOfBytes++;
+	LD	A,(_expr+9)
+	INC	A
+	LD	(_expr+9),A
+;  735	                expr.AnsSetCarryFlagReversed = true;
+	LD	A,1
+	LD	(_expr+8),A
+;  736	            } else {
+	JR	L_574
+L_571:
+;  737	                expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  738	            }
+L_574:
+;  739	            SBC_HL_HL_INC_HL();
+	LD	BC,2319085
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  740	            expr.ZeroCarryFlagRemoveAmountOfBytes += 3;
+	LD	A,(_expr+9)
+	ADD	A,3
+	LD	(_expr+9),A
+;  741	        } else {
+	JR	L_588
+L_584:
+;  742	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_581
+;  743	                LD_DE_IMM(number);
+	LD	BC,(IX+-3)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_582
+;  744	            } else {
+L_581:
+;  745	                LD_HL_IMM(number);
+	LD	BC,(IX+-3)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  746	            }
+L_582:
+;  747	            EQInsert();
+	CALL	_EQInsert
+;  748	        }
+;  749	    }
+;  750	}
+L_588:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _EQChainAnsNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_EQInsert                           IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_MaybeAToHL                         IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_ResetA                             IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_oper                               STATIC      1   variable
+;_expr                               IMPORT     16   variable
+;_entry2_operand                     STATIC      3   variable
+;number                                IX-3      3   variable
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  751	void EQVariableNumber(void) {
+_EQVariableNumber:
+;  752	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  753	    EQChainAnsNumber();
+	CALL	_EQChainAnsNumber
+;  754	}
+	RET	
+
+
+;**************************** _EQVariableNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  755	void EQChainAnsVariable(void) {
+_EQChainAnsVariable:
+;  756	    MaybeAToHL();
+	CALL	_MaybeAToHL
+;  757	    if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_598
+;  758	        LD_DE_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_599
+;  759	    } else {
+L_598:
+;  760	        LD_HL_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  761	    }
+L_599:
+;  762	    EQInsert();
+	CALL	_EQInsert
+;  763	}
+	RET	
+
+
+;**************************** _EQChainAnsVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_EQInsert                           IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_MaybeAToHL                         IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  764	void EQVariableVariable(void) {
+_EQVariableVariable:
+;  765	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  766	    EQChainAnsVariable();
+	CALL	_EQChainAnsVariable
+;  767	}
+	RET	
+
+
+;**************************** _EQVariableVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  768	void EQChainPushChainAns(void) {
+_EQChainPushChainAns:
+;  769	    MaybeAToHL();
+	CALL	_MaybeAToHL
+;  770	    if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_610
+;  771	        POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+	JR	L_611
+;  772	    } else {
+L_610:
+;  773	        POP_HL();
+	LD	BC,225
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  774	    }
+L_611:
+;  775	    EQInsert();
+	CALL	_EQInsert
+;  776	}
+	RET	
+
+
+;**************************** _EQChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_EQInsert                           IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_MaybeAToHL                         IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  777	void GEInsert() {
+_GEInsert:
+;  778	    if (oper == tGE || oper == tLE) {
+	LD	A,(_oper)
+	CP	A,110
+	JR	Z,L_618
+	LD	A,(_oper)
+	CP	A,109
+	JR	NZ,L_619
+L_618:
+;  779	        OR_A_A();
+	LD	BC,183
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	JR	L_622
+;  780	    } else {
+L_619:
+;  781	        SCF();
+	LD	BC,55
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  782	    }
+L_622:
+;  783	    SBC_HL_DE();
+	LD	BC,21229
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  784	    SBC_HL_HL_INC_HL();
+	LD	BC,2319085
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  785	    expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  786	    expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
+	LD	A,3
+	LD	(_expr+9),A
+;  787	}
+	RET	
+
+
+;**************************** _GEInsert ***************************
+;Name                         Addr/Register   Size   Type
+;_expr                               IMPORT     16   variable
+;_OutputWriteLong                    IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_oper                               STATIC      1   variable
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  788	void GEChainAnsNumber(void) {
+_GEChainAnsNumber:
+	LD	HL,-3
+	CALL	__frameset
+;  789	    if (expr.outputRegister == REGISTER_A && entry2_operand < 256) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_641
+	LD	BC,256
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_641
+;  790	        SUB_A(entry2_operand + (oper == tGT || oper == tLT));
+	LD	BC,214
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_oper)
+	CP	A,108
+	JR	Z,L_630
+	LD	A,(_oper)
+	CP	A,107
+	JR	NZ,L_631
+L_630:
+	LD	BC,1
+	LD	(IX+-3),BC
+	JR	L_632
+L_631:
+	LD	BC,0
+	LD	(IX+-3),BC
+L_632:
+	LD	A,(_entry2_operand)
+	LD	B,(IX+-3)
+	ADD	A,B
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  791	        OutputWrite2Bytes(OP_SBC_A_A, OP_INC_A);
+	LD	BC,15519
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  792	        expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  793	        expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  794	        expr.ZeroCarryFlagRemoveAmountOfBytes = 2;
+	LD	A,2
+	LD	(_expr+9),A
+;  795	    } else {
+	JR	L_642
+L_641:
+;  796	        AnsToHL();
+	CALL	_AnsToHL
+;  797	        LD_DE_IMM(entry2_operand);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  798	        GEInsert();
+	CALL	_GEInsert
+;  799	    }
+;  800	}
+L_642:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _GEChainAnsNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_GEInsert                           IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_ResetA                             IMPORT  -----   function
+;_oper                               STATIC      1   variable
+;_OutputWriteByte                    IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_expr                               IMPORT     16   variable
+;temp633                               IX-3      3   variable
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  801	void GEChainAnsVariable(void) {
+_GEChainAnsVariable:
+;  802	    AnsToHL();
+	CALL	_AnsToHL
+;  803	    LD_DE_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  804	    GEInsert();
+	CALL	_GEInsert
+;  805	}
+	RET	
+
+
+;**************************** _GEChainAnsVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_GEInsert                           IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  806	void GENumberVariable(void) {
+_GENumberVariable:
+;  807	    LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  808	    GEChainAnsVariable();
+	CALL	_GEChainAnsVariable
+;  809	}
+	RET	
+
+
+;**************************** _GENumberVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegValue                       IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  810	void GENumberChainAns(void) {
+_GENumberChainAns:
+	LD	HL,-3
+	CALL	__frameset
+;  811	    if (expr.outputRegister == REGISTER_A && entry1_operand < 256) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_664
+	LD	BC,256
+	LD	HL,(_entry1_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_664
+;  812	        ADD_A(256 - entry1_operand - (oper == tGE || oper == tLE));
+	LD	BC,198
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_oper)
+	CP	A,110
+	JR	Z,L_653
+	LD	A,(_oper)
+	CP	A,109
+	JR	NZ,L_654
+L_653:
+	LD	BC,1
+	LD	(IX+-3),BC
+	JR	L_655
+L_654:
+	LD	BC,0
+	LD	(IX+-3),BC
+L_655:
+	LD	A,(_entry1_operand)
+	LD	B,(IX+-3)
+	ADD	A,B
+	NEG	
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  813	        OutputWrite2Bytes(OP_SBC_A_A, OP_INC_A);
+	LD	BC,15519
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  814	        expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  815	        expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  816	        expr.ZeroCarryFlagRemoveAmountOfBytes = 2;
+	LD	A,2
+	LD	(_expr+9),A
+;  817	    } else {
+	JR	L_665
+L_664:
+;  818	        AnsToDE();
+	CALL	_AnsToDE
+;  819	        LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  820	        GEInsert();
+	CALL	_GEInsert
+;  821	    }
+;  822	}
+L_665:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _GENumberChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_GEInsert                           IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_AnsToDE                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_ResetA                             IMPORT  -----   function
+;_oper                               STATIC      1   variable
+;_OutputWriteByte                    IMPORT  -----   function
+;_entry1_operand                     STATIC      3   variable
+;_expr                               IMPORT     16   variable
+;temp656                               IX-3      3   variable
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  823	void GEVariableNumber(void) {
+_GEVariableNumber:
+;  824	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  825	    GEChainAnsNumber();
+	CALL	_GEChainAnsNumber
+;  826	}
+	RET	
+
+
+;**************************** _GEVariableNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  827	void GEVariableVariable(void) {
+_GEVariableVariable:
+;  828	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  829	    GEChainAnsVariable();
+	CALL	_GEChainAnsVariable
+;  830	}
+	RET	
+
+
+;**************************** _GEVariableVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  831	void GEVariableChainAns(void) {
+_GEVariableChainAns:
+;  832	    AnsToDE();
+	CALL	_AnsToDE
+;  833	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  834	    GEInsert();
+	CALL	_GEInsert
+;  835	}
+	RET	
+
+
+;**************************** _GEVariableChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_GEInsert                           IMPORT  -----   function
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_AnsToDE                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  836	void GEChainPushChainAns(void) {
+_GEChainPushChainAns:
+;  837	    AnsToDE();
+	CALL	_AnsToDE
+;  838	    POP_HL();
+	LD	BC,225
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  839	    GEInsert();
+	CALL	_GEInsert
+;  840	}
+	RET	
+
+
+;**************************** _GEChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_GEInsert                           IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_AnsToDE                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  841	
+;  842	#define GTNumberVariable    GENumberVariable
+;  843	#define GTNumberChainAns    GENumberChainAns
+;  844	#define GTVariableNumber    GEVariableNumber
+;  845	#define GTVariableVariable  GEVariableVariable
+;  846	#define GTVariableChainAns  GEVariableChainAns
+;  847	#define GTChainAnsNumber    GEChainAnsNumber
+;  848	#define GTChainAnsVariable  GEChainAnsVariable
+;  849	#define GTChainPushChainAns GEChainPushChainAns
+;  850	
+;  851	#define LTNumberVariable   GTVariableNumber
+;  852	#define LTNumberChainAns   GTChainAnsNumber
+;  853	#define LTVariableNumber   GTNumberVariable
+;  854	#define LTVariableVariable GTVariableVariable
+;  855	#define LTVariableChainAns GTChainAnsVariable
+;  856	#define LTChainAnsNumber   GTNumberChainAns
+;  857	#define LTChainAnsVariable GTVariableChainAns
+;  858	
+;  859	void LTChainPushChainAns(void) {
+_LTChainPushChainAns:
+;  860	    AnsToHL();
+	CALL	_AnsToHL
+;  861	    POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+;  862	    SCF();
+	LD	BC,55
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  863	    SBC_HL_DE();
+	LD	BC,21229
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  864	    SBC_HL_HL_INC_HL();
+	LD	BC,2319085
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  865	    expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  866	    expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
+	LD	A,3
+	LD	(_expr+9),A
+;  867	}
+	RET	
+
+
+;**************************** _LTChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_expr                               IMPORT     16   variable
+;_OutputWriteLong                    IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  868	
+;  869	#define LENumberVariable   GEVariableNumber
+;  870	#define LENumberChainAns   GEChainAnsNumber
+;  871	#define LEVariableNumber   GENumberVariable
+;  872	#define LEVariableVariable GEVariableVariable
+;  873	#define LEVariableChainAns GEChainAnsVariable
+;  874	#define LEChainAnsNumber   GENumberChainAns
+;  875	#define LEChainAnsVariable GEVariableChainAns
+;  876	
+;  877	void LEChainPushChainAns(void) {
+_LEChainPushChainAns:
+;  878	    AnsToHL();
+	CALL	_AnsToHL
+;  879	    POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+;  880	    OR_A_SBC_HL_DE();
+	LD	BC,5434807
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  881	    SBC_HL_HL_INC_HL();
+	LD	BC,2319085
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  882	    expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  883	    expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
+	LD	A,3
+	LD	(_expr+9),A
+;  884	}
+	RET	
+
+
+;**************************** _LEChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_expr                               IMPORT     16   variable
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  885	
+;  886	#define NEVariableNumber    EQVariableNumber
+;  887	#define NEVariableVariable  EQVariableVariable
+;  888	#define NEChainAnsNumber    EQChainAnsNumber
+;  889	#define NEChainAnsVariable  EQChainAnsVariable
+;  890	#define NEChainPushChainAns EQChainPushChainAns
+;  891	
+;  892	void MulChainAnsNumber(void) {
+_MulChainAnsNumber:
+	LD	HL,-3
+	CALL	__frameset
+;  893	    uint24_t number = entry2_operand;
+	LD	BC,(_entry2_operand)
+	LD	(IX+-3),BC
+;  894	
+;  895	    if (expr.outputRegister == REGISTER_A && entry2_operand < 256) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_723
+	LD	BC,256
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_723
+;  896	        LD_L_A();
+	LD	BC,111
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  897	        LD_H(entry2_operand);
+	LD	BC,38
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  898	        MLT_HL();
+	LD	BC,27885
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+	JR	L_724
+;  899	    } else {
+L_723:
+;  900	        MaybeAToHL();
+	CALL	_MaybeAToHL
+;  901	        if (!number) {
+	LD	HL,(IX+-3)
+	CALL	__icmpzero
+	JR	NZ,L_721
+;  902	            ice.programPtr = ice.programPtrBackup;
+;  903	            ice.dataOffsetElements = ice.dataOffsetElementsBackup;
+;  904	            LD_HL_IMM(0);
+	LD	BC,0
+	PUSH	BC
+	PUSH	BC
+	LD	BC,(_ice+63)
+	LD	(_ice+60),BC
+	LD	BC,(_ice+3080)
+	LD	(_ice+3077),BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_724
+;  905	        } else if (number == 0xFFFFFF) {
+L_721:
+	LD	BC,16777215
+	LD	HL,(IX+-3)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_719
+;  906	            CALL(__ineg);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,352
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_724
+;  907	        } else {
+L_719:
+;  908	            MultWithNumber(number, (uint8_t*)&ice.programPtr, 16*expr.outputRegister);
+	LD	A,(_expr+10)
+	ADD	A,A
+	ADD	A,A
+	ADD	A,A
+	ADD	A,A
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,_ice+60
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_MultWithNumber
+	POP	BC
+	POP	BC
+	POP	BC
+;  909	        }
+;  910	    }
+;  911	}
+L_724:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _MulChainAnsNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_MultWithNumber                     IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_ice                                IMPORT  10958   variable
+;_MaybeAToHL                         IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_entry2_operand                     STATIC      3   variable
+;number                                IX-3      3   variable
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  912	void MulVariableNumber(void) {
+_MulVariableNumber:
+;  913	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  914	    MulChainAnsNumber();
+	CALL	_MulChainAnsNumber
+;  915	}
+	RET	
+
+
+;**************************** _MulVariableNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  916	void MulChainAnsVariable(void) {
+_MulChainAnsVariable:
+;  917	    AnsToHL();
+	CALL	_AnsToHL
+;  918	    LD_BC_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  919	}
+	RET	
+
+
+;**************************** _MulChainAnsVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry2_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  920	void MulVariableVariable(void) {
+_MulVariableVariable:
+;  921	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  922	    MulChainAnsVariable();
+	CALL	_MulChainAnsVariable
+;  923	}
+	RET	
+
+
+;**************************** _MulVariableVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  924	void MulChainPushChainAns(void) {
+_MulChainPushChainAns:
+;  925	    AnsToHL();
+	CALL	_AnsToHL
+;  926	    POP_BC();
+	LD	BC,193
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetBC
+;  927	}
+	RET	
+
+
+;**************************** _MulChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetBC                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  928	void DivChainAnsNumber(void) {
+_DivChainAnsNumber:
+;  929	    if (expr.outputRegister == REGISTER_A && entry2_operand <= 64 && !(entry2_operand & (entry2_operand - 1))) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_750
+	LD	BC,(_entry2_operand)
+	LD	HL,64
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_750
+	LD	IY,(_entry2_operand)
+	LEA	HL,IY+-1
+	LD	BC,(_entry2_operand)
+	CALL	__iand
+	CALL	__icmpzero
+	JR	NZ,L_750
+;  930	        while (entry2_operand != 1) {
+	JR	L_744
+L_745:
+;  931	            SRL_A();
+	LD	BC,16331
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetA
+;  932	            entry2_operand /= 2;
+	LD	HL,(_entry2_operand)
+	LD	A,1
+	CALL	__ishru_b
+	LD	(_entry2_operand),HL
+;  933	        }
+L_744:
+	LD	BC,1
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_745
+;  934	        expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  935	    } else {
+	JR	L_751
+L_750:
+;  936	        AnsToHL();
+	CALL	_AnsToHL
+;  937	        LD_BC_IMM(entry2_operand);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  938	    }
+;  939	}
+L_751:
+	RET	
+
+
+;**************************** _DivChainAnsNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_LoadRegValue                       IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+;_ResetA                             IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_expr                               IMPORT     16   variable
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  940	void DivChainAnsVariable(void) {
+_DivChainAnsVariable:
+;  941	    AnsToHL();
+	CALL	_AnsToHL
+;  942	    LD_BC_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  943	}
+	RET	
+
+
+;**************************** _DivChainAnsVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry2_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  944	void DivNumberVariable(void) {
+_DivNumberVariable:
+;  945	    LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  946	    DivChainAnsVariable();
+	CALL	_DivChainAnsVariable
+;  947	}
+	RET	
+
+
+;**************************** _DivNumberVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegValue                       IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  948	void DivNumberChainAns(void) {
+_DivNumberChainAns:
+;  949	    AnsToBC();
+	CALL	_AnsToBC
+;  950	    LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  951	}
+	RET	
+
+
+;**************************** _DivNumberChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegValue                       IMPORT  -----   function
+;_AnsToBC                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  952	void DivVariableNumber(void) {
+_DivVariableNumber:
+;  953	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  954	    DivChainAnsNumber();
+	CALL	_DivChainAnsNumber
+;  955	}
+	RET	
+
+
+;**************************** _DivVariableNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  956	void DivVariableVariable(void) {
+_DivVariableVariable:
+;  957	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  958	    DivChainAnsVariable();
+	CALL	_DivChainAnsVariable
+;  959	}
+	RET	
+
+
+;**************************** _DivVariableVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  960	void DivVariableChainAns(void) {
+_DivVariableChainAns:
+;  961	    AnsToBC();
+	CALL	_AnsToBC
+;  962	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  963	}
+	RET	
+
+
+;**************************** _DivVariableChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_AnsToBC                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  964	void DivChainPushChainAns(void) {
+_DivChainPushChainAns:
+;  965	    AnsToBC();
+	CALL	_AnsToBC
+;  966	    POP_HL();
+	LD	BC,225
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  967	}
+	RET	
+
+
+;**************************** _DivChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_AnsToBC                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  968	void AddChainAnsNumber(void) {
+_AddChainAnsNumber:
+	LD	HL,-4
+	CALL	__frameset
+;  969	    uint24_t number = entry2_operand;
+	LD	BC,(_entry2_operand)
+	LD	(IX+-4),BC
+;  970	
+;  971	    if (expr.outputRegister == REGISTER_A) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_807
+;  972	        if (!number) {
+	LD	HL,(_entry2_operand)
+	CALL	__icmpzero
+	JR	NZ,L_779
+;  973	            expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  974	            return;
+	JR	L_808
+;  975	        }
+L_779:
+;  976	        LD_HL_IMM(number);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  977	        OutputWrite2Bytes(OP_ADD_A_L, OP_LD_L_A);
+	LD	BC,28549
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  978	        if ((number & 0x00FF00) != 0x00FF00) {
+	LD	HL,(IX+-4)
+	LD	BC,65280
+	CALL	__iand
+	LD	BC,65280
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_782
+;  979	            OutputWrite3Bytes(OP_ADC_A_H, OP_SUB_A_L, OP_LD_H_A);
+	LD	BC,6788492
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  980	        } else {
+	JR	L_783
+L_782:
+;  981	            OutputWrite3Bytes(OP_JR_NC, 4, OP_LD_L);
+	LD	BC,3015728
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  982	            OutputWrite3Bytes(-1, OP_INC_HL, OP_LD_L_A);
+	LD	BC,7283455
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  983	        }
+L_783:
+;  984	        ResetHL();
+	CALL	_ResetHL
+;  985	    } else {
+	JR	L_808
+L_807:
+;  986	        if (number < 5) {
+	LD	BC,5
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_805
+;  987	            uint8_t a;
+;  988	
+;  989	            for (a = 0; a < (uint8_t)number; a++) {
+	LD	(IX+-1),0
+	JR	L_793
+L_791:
+;  990	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_790
+;  991	                    INC_HL();
+	LD	BC,35
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+	JR	L_792
+;  992	                } else {
+L_790:
+;  993	                    INC_DE();
+	LD	BC,19
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+;  994	                }
+;  995	            }
+L_792:
+	INC	(IX+-1)
+L_793:
+	LD	B,(IX+-4)
+	LD	A,(IX+-1)
+	CP	A,B
+	JR	C,L_791
+;  996	            expr.outputReturnRegister = expr.outputRegister;
+	LD	A,(_expr+10)
+	LD	(_expr+11),A
+;  997	        } else {
+	JR	L_808
+L_805:
+;  998	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_800
+;  999	                LD_DE_IMM(number);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_803
+; 1000	            } else {
+L_800:
+; 1001	                LD_HL_IMM(number);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1002	            }
+L_803:
+; 1003	            ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+; 1004	        }
+; 1005	    }
+; 1006	}
+L_808:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _AddChainAnsNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetDE                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_entry2_operand                     STATIC      3   variable
+;number                                IX-4      3   variable
+;a                                     IX-1      1   variable
+
+
+; Stack Frame Size: 10 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1007	void AddVariableNumber(void) {
+_AddVariableNumber:
+; 1008	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1009	    AddChainAnsNumber();
+	CALL	_AddChainAnsNumber
+; 1010	}
+	RET	
+
+
+;**************************** _AddVariableNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1011	void AddChainAnsVariable(void) {
+_AddChainAnsVariable:
+; 1012	    MaybeAToHL();
+	CALL	_MaybeAToHL
+; 1013	    if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_818
+; 1014	        LD_DE_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_821
+; 1015	    } else {
+L_818:
+; 1016	        LD_HL_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1017	    }
+L_821:
+; 1018	    ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+; 1019	}
+	RET	
+
+
+;**************************** _AddChainAnsVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_MaybeAToHL                         IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1020	void AddVariableVariable(void) {
+_AddVariableVariable:
+; 1021	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1022	    if (entry1_operand == entry2_operand) {
+	LD	BC,(_entry2_operand)
+	LD	HL,(_entry1_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_828
+; 1023	        ADD_HL_HL();
+	LD	BC,41
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+	JR	L_830
+; 1024	    } else {
+L_828:
+; 1025	        AddChainAnsVariable();
+	CALL	_AddChainAnsVariable
+; 1026	    }
+; 1027	}
+L_830:
+	RET	
+
+
+;**************************** _AddVariableVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1028	void AddChainPushChainAns(void) {
+_AddChainPushChainAns:
+; 1029	    MaybeAToHL();
+	CALL	_MaybeAToHL
+; 1030	    if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_836
+; 1031	        POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+	JR	L_839
+; 1032	    } else {
+L_836:
+; 1033	        POP_HL();
+	LD	BC,225
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+; 1034	    }
+L_839:
+; 1035	    ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+; 1036	}
+	RET	
+
+
+;**************************** _AddChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetHL                            IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_MaybeAToHL                         IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1037	void AddStringString(void) {
+_AddStringString:
+	LD	HL,-3
+	CALL	__frameset
+; 1038	    /**
+; 1039	    *    Cases:
+; 1040	    *        <string1>+<string2>             --> strcpy(<TempString1>, <string1>) strcat(<TempString1>, <string2>)
+; 1041	    *        <string1>+<TempString1>         --> strcpy(<TempString2>, <string1>) strcat(<TempString2>, <TempString1>)
+; 1042	    *        <string1>+<TempString2>         --> strcpy(<TempString1>, <string1>) strcat(<TempString1>, <TempString2>)
+; 1043	    *        <TempString1>+<string2>         --> strcat(<TempString1>, <string2>)
+; 1044	    *        <TempString1>+<TempString2>     --> strcat(<TempString1>, <TempString2>)
+; 1045	    *        <TempString2>+<string2>         --> strcat(<TempString2>, <string2>)
+; 1046	    *        <TempString2>+<TempString1>     --> strcat(<TempString2>, <TempString1>)
+; 1047	    *
+; 1048	    *    Output in TempString2 if:
+; 1049	    *        <TempString2>+X
+; 1050	    *        X+<TempString1>
+; 1051	    **/
+; 1052	
+; 1053	    if (comparePtrToTempStrings(entry1_operand)) {
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_comparePtrToTempStrings
+	POP	BC
+	OR	A,A
+	JR	Z,L_916
+; 1054	        if (entry2->type == TYPE_STRING && !comparePtrToTempStrings(entry2_operand)) {
+	LD	IY,(_entry2)
+	LD	A,(IY+1)
+	CP	A,4
+	JR	NZ,L_845
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	CALL	_comparePtrToTempStrings
+	POP	BC
+	OR	A,A
+	JR	NZ,L_845
+; 1055	            ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1056	        }
+L_845:
+; 1057	        LD_HL_IMM(entry2_operand);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1058	        PUSH_HL();
+	LD	BC,229
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+; 1059	        LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1060	        PUSH_HL();
+	LD	BC,229
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+; 1061	        CALL(__strcat);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,192
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1062	        OutputWrite2Bytes(OP_POP_BC, OP_POP_BC);
+	LD	BC,49601
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+; 1063	        ResetBC();
+	CALL	_ResetBC
+; 1064	    } else {
+	JR	L_917
+L_916:
+; 1065	        // Optimize StrX + "..." -> StrX
+; 1066	        if (canOptimizeConcatenateStrings) {
+	LD	A,(_canOptimizeConcatenateStrings)
+	OR	A,A
+	JR	Z,L_910
+; 1067	            if (entry2->type == TYPE_STRING && !comparePtrToTempStrings(entry2_operand)) {
+	LD	IY,(_entry2)
+	LD	A,(IY+1)
+	CP	A,4
+	JR	NZ,L_863
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	CALL	_comparePtrToTempStrings
+	POP	BC
+	OR	A,A
+	JR	NZ,L_863
+; 1068	                ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1069	            }
+L_863:
+; 1070	            LD_HL_IMM(entry2_operand);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1071	            PUSH_HL();
+	LD	BC,229
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+; 1072	            LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1073	            PUSH_HL();
+	LD	BC,229
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	JR	L_913
+; 1074	        } else {
+L_910:
+; 1075	            if (entry1->type == TYPE_STRING && !comparePtrToTempStrings(entry1_operand)) {
+	LD	IY,(_entry1)
+	LD	A,(IY+1)
+	CP	A,4
+	JR	NZ,L_877
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	CALL	_comparePtrToTempStrings
+	POP	BC
+	OR	A,A
+	JR	NZ,L_877
+; 1076	                ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1077	            }
+L_877:
+; 1078	            LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1079	            PUSH_HL();
+	LD	BC,229
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+; 1080	            if (entry2_operand == prescan.tempStrings[TempString1]) {
+	LD	BC,_prescan+472
+	LD	(IX+-3),BC
+	LD	HL,BC
+	LD	BC,(HL)
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_886
+; 1081	                LD_HL_IMM(prescan.tempStrings[TempString2]);
+	LD	IY,(IX+-3)
+	LEA	HL,IY+3
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_890
+; 1082	            } else {
+L_886:
+; 1083	                LD_HL_IMM(prescan.tempStrings[TempString1]);
+	LD	HL,(IX+-3)
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1084	            }
+L_890:
+; 1085	            PUSH_HL();
+	LD	BC,229
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+; 1086	            CALL(__strcpy);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,204
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1087	            POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+; 1088	            if (entry2->type == TYPE_STRING && !comparePtrToTempStrings(entry2_operand)) {
+	LD	IY,(_entry2)
+	LD	A,(IY+1)
+	CP	A,4
+	JR	NZ,L_902
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	CALL	_comparePtrToTempStrings
+	POP	BC
+	OR	A,A
+	JR	NZ,L_902
+; 1089	                ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1090	            }
+L_902:
+; 1091	            LD_HL_IMM(entry2_operand);
+	LD	BC,(_entry2_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1092	            EX_SP_HL();
+	LD	BC,227
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+; 1093	            PUSH_DE();
+	LD	BC,213
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+; 1094	        }
+L_913:
+; 1095	        CALL(__strcat);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,192
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1096	        OutputWrite2Bytes(OP_POP_BC, OP_POP_BC);
+	LD	BC,49601
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+; 1097	        ResetBC();
+	CALL	_ResetBC
+; 1098	    }
+; 1099	}
+L_917:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _AddStringString ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetHL                            IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_prescan                            IMPORT   5833   variable
+;_entry1                             STATIC      3   variable
+;_canOptimizeConcatenateStrings      STATIC      1   variable
+;_ResetBC                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_ProgramPtrToOffsetStack            IMPORT  -----   function
+;_entry2_operand                     STATIC      3   variable
+;_entry2                             STATIC      3   variable
+;_entry1_operand                     STATIC      3   variable
+;_comparePtrToTempStrings            IMPORT  -----   function
+;G_7                                   IX-3      3   variable
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1100	void SubChainAnsNumber(void) {
+_SubChainAnsNumber:
+	LD	HL,-4
+	CALL	__frameset
+; 1101	    uint24_t number = entry2_operand;
+	LD	BC,(_entry2_operand)
+	LD	(IX+-4),BC
+; 1102	
+; 1103	    if (expr.outputRegister == REGISTER_A && number < 256) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_953
+	LD	BC,256
+	LD	HL,(_entry2_operand)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_953
+; 1104	        if (!number) {
+	LD	HL,(_entry2_operand)
+	CALL	__icmpzero
+	JR	NZ,L_922
+; 1105	            expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+; 1106	            return;
+	JR	L_954
+; 1107	        }
+L_922:
+; 1108	        SUB_A(number);
+	LD	BC,214
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	C,(IX+-4)
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+; 1109	        SBC_HL_HL();
+	LD	BC,25325
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+; 1110	        LD_L_A();
+	LD	BC,111
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+; 1111	        expr.AnsSetZeroFlag = true;
+	LD	A,1
+	LD	(_expr+5),A
+; 1112	        expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
+	LD	A,3
+	LD	(_expr+9),A
+; 1113	    } else {
+	JR	L_954
+L_953:
+; 1114	        MaybeAToHL();
+	CALL	_MaybeAToHL
+; 1115	
+; 1116	        if (number < 5) {
+	LD	BC,5
+	LD	HL,(IX+-4)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_951
+; 1117	            uint8_t a;
+; 1118	
+; 1119	            for (a = 0; a < (uint8_t)number; a++) {
+	LD	(IX+-1),0
+	JR	L_940
+L_938:
+; 1120	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_936
+; 1121	                    DEC_HL();
+	LD	BC,43
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+	JR	L_937
+; 1122	                } else {
+L_936:
+; 1123	                    DEC_DE();
+	LD	BC,27
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+; 1124	                }
+L_937:
+; 1125	                expr.outputReturnRegister = expr.outputRegister;
+	LD	A,(_expr+10)
+	LD	(_expr+11),A
+	INC	(IX+-1)
+; 1126	            }
+L_940:
+	LD	B,(IX+-4)
+	LD	A,(IX+-1)
+	CP	A,B
+	JR	C,L_938
+	JR	L_954
+; 1127	        } else {
+L_951:
+; 1128	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_946
+; 1129	                LD_DE_IMM(0 - number);
+	LD	HL,(IX+-4)
+	CALL	__ineg
+	PUSH	HL
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_949
+; 1130	            } else {
+L_946:
+; 1131	                LD_HL_IMM(0 - number);
+	LD	HL,(IX+-4)
+	CALL	__ineg
+	PUSH	HL
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1132	            }
+L_949:
+; 1133	            ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+; 1134	        }
+; 1135	    }
+; 1136	}
+L_954:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _SubChainAnsNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_LoadRegValue                       IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_MaybeAToHL                         IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_ResetA                             IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_entry2_operand                     STATIC      3   variable
+;number                                IX-4      3   variable
+;a                                     IX-1      1   variable
+
+
+; Stack Frame Size: 10 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1137	void SubChainAnsVariable(void) {
+_SubChainAnsVariable:
+; 1138	    AnsToHL();
+	CALL	_AnsToHL
+; 1139	    LD_DE_IND_IX_OFF(entry2_operand);
+	LD	A,(_entry2_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1140	}
+	RET	
+
+
+;**************************** _SubChainAnsVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry2_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1141	void SubNumberVariable(void) {
+_SubNumberVariable:
+; 1142	    LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1143	    SubChainAnsVariable();
+	CALL	_SubChainAnsVariable
+; 1144	}
+	RET	
+
+
+;**************************** _SubNumberVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegValue                       IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1145	void SubNumberChainAns(void) {
+_SubNumberChainAns:
+; 1146	    AnsToDE();
+	CALL	_AnsToDE
+; 1147	    LD_HL_IMM(entry1_operand);
+	LD	BC,(_entry1_operand)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1148	}
+	RET	
+
+
+;**************************** _SubNumberChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegValue                       IMPORT  -----   function
+;_AnsToDE                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1149	void SubVariableNumber(void) {
+_SubVariableNumber:
+; 1150	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1151	    SubChainAnsNumber();
+	CALL	_SubChainAnsNumber
+; 1152	}
+	RET	
+
+
+;**************************** _SubVariableNumber ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1153	void SubVariableVariable(void) {
+_SubVariableVariable:
+; 1154	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1155	    SubChainAnsVariable();
+	CALL	_SubChainAnsVariable
+; 1156	}
+	RET	
+
+
+;**************************** _SubVariableVariable ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1157	void SubVariableChainAns(void) {
+_SubVariableChainAns:
+; 1158	    AnsToDE();
+	CALL	_AnsToDE
+; 1159	    LD_HL_IND_IX_OFF(entry1_operand);
+	LD	A,(_entry1_operand)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1160	}
+	RET	
+
+
+;**************************** _SubVariableChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_entry1_operand                     STATIC      3   variable
+;_LoadRegVariable                    IMPORT  -----   function
+;_AnsToDE                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+; 1161	void SubChainPushChainAns(void) {
+_SubChainPushChainAns:
+; 1162	    AnsToDE();
+	CALL	_AnsToDE
+; 1163	    POP_HL();
+	LD	BC,225
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+; 1164	}
+	RET	
+
+
+;**************************** _SubChainPushChainAns ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_AnsToDE                            IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	SEGMENT DATA
+_operatorChainPushChainAnsFunctions:
+	DW24	_StoChainPushChainAns
+	DW24	_BitAndChainPushChainAns
+	DW24	_BitAndChainPushChainAns
+	DW24	_BitAndChainPushChainAns
+	DW24	_AndChainPushChainAns
+	DW24	_AndChainPushChainAns
+	DW24	_AndChainPushChainAns
+	DW24	_EQChainPushChainAns
+	DW24	_LTChainPushChainAns
+	DW24	_GEChainPushChainAns
+	DW24	_LEChainPushChainAns
+	DW24	_GEChainPushChainAns
+	DW24	_EQChainPushChainAns
+	DW24	_MulChainPushChainAns
+	DW24	_DivChainPushChainAns
+	DW24	_AddChainPushChainAns
+	DW24	_SubChainPushChainAns
+_operatorFunctions:
+	DW24	_OperatorError
+	DW24	_StoNumberVariable
+	DW24	_StoNumberChainAns
+	DW24	_OperatorError
+	DW24	_StoVariableVariable
+	DW24	_StoVariableChainAns
+	DW24	_OperatorError
+	DW24	_StoChainAnsVariable
+	DW24	_StoChainAnsChainAns
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_BitAndVariableNumber
+	DW24	_BitAndVariableVariable
+	DW24	_OperatorError
+	DW24	_BitAndChainAnsNumber
+	DW24	_BitAndChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_BitAndVariableNumber
+	DW24	_BitAndVariableVariable
+	DW24	_OperatorError
+	DW24	_BitAndChainAnsNumber
+	DW24	_BitAndChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_BitAndVariableNumber
+	DW24	_BitAndVariableVariable
+	DW24	_OperatorError
+	DW24	_BitAndChainAnsNumber
+	DW24	_BitAndChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_AndVariableNumber
+	DW24	_AndVariableVariable
+	DW24	_OperatorError
+	DW24	_AndChainAnsNumber
+	DW24	_AndChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_AndVariableNumber
+	DW24	_AndVariableVariable
+	DW24	_OperatorError
+	DW24	_AndChainAnsNumber
+	DW24	_AndChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_AndVariableNumber
+	DW24	_AndVariableVariable
+	DW24	_OperatorError
+	DW24	_AndChainAnsNumber
+	DW24	_AndChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_EQVariableNumber
+	DW24	_EQVariableVariable
+	DW24	_OperatorError
+	DW24	_EQChainAnsNumber
+	DW24	_EQChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_GEVariableNumber
+	DW24	_GEChainAnsNumber
+	DW24	_GENumberVariable
+	DW24	_GEVariableVariable
+	DW24	_GEChainAnsVariable
+	DW24	_GENumberChainAns
+	DW24	_GEVariableChainAns
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_GENumberVariable
+	DW24	_GENumberChainAns
+	DW24	_GEVariableNumber
+	DW24	_GEVariableVariable
+	DW24	_GEVariableChainAns
+	DW24	_GEChainAnsNumber
+	DW24	_GEChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_GEVariableNumber
+	DW24	_GEChainAnsNumber
+	DW24	_GENumberVariable
+	DW24	_GEVariableVariable
+	DW24	_GEChainAnsVariable
+	DW24	_GENumberChainAns
+	DW24	_GEVariableChainAns
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_GENumberVariable
+	DW24	_GENumberChainAns
+	DW24	_GEVariableNumber
+	DW24	_GEVariableVariable
+	DW24	_GEVariableChainAns
+	DW24	_GEChainAnsNumber
+	DW24	_GEChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_EQVariableNumber
+	DW24	_EQVariableVariable
+	DW24	_OperatorError
+	DW24	_EQChainAnsNumber
+	DW24	_EQChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_MulVariableNumber
+	DW24	_MulVariableVariable
+	DW24	_OperatorError
+	DW24	_MulChainAnsNumber
+	DW24	_MulChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_DivNumberVariable
+	DW24	_DivNumberChainAns
+	DW24	_DivVariableNumber
+	DW24	_DivVariableVariable
+	DW24	_DivVariableChainAns
+	DW24	_DivChainAnsNumber
+	DW24	_DivChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_AddVariableNumber
+	DW24	_AddVariableVariable
+	DW24	_OperatorError
+	DW24	_AddChainAnsNumber
+	DW24	_AddChainAnsVariable
+	DW24	_OperatorError
+	DW24	_OperatorError
+	DW24	_SubNumberVariable
+	DW24	_SubNumberChainAns
+	DW24	_SubVariableNumber
+	DW24	_SubVariableVariable
+	DW24	_SubVariableChainAns
+	DW24	_SubChainAnsNumber
+	DW24	_SubChainAnsVariable
+	DW24	_OperatorError
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	DW24	0
+	XREF _MaybeAToHL:ROM
+	XREF _AnsToBC:ROM
+	XREF _AnsToDE:ROM
+	XREF _AnsToHL:ROM
+	XREF _RegChangeHLDE:ROM
+	XREF _ResetA:ROM
+	XREF _ResetBC:ROM
+	XREF _ResetDE:ROM
+	XREF _ResetHL:ROM
+	XREF _LoadRegVariable:ROM
+	XREF _LoadRegValue:ROM
+	XREF _ClearAnsFlags:ROM
+	XREF _ProgramPtrToOffsetStack:ROM
+	XREF _OutputWriteLong:ROM
+	XREF _OutputWriteWord:ROM
+	XREF _OutputWriteByte:ROM
+	XREF _displayError:ROM
+	XREF _XorData:ROM
+	XREF _AndData:ROM
+	XREF _OrData:ROM
+	XREF _reg:ROM
+	XREF _prescan:ROM
+	XREF _expr:ROM
+	XREF _ice:ROM
+	XREF _MultWithNumber:ROM
+	XREF _memchr:ROM
+	XREF _memcpy:ROM
+	XREF __indcall:ROM
+	XREF __idivu:ROM
+	XREF __imulu:ROM
+	XREF __ineg:ROM
+	XREF __ior:ROM
+	XREF __iand:ROM
+	XREF __ixor:ROM
+	XREF __frameset0:ROM
+	XREF __frameset:ROM
+	XREF __icmpzero:ROM
+	XREF __case8:ROM
+	XREF __imul_b:ROM
+	XREF __ishru_b:ROM
+	XDEF _SubChainPushChainAns
+	XDEF _SubVariableChainAns
+	XDEF _SubVariableVariable
+	XDEF _SubVariableNumber
+	XDEF _SubNumberChainAns
+	XDEF _SubNumberVariable
+	XDEF _SubChainAnsVariable
+	XDEF _SubChainAnsNumber
+	XDEF _AddStringString
+	XDEF _AddChainPushChainAns
+	XDEF _AddVariableVariable
+	XDEF _AddChainAnsVariable
+	XDEF _AddVariableNumber
+	XDEF _AddChainAnsNumber
+	XDEF _DivChainPushChainAns
+	XDEF _DivVariableChainAns
+	XDEF _DivVariableVariable
+	XDEF _DivVariableNumber
+	XDEF _DivNumberChainAns
+	XDEF _DivNumberVariable
+	XDEF _DivChainAnsVariable
+	XDEF _DivChainAnsNumber
+	XDEF _MulChainPushChainAns
+	XDEF _MulVariableVariable
+	XDEF _MulChainAnsVariable
+	XDEF _MulVariableNumber
+	XDEF _MulChainAnsNumber
+	XDEF _LEChainPushChainAns
+	XDEF _LTChainPushChainAns
+	XDEF _GEChainPushChainAns
+	XDEF _GEVariableChainAns
+	XDEF _GEVariableVariable
+	XDEF _GEVariableNumber
+	XDEF _GENumberChainAns
+	XDEF _GENumberVariable
+	XDEF _GEChainAnsVariable
+	XDEF _GEChainAnsNumber
+	XDEF _GEInsert
+	XDEF _EQChainPushChainAns
+	XDEF _EQVariableVariable
+	XDEF _EQChainAnsVariable
+	XDEF _EQVariableNumber
+	XDEF _EQChainAnsNumber
+	XDEF _EQInsert
+	XDEF _AndChainPushChainAns
+	XDEF _AndVariableVariable
+	XDEF _AndVariableNumber
+	XDEF _AndChainAnsVariable
+	XDEF _AndChainAnsNumber
+	XDEF _AndInsert
+	XDEF _BitAndChainPushChainAns
+	XDEF _BitAndVariableVariable
+	XDEF _BitAndVariableNumber
+	XDEF _BitAndChainAnsVariable
+	XDEF _BitAndChainAnsNumber
+	XDEF _StoStringVariable
+	XDEF _StoStringString
+	XDEF _StoToChainAns
+	XDEF _StoStringChainAns
+	XDEF _StoChainAnsChainAns
+	XDEF _StoChainPushChainAns
+	XDEF _StoVariableChainAns
+	XDEF _StoNumberChainAns
+	XDEF _StoVariableVariable
+	XDEF _StoNumberVariable
+	XDEF _StoChainAnsVariable
+	XDEF _OperatorError
+	XDEF _LD_HL_STRING
+	XDEF _parseOperator
+	XDEF _executeOperator
+	XDEF _getIndexOfOperator
+	XDEF _comparePtrToTempStrings
+	XDEF _operatorCanSwap
+	XDEF _operatorPrecedence2
+	XDEF _operatorPrecedence
+	XDEF _operators
+; 1165	
+; 1166	static void (*operatorChainPushChainAnsFunctions[17])(void) = {
+; 1167	    StoChainPushChainAns,
+; 1168	    BitAndChainPushChainAns,
+; 1169	    BitOrChainPushChainAns,
+; 1170	    BitXorChainPushChainAns,
+; 1171	    AndChainPushChainAns,
+; 1172	    XorChainPushChainAns,
+; 1173	    OrChainPushChainAns,
+; 1174	    EQChainPushChainAns,
+; 1175	    LTChainPushChainAns,
+; 1176	    GTChainPushChainAns,
+; 1177	    LEChainPushChainAns,
+; 1178	    GEChainPushChainAns,
+; 1179	    NEChainPushChainAns,
+; 1180	    MulChainPushChainAns,
+; 1181	    DivChainPushChainAns,
+; 1182	    AddChainPushChainAns,
+; 1183	    SubChainPushChainAns
+; 1184	};
+; 1185	
+; 1186	static void (*operatorFunctions[272])(void) = {
+	END

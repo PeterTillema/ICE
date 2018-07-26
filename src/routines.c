@@ -1375,8 +1375,11 @@ int grabString(uint8_t **outputPtr, bool stopAtStoreAndString) {
         } else if (tok == 0xEF) {
             tok = _getc();
             output = 715 + tok - 15 * (tok >= 0x2E) - 3 * (tok >= 0x40) - 8 * (tok >= 0x60) - 40 * (tok >= 0x70);
-        } else {
+        } else if (tok) {
             output = token - 1;
+        } else {
+            displayError(W_WRONG_CHAR);
+            continue;
         }
 
         strcpy(tempString, tokenStrings[output]);

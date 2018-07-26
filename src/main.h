@@ -1,8 +1,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define AMOUNT_OF_GRAPHX_FUNCTIONS 92
-#define AMOUNT_OF_FILEIOC_FUNCTIONS 21
+#define AMOUNT_OF_GRAPHX_FUNCTIONS 94
+#define AMOUNT_OF_FILEIOC_FUNCTIONS 34
 #define AMOUNT_OF_FUNCTIONS 33
 
 #define STACK_SIZE 500
@@ -234,6 +234,8 @@ void SqrtData(void);
 void PauseData(void);
 void GotoEditor(char*, uint16_t);
 void RunPrgm(char*);
+void SetHooks1(uint8_t*);
+void SetHooks2(uint8_t*);
 #endif
 
 #endif

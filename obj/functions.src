@@ -1,0 +1,6318 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"..\SRC\FUNCTIONS.C"
+	.assume ADL=1
+	SEGMENT TEXT
+_GraphxArgs:
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	129
+	DB	128
+	DB	0
+	DB	0
+	DB	3
+	DB	0
+	DB	1
+	DB	128
+	DB	2
+	DB	64
+	DB	130
+	DB	64
+	DB	128
+	DB	0
+	DB	1
+	DB	128
+	DB	0
+	DB	0
+	DB	1
+	DB	128
+	DB	3
+	DB	224
+	DB	5
+	DB	160
+	DB	1
+	DB	128
+	DB	2
+	DB	64
+	DB	2
+	DB	64
+	DB	1
+	DB	0
+	DB	3
+	DB	0
+	DB	2
+	DB	0
+	DB	129
+	DB	128
+	DB	129
+	DB	128
+	DB	129
+	DB	128
+	DB	1
+	DB	0
+	DB	1
+	DB	0
+	DB	1
+	DB	128
+	DB	1
+	DB	0
+	DB	1
+	DB	128
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	4
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	0
+	DB	4
+	DB	0
+	DB	4
+	DB	0
+	DB	4
+	DB	80
+	DB	3
+	DB	64
+	DB	3
+	DB	64
+	DB	3
+	DB	64
+	DB	4
+	DB	80
+	DB	4
+	DB	80
+	DB	4
+	DB	0
+	DB	129
+	DB	0
+	DB	1
+	DB	128
+	DB	1
+	DB	128
+	DB	1
+	DB	0
+	DB	1
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	96
+	DB	64
+	DB	0
+	DB	64
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	0
+	DB	3
+	DB	32
+	DB	3
+	DB	32
+	DB	3
+	DB	0
+	DB	5
+	DB	56
+	DB	5
+	DB	56
+	DB	2
+	DB	0
+	DB	2
+	DB	0
+	DB	2
+	DB	0
+	DB	2
+	DB	0
+	DB	2
+	DB	0
+	DB	2
+	DB	0
+	DB	2
+	DB	0
+	DB	6
+	DB	0
+	DB	6
+	DB	0
+	DB	64
+	DB	0
+	DB	2
+	DB	192
+	DB	129
+	DB	128
+	DB	0
+	DB	0
+	DB	1
+	DB	128
+	DB	1
+	DB	128
+	DB	34
+	DB	64
+	DB	34
+	DB	64
+	DB	129
+	DB	128
+	DB	2
+	DB	0
+	DB	3
+	DB	96
+	DB	3
+	DB	0
+	DB	3
+	DB	32
+	DB	2
+	DB	0
+	DB	2
+	DB	0
+	DB	66
+	DB	0
+	DB	4
+	DB	48
+	DB	5
+	DB	56
+	DB	5
+	DB	56
+	DB	2
+	DB	128
+	DB	0
+	DB	0
+_FileiocArgs:
+	DB	0
+	DB	0
+	DB	130
+	DB	0
+	DB	131
+	DB	32
+	DB	1
+	DB	128
+	DB	4
+	DB	16
+	DB	4
+	DB	16
+	DB	1
+	DB	128
+	DB	2
+	DB	192
+	DB	1
+	DB	0
+	DB	2
+	DB	64
+	DB	3
+	DB	96
+	DB	2
+	DB	64
+	DB	1
+	DB	128
+	DB	2
+	DB	192
+	DB	1
+	DB	128
+	DB	1
+	DB	128
+	DB	1
+	DB	128
+	DB	3
+	DB	0
+	DB	1
+	DB	128
+	DB	2
+	DB	0
+	DB	3
+	DB	32
+	DB	67
+	DB	128
+	DB	68
+	DB	160
+	DB	67
+	DB	128
+	DB	66
+	DB	0
+	DB	66
+	DB	0
+	DB	67
+	DB	192
+	DB	66
+	DB	0
+	DB	66
+	DB	0
+	DB	3
+	DB	0
+	DB	1
+	DB	128
+	DB	2
+	DB	64
+	DB	130
+	DB	0
+	DB	131
+	DB	32
+_implementedFunctions:
+	DB	184
+	DB	0
+	DB	1
+	DB	1
+	DB	0
+	DB	26
+	DB	0
+	DB	2
+	DB	1
+	DB	0
+	DB	25
+	DB	0
+	DB	2
+	DB	1
+	DB	0
+	DB	33
+	DB	0
+	DB	2
+	DB	1
+	DB	0
+	DB	188
+	DB	0
+	DB	1
+	DB	1
+	DB	0
+	DB	179
+	DB	0
+	DB	255
+	DB	0
+	DB	1
+	DB	182
+	DB	0
+	DB	255
+	DB	0
+	DB	1
+	DB	194
+	DB	0
+	DB	1
+	DB	1
+	DB	0
+	DB	196
+	DB	0
+	DB	1
+	DB	1
+	DB	0
+	DB	173
+	DB	0
+	DB	255
+	DB	0
+	DB	0
+	DB	171
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	114
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	16
+	DB	0
+	DB	1
+	DB	0
+	DB	0
+	DB	8
+	DB	0
+	DB	1
+	DB	0
+	DB	0
+	DB	239
+	DB	50
+	DB	2
+	DB	1
+	DB	0
+	DB	239
+	DB	2
+	DB	1
+	DB	0
+	DB	0
+	DB	239
+	DB	11
+	DB	0
+	DB	0
+	DB	0
+	DB	239
+	DB	146
+	DB	2
+	DB	1
+	DB	0
+	DB	239
+	DB	148
+	DB	2
+	DB	1
+	DB	0
+	DB	187
+	DB	12
+	DB	3
+	DB	0
+	DB	0
+	DB	187
+	DB	43
+	DB	1
+	DB	0
+	DB	0
+	DB	187
+	DB	7
+	DB	1
+	DB	0
+	DB	0
+	DB	187
+	DB	10
+	DB	2
+	DB	0
+	DB	0
+	DB	187
+	DB	15
+	DB	2
+	DB	0
+	DB	1
+	DB	98
+	DB	10
+	DB	255
+	DB	0
+	DB	0
+	DB	98
+	DB	12
+	DB	255
+	DB	0
+	DB	0
+	DB	98
+	DB	13
+	DB	255
+	DB	0
+	DB	0
+	DB	98
+	DB	14
+	DB	1
+	DB	0
+	DB	0
+	DB	98
+	DB	15
+	DB	255
+	DB	0
+	DB	0
+	DB	98
+	DB	16
+	DB	255
+	DB	0
+	DB	0
+	DB	98
+	DB	17
+	DB	3
+	DB	0
+	DB	0
+	DB	98
+	DB	18
+	DB	1
+	DB	0
+	DB	0
+	DB	98
+	DB	19
+	DB	2
+	DB	0
+	DB	1
+;    1	#include "defines.h"
+;    2	#include "functions.h"
+;    3	
+;    4	#include "ast.h"
+;    5	#include "errors.h"
+;    6	#include "stack.h"
+;    7	#include "parse.h"
+;    8	#include "main.h"
+;    9	#include "output.h"
+;   10	#include "operator.h"
+;   11	#include "routines.h"
+;   12	#include "prescan.h"
+;   13	#include "ast.h"
+;   14	
+;   15	#ifndef CALCULATOR
+;   16	extern const uint8_t SqrtData[];
+;   17	extern const uint8_t MeanData[];
+;   18	extern const uint8_t RandData[];
+;   19	extern const uint8_t TimerData[];
+;   20	extern const uint8_t MallocData[];
+;   21	extern const uint8_t SincosData[];
+;   22	extern const uint8_t KeypadData[];
+;   23	extern const uint8_t LoadspriteData[];
+;   24	extern const uint8_t LoadtilemapData[];
+;   25	#endif
+;   26	
+;   27	/* First byte:  bit 7  : returns something in A
+;   28	                bit 6  : unimplemented
+;   29	                bit 5  : returns something in HL (16 bits)
+;   30	                bit 4  : deprecated
+;   31	                bit 2-0: amount of arguments needed
+;   32	   Second byte: bit 7  : first argument is small
+;   33	                bit 6  : second argument is small
+;   34	                bit 5  : third argument is small
+;   35	                ...
+;   36	*/
+;   37	
+;   38	static const c_function_t GraphxArgs[] = {
+;   39	    {RET_NONE | 0, ARG_NORM},    // Begin
+;   40	    {RET_NONE | 0, ARG_NORM},    // End
+;   41	    {RET_A    | 1, SMALL_1},     // SetColor
+;   42	    {RET_NONE | 0, ARG_NORM},    // SetDefaultPalette
+;   43	    {RET_NONE | 3, ARG_NORM},    // SetPalette
+;   44	    {RET_NONE | 1, SMALL_1},     // FillScreen
+;   45	    {RET_NONE | 2, SMALL_2},     // SetPixel
+;   46	    {RET_A    | 2, SMALL_2},     // GetPixel
+;   47	    {RET_A    | 0, ARG_NORM},    // GetDraw
+;   48	    {RET_NONE | 1, SMALL_1},     // SetDraw
+;   49	    {RET_NONE | 0, ARG_NORM},    // SwapDraw
+;   50	    {RET_NONE | 1, SMALL_1},     // Blit
+;   51	    {RET_NONE | 3, SMALL_123},   // BlitLines
+;   52	    {RET_NONE | 5, SMALL_13},    // BlitArea
+;   53	    {RET_NONE | 1, SMALL_1},     // PrintChar
+;   54	    {RET_NONE | 2, SMALL_2},     // PrintInt
+;   55	    {RET_NONE | 2, SMALL_2},     // PrintUInt
+;   56	    {RET_NONE | 1, ARG_NORM},    // PrintString
+;   57	    {RET_NONE | 3, ARG_NORM},    // PrintStringXY
+;   58	    {RET_NONE | 2, ARG_NORM},    // SetTextXY
+;   59	    {RET_A    | 1, SMALL_1},     // SetTextBGColor
+;   60	    {RET_A    | 1, SMALL_1},     // SetTextFGColor
+;   61	    {RET_A    | 1, SMALL_1},     // SetTextTransparentColor
+;   62	    {RET_NONE | 1, ARG_NORM},    // SetCustomFontData
+;   63	    {RET_NONE | 1, ARG_NORM},    // SetCustomFontSpacing
+;   64	    {RET_NONE | 1, SMALL_1},     // SetMonoSpaceFont
+;   65	    {RET_HL   | 1, ARG_NORM},    // GetStringWidth
+;   66	    {RET_HL   | 1, SMALL_1},     // GetCharWidth
+;   67	    {RET_HL   | 0, ARG_NORM},    // GetTextX
+;   68	    {RET_HL   | 0, ARG_NORM},    // GetTextY
+;   69	    {RET_NONE | 4, ARG_NORM},    // Line
+;   70	    {RET_NONE | 3, ARG_NORM},    // HorizLine
+;   71	    {RET_NONE | 3, ARG_NORM},    // VertLine
+;   72	    {RET_NONE | 3, ARG_NORM},    // Circle
+;   73	    {RET_NONE | 3, ARG_NORM},    // FillCircle
+;   74	    {RET_NONE | 4, ARG_NORM},    // Rectangle
+;   75	    {RET_NONE | 4, ARG_NORM},    // FillRectangle
+;   76	    {RET_NONE | 4, SMALL_24},    // Line_NoClip
+;   77	    {RET_NONE | 3, SMALL_2},     // HorizLine_NoClip
+;   78	    {RET_NONE | 3, SMALL_2},     // VertLine_NoClip
+;   79	    {RET_NONE | 3, SMALL_2},     // FillCircle_NoClip
+;   80	    {RET_NONE | 4, SMALL_24},    // Rectangle_NoClip
+;   81	    {RET_NONE | 4, SMALL_24},    // FillRectangle_NoClip
+;   82	    {RET_NONE | 4, ARG_NORM},    // SetClipRegion
+;   83	    {RET_A    | 1, ARG_NORM},    // GetClipRegion
+;   84	    {RET_NONE | 1, SMALL_1},     // ShiftDown
+;   85	    {RET_NONE | 1, SMALL_1},     // ShiftUp
+;   86	    {RET_NONE | 1, ARG_NORM},    // ShiftLeft
+;   87	    {RET_NONE | 1, ARG_NORM},    // ShiftRight
+;   88	    {RET_NONE | 3, ARG_NORM},    // Tilemap
+;   89	    {RET_NONE | 3, ARG_NORM},    // Tilemap_NoClip
+;   90	    {RET_NONE | 3, ARG_NORM},    // TransparentTilemap
+;   91	    {RET_NONE | 3, ARG_NORM},    // TransparentTilemap_NoClip
+;   92	    {RET_HL   | 3, ARG_NORM},    // TilePtr
+;   93	    {RET_HL   | 3, SMALL_23},    // TilePtrMapped
+;   94	    {UN       | 0, ARG_NORM},    // LZDecompress
+;   95	    {UN       | 0, ARG_NORM},    // AllocSprite
+;   96	    {RET_NONE | 3, ARG_NORM},    // Sprite
+;   97	    {RET_NONE | 3, ARG_NORM},    // TransparentSprite
+;   98	    {RET_NONE | 3, SMALL_3},     // Sprite_NoClip
+;   99	    {RET_NONE | 3, SMALL_3},     // TransparentSprite_NoClip
+;  100	    {RET_HL   | 3, ARG_NORM},    // GetSprite
+;  101	    {RET_NONE | 5, SMALL_345},   // ScaledSprite_NoClip
+;  102	    {RET_NONE | 5, SMALL_345},   // ScaledTransparentSprite_NoClip
+;  103	    {RET_HL   | 2, ARG_NORM},    // FlipSpriteY
+;  104	    {RET_HL   | 2, ARG_NORM},    // FlipSpriteX
+;  105	    {RET_HL   | 2, ARG_NORM},    // RotateSpriteC
+;  106	    {RET_HL   | 2, ARG_NORM},    // RotateSpriteCC
+;  107	    {RET_HL   | 2, ARG_NORM},    // RotateSpriteHalf
+;  108	    {RET_NONE | 2, ARG_NORM},    // Polygon
+;  109	    {RET_NONE | 2, ARG_NORM},    // Polygon_NoClip
+;  110	    {RET_NONE | 6, ARG_NORM},    // FillTriangle
+;  111	    {RET_NONE | 6, ARG_NORM},    // FillTriangle_NoClip
+;  112	    {UN       | 0, ARG_NORM},    // LZDecompressSprite
+;  113	    {RET_NONE | 2, SMALL_12},    // SetTextScale
+;  114	    {RET_A    | 1, SMALL_1},     // SetTransparentColor
+;  115	    {RET_NONE | 0, ARG_NORM},    // ZeroScreen
+;  116	    {RET_NONE | 1, SMALL_1},     // SetTextConfig
+;  117	    {RET_HL   | 1, SMALL_1},     // GetSpriteChar
+;  118	    {RET_HLs  | 2, SMALL_2},     // Lighten
+;  119	    {RET_HLs  | 2, SMALL_2},     // Darken
+;  120	    {RET_A    | 1, SMALL_1},     // SetFontHeight
+;  121	    {RET_HL   | 2, ARG_NORM},    // ScaleSprite
+;  122	    {RET_NONE | 3, SMALL_23},    // FloodFill
+;  123	    {RET_NONE | 3, ARG_NORM},    // RLETSprite
+;  124	    {RET_NONE | 3, SMALL_3},     // RLETSprite_NoClip
+;  125	    {RET_HL   | 2, ARG_NORM},    // ConvertFromRLETSprite
+;  126	    {RET_HL   | 2, ARG_NORM},    // ConvertToRLETSprite
+;  127	    {UN       | 2, ARG_NORM},    // ConvertToNewRLETSprite
+;  128	    {RET_HL   | 4, SMALL_34},    // RotateScaleSprite
+;  129	    {RET_HL   | 5, SMALL_345},   // RotatedScaledTransparentSprite_NoClip
+;  130	    {RET_HL   | 5, SMALL_345},   // RotatedScaledSprite_NoClip
+;  131	    {RET_HL   | 2, SMALL_1},     // SetCharData
+;  132	    {RET_NONE | 0, ARG_NORM},    // Wait
+;  133	};
+;  134	
+;  135	static const c_function_t FileiocArgs[] = {
+;  136	    {RET_NONE | 0, ARG_NORM},    // CloseAll
+;  137	    {RET_A    | 2, ARG_NORM},    // Open
+;  138	    {RET_A    | 3, SMALL_3},     // OpenVar
+;  139	    {RET_NONE | 1, SMALL_1},     // Close
+;  140	    {RET_HL   | 4, SMALL_4},     // Write
+;  141	    {RET_HL   | 4, SMALL_4},     // Read
+;  142	    {RET_HL   | 1, SMALL_1},     // GetChar
+;  143	    {RET_HL   | 2, SMALL_12},    // PutChar
+;  144	    {RET_HL   | 1, ARG_NORM},    // Delete
+;  145	    {RET_HL   | 2, SMALL_2},     // DeleteVar
+;  146	    {RET_HL   | 3, SMALL_23},    // Seek
+;  147	    {RET_HL   | 2, SMALL_2},     // Resize
+;  148	    {RET_HL   | 1, SMALL_1},     // IsArchived
+;  149	    {RET_NONE | 2, SMALL_12},    // SetArchiveStatus
+;  150	    {RET_HL   | 1, SMALL_1},     // Tell
+;  151	    {RET_HL   | 1, SMALL_1},     // Rewind
+;  152	    {RET_HL   | 1, SMALL_1},     // GetSize
+;  153	    {RET_HL   | 3, ARG_NORM},    // GetTokenString
+;  154	    {RET_HL   | 1, SMALL_1},     // GetDataPtr
+;  155	    {RET_HL   | 2, ARG_NORM},    // Detect
+;  156	    {RET_HL   | 3, SMALL_3},     // DetectVar
+;  157	    {UN       | 3, SMALL_1},     // SetVar
+;  158	    {UN       | 4, SMALL_13},    // StoVar
+;  159	    {UN       | 3, SMALL_1},     // RclVar
+;  160	    {UN       | 2, ARG_NORM},    // AllocString
+;  161	    {UN       | 2, ARG_NORM},    // AllocList
+;  162	    {UN       | 3, SMALL_12},    // AllocMatrix
+;  163	    {UN       | 2, ARG_NORM},    // AllocCplxList
+;  164	    {UN       | 2, ARG_NORM},    // AllocEqu
+;  165	    {RET_HL   | 3, ARG_NORM},    // DetectAny
+;  166	    {RET_HL   | 1, SMALL_1},     // GetVATPtr
+;  167	    {RET_NONE | 2, SMALL_2},     // GetName
+;  168	    {RET_A    | 2, ARG_NORM},    // Rename
+;  169	    {RET_A    | 3, SMALL_3},     // RenameVar
+;  170	};
+;  171	
+;  172	const function_t implementedFunctions[AMOUNT_OF_FUNCTIONS] = {
+	SEGMENT CODE
+;  173	// function / second byte / amount of args / allow args as numbers / args backwards pushed
+;  174	    {tNot,      0,              1,   1, 0},
+;  175	    {tMin,      0,              2,   1, 0},
+;  176	    {tMax,      0,              2,   1, 0},
+;  177	    {tMean,     0,              2,   1, 0},
+;  178	    {tSqrt,     0,              1,   1, 0},
+;  179	    {tDet,      0,              255, 0, 1},
+;  180	    {tSum,      0,              255, 0, 1},
+;  181	    {tSin,      0,              1,   1, 0},
+;  182	    {tCos,      0,              1,   1, 0},
+;  183	    {tGetKey,   0,              255, 0, 0},
+;  184	    {tRand,     0,              0,   0, 0},
+;  185	    {tAns,      0,              0,   0, 0},
+;  186	    {tLParen,   0,              1,   0, 0},
+;  187	    {tLBrace,   0,              1,   0, 0},
+;  188	    {tExtTok,   tRemainder,     2,   1, 0},
+;  189	    {tExtTok,   tCheckTmr,      1,   0, 0},
+;  190	    {tExtTok,   tStartTmr,      0,   0, 0},
+;  191	    {tExtTok,   tLEFT,          2,   1, 0},
+;  192	    {tExtTok,   tRIGHT,         2,   1, 0},
+;  193	    {t2ByteTok, tSubStrng,      3,   0, 0},
+;  194	    {t2ByteTok, tLength,        1,   0, 0},
+;  195	    {t2ByteTok, tFinDBD,        1,   0, 0},
+;  196	    {t2ByteTok, tRandInt,       2,   0, 0},
+;  197	    {t2ByteTok, tInStrng,       2,   0, 1},
+;  198	    {tVarOut,   tDefineSprite,  255, 0, 0},
+;  199	    {tVarOut,   tData,          255, 0, 0},
+;  200	    {tVarOut,   tCopy,          255, 0, 0},
+;  201	    {tVarOut,   tAlloc,         1,   0, 0},
+;  202	    {tVarOut,   tDefineTilemap, 255, 0, 0},
+;  203	    {tVarOut,   tCopyData,      255, 0, 0},
+;  204	    {tVarOut,   tLoadData,      3,   0, 0},
+;  205	    {tVarOut,   tSetBrightness, 1,   0, 0},
+;  206	    {tVarOut,   tCompare,       2,   0, 1}
+;  207	};
+;  208	
+;  209	extern uint8_t outputStack[400];
+;  210	
+;  211	uint8_t parseFunction(uint24_t index) {
+_parseFunction:
+	LD	HL,-154
+	CALL	__frameset
+;  212	    element_t *outputPtr = (element_t*)outputStack, *outputPrev, *outputCurr, *outputPrevPrev, *outputPrevPrevPrev;
+	LD	BC,_outputStack
+	LD	(IX+-32),BC
+;  213	    uint8_t function, function2, amountOfArguments, outputPrevType, outputPrevPrevType, res;
+;  214	    uint24_t outputPrevOperand, outputPrevPrevOperand;
+;  215	
+;  216	    outputPrevPrevPrev = &outputPtr[getIndexOffset(-4)];
+	LD	BC,16777212
+	PUSH	BC
+	PUSH	BC
+	PUSH	HL
+	LD	HL,IY
+	LD	BC,-154
+	CALL	__istix
+	POP	HL
+	POP	BC
+	CALL	_getIndexOffset
+	PUSH	BC
+	LD	BC,-154
+	PUSH	HL
+	CALL	__ildix
+	LD	IY,HL
+	POP	HL
+	POP	BC
+	POP	BC
+;  217	    outputPrevPrev     = &outputPtr[getIndexOffset(-3)];
+	LD	DE,16777213
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	LD	BC,_outputStack
+	ADD	HL,BC
+	LD	(IX+-29),HL
+	PUSH	DE
+	PUSH	BC
+	PUSH	HL
+	LD	HL,IY
+	LD	BC,-154
+	CALL	__istix
+	POP	HL
+	POP	BC
+	CALL	_getIndexOffset
+	PUSH	BC
+	LD	BC,-154
+	PUSH	HL
+	CALL	__ildix
+	LD	IY,HL
+	POP	HL
+	POP	BC
+	POP	BC
+	LD	DE,(IX+-32)
+;  218	    outputPrev         = &outputPtr[getIndexOffset(-2)];
+	PUSH	IY
+	LEA	IY,IX+-128	; spill
+	LD	(IY+-17),HL
+	POP	IY
+	LD	HL,16777214
+	PUSH	IY
+	LEA	IY,IX+-128	; spill
+	LD	(IY+-23),HL	; unspill
+	LD	HL,(IY+-17)
+	POP	IY
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	ADD	HL,DE
+	LD	(IX+-84),HL
+	PUSH	IY
+	LEA	IY,IX+-128	; unspill
+	LD	HL,(IY+-23)
+	POP	IY
+	PUSH	HL
+	PUSH	BC
+	PUSH	HL
+	LD	HL,IY
+	LD	BC,-154
+	CALL	__istix
+	POP	HL
+	POP	BC
+	CALL	_getIndexOffset
+	PUSH	BC
+	LD	BC,-154
+	PUSH	HL
+	CALL	__ildix
+	LD	IY,HL
+	POP	HL
+	POP	BC
+	POP	BC
+	LD	DE,(IX+-32)
+;  219	    outputCurr         = &outputPtr[getIndexOffset(-1)];
+	PUSH	IY
+	LEA	IY,IX+-128	; spill
+	LD	(IY+-17),HL
+	POP	IY
+	LD	HL,16777215
+	PUSH	IY
+	LEA	IY,IX+-128	; spill
+	LD	(IY+-20),HL	; unspill
+	LD	HL,(IY+-17)
+	POP	IY
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	ADD	HL,DE
+	LD	(IX+-20),HL
+	PUSH	IY
+	LEA	IY,IX+-128	; unspill
+	LD	HL,(IY+-20)
+	POP	IY
+	PUSH	HL
+	CALL	_getIndexOffset
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	POP	BC
+	LD	BC,(IX+-32)
+	ADD	HL,BC
+	LD	(IX+-58),HL
+;  220	    function           = outputPtr[index].operand.func.function;
+	LD	HL,(IX+6)
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	LD	BC,(IX+-32)
+	ADD	HL,BC
+	LD	(IX+-6),HL
+	LD	IY,(IX+-6)
+	LEA	BC,IY+3
+	LD	(IX+-3),BC
+	LD	IY,(IX+-3)
+	LD	A,(IY+0)
+	LD	(IX+-12),A
+;  221	    function2          = outputPtr[index].operand.func.function2;
+	LD	A,(IY+2)
+	LD	(IX+-14),A
+;  222	    amountOfArguments  = outputPtr[index].operand.func.amountOfArgs;
+	LD	A,(IY+1)
+	LD	(IX+-15),A
+;  223	
+;  224	    outputPrevOperand     = outputPrev->operand.num;
+	LD	IY,(IX+-20)
+	LD	BC,(IY+3)
+	LD	(IX+-11),BC
+;  225	    outputPrevType        = outputPrev->type;
+	LD	A,(IY+1)
+	LD	(IX+-7),A
+;  226	    outputPrevPrevType    = outputPrevPrev->type;
+	LD	IY,(IX+-84)
+	LD	A,(IY+1)
+	LD	(IX+-13),A
+;  227	    outputPrevPrevOperand = outputPrevPrev->operand.num;
+	LD	BC,(IY+3)
+	LD	(IX+-26),BC
+;  228	    
+;  229	    // (
+;  230	    if (function == tLParen) {
+	LD	A,(IX+-12)
+	CP	A,16
+	JR	NZ,L_739
+;  231	        expr.outputReturnRegister = expr.outputRegister;
+	LD	A,(_expr+10)
+	LD	(_expr+11),A
+;  232	    }
+;  233	    
+;  234	    // not(
+;  235	    else if (function == tNot) {
+	JR	L_740
+L_739:
+	LD	A,(IX+-12)
+	CP	A,184
+	JR	NZ,L_737
+;  236	        if ((res = parseFunction1Arg(index, REGISTER_HL_DE)) != VALID) {
+	LD	BC,3
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction1Arg
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_21
+;  237	            return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  238	        }
+L_21:
+;  239	
+;  240	        if (expr.outputRegister == REGISTER_A) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_20
+;  241	            OutputWrite2Bytes(OP_ADD_A, 255);
+	LD	BC,65478
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  242	            OutputWrite2Bytes(OP_SBC_A_A, OP_INC_A);
+	LD	BC,15519
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  243	            ResetA();
+	CALL	_ResetA
+;  244	            expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  245	            if (expr.AnsSetZeroFlag || expr.AnsSetCarryFlag || expr.AnsSetZeroFlagReversed || expr.AnsSetCarryFlagReversed) {
+	LD	A,(_expr+5)
+	OR	A,A
+	JR	NZ,L_4
+	LD	A,(_expr+7)
+	OR	A,A
+	JR	NZ,L_4
+	LD	A,(_expr+6)
+	OR	A,A
+	JR	NZ,L_4
+	LD	A,(_expr+8)
+	OR	A,A
+	JR	Z,L_5
+L_4:
+;  246	                bool temp = expr.AnsSetZeroFlag;
+	LD	A,(_expr+5)
+	LD	(IX+-43),A
+;  247	
+;  248	                expr.ZeroCarryFlagRemoveAmountOfBytes += 4;
+	LD	A,(_expr+9)
+	ADD	A,4
+	LD	(_expr+9),A
+;  249	                expr.AnsSetZeroFlag = expr.AnsSetZeroFlagReversed;
+	LD	A,(_expr+6)
+	LD	(_expr+5),A
+;  250	                expr.AnsSetZeroFlagReversed = temp;
+	LD	A,(IX+-43)
+	LD	(_expr+6),A
+;  251	                temp = expr.AnsSetCarryFlag;
+	LD	A,(_expr+7)
+	LD	(IX+-43),A
+;  252	                expr.AnsSetCarryFlag = expr.AnsSetCarryFlagReversed;
+	LD	A,(_expr+8)
+	LD	(_expr+7),A
+;  253	                expr.AnsSetCarryFlagReversed = temp;
+	LD	A,(IX+-43)
+	LD	(_expr+8),A
+;  254	            } else {
+	JR	L_740
+L_5:
+;  255	                expr.ZeroCarryFlagRemoveAmountOfBytes = 2;
+	LD	A,2
+	LD	(_expr+9),A
+;  256	                expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  257	            }
+;  258	        } else {
+	JR	L_740
+L_20:
+;  259	            uint8_t *tempProgPtr = ice.programPtr;
+	LD	BC,(_ice+60)
+	LD	(IX+-93),BC
+;  260	            
+;  261	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_9
+;  262	                LD_DE_IMM(-1);
+	LD	BC,16777215
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_12
+;  263	            } else {
+L_9:
+;  264	                OutputWrite3Bytes(OP_SCF, 0xED, 0x62);
+	LD	BC,6483255
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  265	            }
+L_12:
+;  266	            ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  267	            SBC_HL_HL_INC_HL();
+	LD	BC,2319085
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  268	            if (expr.ZeroCarryFlagRemoveAmountOfBytes) {
+	LD	A,(_expr+9)
+	OR	A,A
+	JR	Z,L_17
+;  269	                bool temp = expr.AnsSetZeroFlag;
+	LD	A,(_expr+5)
+	LD	(IX+-39),A
+;  270	
+;  271	                expr.ZeroCarryFlagRemoveAmountOfBytes += ice.programPtr - tempProgPtr;
+	LD	HL,(_ice+60)
+	LD	BC,(IX+-93)
+	OR	A,A
+	SBC	HL,BC
+	LD	A,L
+	LD	BC,(_expr+9)
+	ADD	A,C
+	LD	(_expr+9),A
+;  272	                expr.AnsSetZeroFlag = expr.AnsSetZeroFlagReversed;
+	LD	A,(_expr+6)
+	LD	(_expr+5),A
+;  273	                expr.AnsSetZeroFlagReversed = temp;
+	LD	A,(IX+-39)
+	LD	(_expr+6),A
+;  274	                temp = expr.AnsSetCarryFlag;
+	LD	A,(_expr+7)
+	LD	(IX+-39),A
+;  275	                expr.AnsSetCarryFlag = expr.AnsSetCarryFlagReversed;
+	LD	A,(_expr+8)
+	LD	(_expr+7),A
+;  276	                expr.AnsSetCarryFlagReversed = temp;
+	LD	A,(IX+-39)
+	LD	(_expr+8),A
+;  277	            } else {
+	JR	L_740
+L_17:
+;  278	                ClearAnsFlags();
+	CALL	_ClearAnsFlags
+;  279	                expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
+	LD	A,3
+	LD	(_expr+9),A
+;  280	                expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  281	            }
+;  282	        }
+;  283	    } else {
+	JR	L_740
+L_737:
+;  284	        uint8_t temp, a;
+;  285	        uint24_t startIndex, endIndex;
+;  286	        
+;  287	        ClearAnsFlags();
+	CALL	_ClearAnsFlags
+;  288	        
+;  289	        // rand
+;  290	        if (function == tRand) {
+	LD	A,(IX+-12)
+	CP	A,171
+	JR	NZ,L_735
+;  291	            ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  292	            CALL(ice.randAddr + SIZEOF_SRAND_DATA);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	IY,(_ice+10911)
+	LEA	BC,IY+17
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  293	
+;  294	            ice.modifiedIY = true;
+	LD	A,1
+	LD	(_ice+10908),A
+;  295	            ResetAllRegs();
+	CALL	_ResetAllRegs
+;  296	        }
+;  297	
+;  298	        // Ans
+;  299	        else if (function == tAns) {
+	JR	L_740
+L_735:
+	LD	A,(IX+-12)
+	CP	A,114
+	JR	NZ,L_733
+;  300	            CALL(_RclAns);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,134992
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  301	            CALL(_ConvOP1);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,135024
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  302	            ResetAllRegs();
+	CALL	_ResetAllRegs
+;  303	            expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  304	        }
+;  305	
+;  306	        // getKey / getKey(X)
+;  307	        else if (function == tGetKey) {
+	JR	L_740
+L_733:
+	LD	A,(IX+-12)
+	CP	A,173
+	JR	NZ,L_731
+;  308	            if (amountOfArguments) {
+	LD	A,(IX+-15)
+	OR	A,A
+	JR	Z,L_72
+;  309	                if (outputPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	NZ,L_46
+;  310	                    uint8_t key = outputPrevOperand;
+;  311	                    uint8_t keyBit = 1;
+	LD	(IX+-47),1
+;  312	                    
+;  313	                    /* ((key-1)/8 & 7) * 2 =
+;  314	                       (key-1)/4 & (7*2) =
+;  315	                       (key-1) >> 2 & 14  */
+;  316	                    LD_B(0x1E - (((key - 1) >> 2) & 14));
+	LD	BC,6
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(IX+-11)
+	UEXT	HL
+	LD	L,A
+	DEC	HL
+	LD	A,2
+	CALL	__ishrs_b
+	LD	A,L
+	AND	A,14
+	LD	B,A
+	LD	A,30
+	SUB	A,B
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetBC
+;  317	
+;  318	                    // Get the right bit for the keypress
+;  319	                    key = (key - 1) & 7;
+	LD	A,(IX+-11)
+	DEC	A
+	AND	A,7
+	LD	(IX+-44),A
+;  320	                    while (key--) {
+	JR	L_35
+L_36:
+;  321	                        keyBit = keyBit << 1;
+	LD	A,(IX+-47)
+	ADD	A,A
+	LD	(IX+-47),A
+;  322	                    }
+L_35:
+	LD	A,(IX+-44)
+	DEC	(IX+-44)
+	OR	A,A
+	JR	NZ,L_36
+;  323	
+;  324	                    LD_C(keyBit);
+	LD	BC,14
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	C,(IX+-47)
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetBC
+	JR	L_66
+;  325	                } else if (outputPrevType == TYPE_VARIABLE) {
+L_46:
+	LD	A,(IX+-7)
+	CP	A,1
+	JR	NZ,L_44
+;  326	                    LD_A_IND_IX_OFF(outputPrevOperand);
+	LD	C,(IX+-11)
+	LD	B,0
+	PUSH	BC
+	LD	BC,4
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_66
+;  327	                } else if (outputPrevType != TYPE_CHAIN_ANS) {
+L_44:
+	LD	A,(IX+-7)
+	CP	A,2
+	JR	Z,L_66
+;  328	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  329	                }
+L_66:
+;  330	
+;  331	                if (outputPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	Z,L_67
+;  332	                    if (expr.outputRegister == REGISTER_A) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_63
+;  333	                        OutputWrite2Bytes(OP_DEC_A, OP_LD_D_A);
+	LD	BC,22333
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  334	                        loadGetKeyFastData1();
+	CALL	_loadGetKeyFastData1
+;  335	                        LD_A_D();
+	LD	BC,122
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_64
+;  336	                    } else {
+L_63:
+;  337	                        if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_54
+;  338	                            LD_A_L();
+	LD	BC,125
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_55
+;  339	                        } else {
+L_54:
+;  340	                            LD_A_E();
+	LD	BC,123
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  341	                        }
+L_55:
+;  342	                        loadGetKeyFastData1();
+	CALL	_loadGetKeyFastData1
+;  343	                        if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_61
+;  344	                            LD_A_L();
+	LD	BC,125
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_64
+;  345	                        } else {
+L_61:
+;  346	                            LD_A_E();
+	LD	BC,123
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  347	                        }
+;  348	                    }
+L_64:
+;  349	                    loadGetKeyFastData2();
+	CALL	_loadGetKeyFastData2
+;  350	                }
+L_67:
+;  351	
+;  352	                CallRoutine(&ice.usedAlreadyGetKeyFast, &ice.getKeyFastAddr, (uint8_t*)KeypadData, SIZEOF_KEYPAD_DATA);
+	LD	BC,18
+	PUSH	BC
+	LD	BC,_KeypadData
+	PUSH	BC
+	LD	BC,_ice+10915
+	PUSH	BC
+	LD	BC,_ice+10914
+	PUSH	BC
+	CALL	_CallRoutine
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  353	                ResetHL();
+	CALL	_ResetHL
+;  354	                ResetA();
+	CALL	_ResetA
+;  355	            } else {
+	JR	L_740
+L_72:
+;  356	                CALL(_os_GetCSC);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,138556
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  357	                ResetHL();
+	CALL	_ResetHL
+;  358	                ResetA();
+	CALL	_ResetA
+;  359	                ice.modifiedIY = false;
+	XOR	A,A
+	LD	(_ice+10908),A
+;  360	            }
+;  361	        }
+;  362	        
+;  363	        // sqrt(
+;  364	        else if (function == tSqrt) {
+	JR	L_740
+L_731:
+	LD	A,(IX+-12)
+	CP	A,188
+	JR	NZ,L_729
+;  365	            if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID) {
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction1Arg
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_74
+;  366	                return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  367	            }
+L_74:
+;  368	
+;  369	            CallRoutine(&ice.usedAlreadySqrt, &ice.SqrtAddr, (uint8_t*)SqrtData, SIZEOF_SQRT_DATA);
+	LD	BC,43
+	PUSH	BC
+	LD	BC,_SqrtData
+	PUSH	BC
+	LD	BC,_ice+10919
+	PUSH	BC
+	LD	BC,_ice+10918
+	PUSH	BC
+	CALL	_CallRoutine
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  370	            ResetAllRegs();
+	CALL	_ResetAllRegs
+;  371	
+;  372	            expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  373	            ice.modifiedIY = true;
+	LD	(_ice+10908),A
+;  374	        }
+;  375	
+;  376	        // sin(, cos(
+;  377	        else if (function == tSin || function == tCos) {
+	JR	L_740
+L_729:
+	LD	A,(IX+-12)
+	CP	A,194
+	JR	Z,L_726
+	LD	A,(IX+-12)
+	CP	A,196
+	JR	NZ,L_727
+L_726:
+;  378	            if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID) {
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction1Arg
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_79
+;  379	                return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  380	            }
+L_79:
+;  381	
+;  382	            if (!ice.usedAlreadySinCos) {
+	LD	A,(_ice+10934)
+	OR	A,A
+	JR	NZ,L_80
+;  383	                ice.programDataPtr -= SIZEOF_SINCOS_DATA;
+	LD	IY,(_ice+66)
+	LEA	BC,IY+-99
+	LD	(_ice+66),BC
+;  384	                ice.SinCosAddr = (uintptr_t)ice.programDataPtr;
+;  385	                memcpy(ice.programDataPtr, SincosData, SIZEOF_SINCOS_DATA);
+	LD	DE,99
+	PUSH	DE
+	LD	(_ice+10935),BC
+	LD	BC,_SincosData
+	PUSH	BC
+	LD	BC,(_ice+66)
+	PUSH	BC
+	CALL	_memcpy
+	POP	BC
+	POP	BC
+	POP	BC
+;  386	
+;  387	                // 16 = distance from start of routine to "ld de, SinTable"
+;  388	                ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.programDataPtr + 16);
+	LD	BC,(_ice+3077)
+	LD	HL,3
+	CALL	__imulu
+	LD	IY,(_ice+66)
+	LD	BC,_ice+77
+	ADD	HL,BC
+	LEA	BC,IY+16
+	LD	(HL),BC
+	LD	BC,(_ice+3077)
+	INC	BC
+	LD	(_ice+3077),BC
+;  389	
+;  390	                // This is the "ld de, SinTable", 18 is the distance from "ld de, SinTable" to "SinTable"
+;  391	                *(uint24_t*)(ice.programDataPtr + 16) = (uint24_t)ice.programDataPtr + 18 + 16;
+	LD	IY,(_ice+66)
+	LEA	HL,IY+16
+	LD	IY,(_ice+66)
+	LEA	BC,IY+34
+	LD	(HL),BC
+;  392	                ice.usedAlreadySinCos = true;
+	LD	A,1
+	LD	(_ice+10934),A
+;  393	            }
+L_80:
+;  394	
+;  395	            ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  396	            CALL(ice.SinCosAddr + (function == tSin ? 4 : 0));
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(IX+-12)
+	CP	A,194
+	JR	NZ,L_83
+	LD	BC,4
+	LD	(IX+-75),BC
+	JR	L_84
+L_83:
+	LD	BC,0
+	LD	(IX+-75),BC
+L_84:
+	LD	BC,(IX+-75)
+	LD	HL,(_ice+10935)
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_OutputWriteLong
+	POP	BC
+;  397	            ResetAllRegs();
+	CALL	_ResetAllRegs
+;  398	
+;  399	            expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  400	        }
+;  401	
+;  402	        // min(, max(
+;  403	        else if (function == tMin || function == tMax) {
+	JR	L_740
+L_727:
+	LD	A,(IX+-12)
+	CP	A,26
+	JR	Z,L_724
+	LD	A,(IX+-12)
+	CP	A,25
+	JR	NZ,L_725
+L_724:
+;  404	            if ((res = parseFunction2Args(index, REGISTER_DE, false)) != VALID) {
+	LD	BC,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction2Args
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_92
+;  405	                return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  406	            }
+L_92:
+;  407	
+;  408	            OR_A_SBC_HL_DE();
+	LD	BC,5434807
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  409	            ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  410	            if (function == tMin) {
+	LD	A,(IX+-12)
+	CP	A,26
+	JR	NZ,L_97
+;  411	                OutputWrite2Bytes(OP_JR_C, 1);
+	LD	BC,312
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  412	            } else {
+	JR	L_101
+L_97:
+;  413	                OutputWrite2Bytes(OP_JR_NC, 1);
+	LD	BC,304
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  414	            }
+L_101:
+;  415	            EX_DE_HL();
+	LD	BC,235
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_RegChangeHLDE
+;  416	            ResetHL();                 // DE is already reset because of "add hl, de \ ex de, hl"
+	CALL	_ResetHL
+;  417	        }
+;  418	
+;  419	        // mean(
+;  420	        else if (function == tMean) {
+	JR	L_740
+L_725:
+	LD	A,(IX+-12)
+	CP	A,33
+	JR	NZ,L_723
+;  421	            if ((res = parseFunction2Args(index, REGISTER_DE, false)) != VALID) {
+	LD	BC,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction2Args
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_104
+;  422	                return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  423	            }
+L_104:
+;  424	
+;  425	            CallRoutine(&ice.usedAlreadyMean, &ice.MeanAddr, (uint8_t*)MeanData, SIZEOF_MEAN_DATA);
+	LD	BC,24
+	PUSH	BC
+	LD	BC,_MeanData
+	PUSH	BC
+	LD	BC,_ice+10923
+	PUSH	BC
+	LD	BC,_ice+10922
+	PUSH	BC
+	CALL	_CallRoutine
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  426	            ResetHL();
+	CALL	_ResetHL
+;  427	            ResetBC();
+	CALL	_ResetBC
+;  428	            ResetA();
+	CALL	_ResetA
+;  429	        }
+;  430	        
+;  431	        // {}
+;  432	        else if (function == tLBrace) {
+	JR	L_740
+L_723:
+	LD	A,(IX+-12)
+	CP	A,8
+	JR	NZ,L_721
+;  433	            /*****************************************************
+;  434	            * Inputs:
+;  435	            *  arg1: PTR
+;  436	            *
+;  437	            * Returns: 1-, 2- or 3-byte value at address PTR
+;  438	            *****************************************************/
+;  439	
+;  440	            if (outputPrevType == TYPE_NUMBER || outputPrev->isString) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	Z,L_162
+	LD	IY,(IX+-20)
+	LD	A,(IY+0)
+	OR	A,A
+	JR	Z,L_163
+L_162:
+;  441	                if (outputPrevType == TYPE_STRING && !comparePtrToTempStrings(outputPrevOperand)) {
+	LD	A,(IX+-7)
+	CP	A,4
+	JR	NZ,L_122
+	LD	BC,(IX+-11)
+	PUSH	BC
+	CALL	_comparePtrToTempStrings
+	POP	BC
+	OR	A,A
+	JR	NZ,L_122
+;  442	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  443	                }
+L_122:
+;  444	                if (outputCurr->mask == TYPE_MASK_U8) {
+	LD	IY,(IX+-58)
+	LD	A,(IY+2)
+	LD	(IX+-55),A
+	OR	A,A
+	JR	NZ,L_121
+;  445	                    LD_A_ADDR(outputPrevOperand);
+	LD	BC,58
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(IX+-11)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetA
+	JR	L_165
+;  446	                } else if (outputCurr->mask == TYPE_MASK_U16) {
+L_121:
+	LD	A,(IX+-55)
+	CP	A,1
+	JR	NZ,L_119
+;  447	                    LD_HL_ADDR(outputPrevOperand);
+	LD	BC,42
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(IX+-11)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  448	                    EX_S_DE_HL();
+	LD	BC,60242
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_RegChangeHLDE
+;  449	                    expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  450	                } else {
+	JR	L_165
+L_119:
+;  451	                    LD_HL_ADDR(outputPrevOperand);
+	LD	BC,42
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(IX+-11)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+	JR	L_165
+;  452	                }
+;  453	            } else if (outputPrevType == TYPE_VARIABLE) {
+L_163:
+	LD	A,(IX+-7)
+	CP	A,1
+	JR	NZ,L_161
+;  454	                LD_HL_IND_IX_OFF(outputPrevOperand);
+	LD	C,(IX+-11)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  455	                if (outputCurr->mask == TYPE_MASK_U8) {
+	LD	IY,(IX+-58)
+	LD	A,(IY+2)
+	LD	(IX+-59),A
+	OR	A,A
+	JR	NZ,L_138
+;  456	                    LD_A_HL();
+	LD	BC,126
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_165
+;  457	                } else if (outputCurr->mask == TYPE_MASK_U16) {
+L_138:
+	LD	A,(IX+-59)
+	CP	A,1
+	JR	NZ,L_136
+;  458	                    LD_HL_HL();
+	LD	BC,10221
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  459	                    EX_S_DE_HL();
+	LD	BC,60242
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_RegChangeHLDE
+;  460	                    expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  461	                } else {
+	JR	L_165
+L_136:
+;  462	                    LD_HL_HL();
+	LD	BC,10221
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+	JR	L_165
+;  463	                }
+;  464	            } else if (outputPrevType == TYPE_CHAIN_ANS) {
+L_161:
+	LD	A,(IX+-7)
+	CP	A,2
+	JR	NZ,L_159
+;  465	                if (outputCurr->mask == TYPE_MASK_U8) {
+	LD	IY,(IX+-58)
+	LD	A,(IY+2)
+	LD	(IX+-60),A
+	OR	A,A
+	JR	NZ,L_157
+;  466	                    if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_145
+;  467	                        LD_A_HL();
+	LD	BC,126
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_165
+;  468	                    } else {
+L_145:
+;  469	                        LD_A_DE();
+	LD	BC,26
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_165
+;  470	                    }
+;  471	                } else if (outputCurr->mask == TYPE_MASK_U16) {
+L_157:
+	LD	A,(IX+-60)
+	CP	A,1
+	JR	NZ,L_155
+;  472	                    AnsToHL();
+	CALL	_AnsToHL
+;  473	                    LD_HL_HL();
+	LD	BC,10221
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  474	                    EX_S_DE_HL();
+	LD	BC,60242
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_RegChangeHLDE
+;  475	                    expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+;  476	                } else {
+	JR	L_165
+L_155:
+;  477	                    AnsToHL();
+	CALL	_AnsToHL
+;  478	                    LD_HL_HL();
+	LD	BC,10221
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+	JR	L_165
+;  479	                }
+;  480	            } else {
+L_159:
+;  481	                return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  482	            }
+L_165:
+;  483	            if (outputCurr->mask == TYPE_MASK_U8) {
+	LD	IY,(IX+-58)
+	LD	A,(IY+2)
+	OR	A,A
+	JR	NZ,L_740
+;  484	                expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+;  485	            }
+;  486	        }
+;  487	        
+;  488	        else if (function == t2ByteTok && function2 != tInStrng) {
+	JR	L_740
+L_721:
+	LD	A,(IX+-12)
+	CP	A,187
+	JR	NZ,L_719
+	LD	A,(IX+-14)
+	CP	A,15
+	JR	Z,L_719
+;  489	            // randInt(
+;  490	            if (function2 == tRandInt) {
+	LD	A,(IX+-14)
+	CP	A,10
+	JR	NZ,L_319
+;  491	                bool usedAlreadyRand = ice.usedAlreadyRand;
+;  492	                
+;  493	                if (outputPrevPrevType == TYPE_STRING || outputPrevType == TYPE_STRING) {
+	LD	A,(IX+-13)
+	CP	A,4
+	JR	Z,L_168
+	LD	A,(IX+-7)
+	CP	A,4
+	JR	NZ,L_177
+L_168:
+;  494	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  495	                }
+L_177:
+;  496	
+;  497	                if (outputPrevType == TYPE_CHAIN_ANS) {
+	LD	A,(IX+-7)
+	CP	A,2
+	JR	NZ,L_182
+;  498	                    AnsToHL();
+	CALL	_AnsToHL
+;  499	                    if (outputPrevPrevType == TYPE_CHAIN_PUSH) {
+	LD	A,(IX+-13)
+	CP	A,3
+	JR	NZ,L_175
+;  500	                        POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+	JR	L_182
+;  501	                    } else if (outputPrevPrevType == TYPE_NUMBER) {
+L_175:
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	NZ,L_182
+;  502	                        LD_DE_IMM(outputPrevPrevOperand - 1);
+	LD	IY,(IX+-26)
+	LEA	BC,IY+-1
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  503	                    }
+;  504	                }
+L_182:
+;  505	                if (outputPrevPrevType == TYPE_CHAIN_ANS) {
+	LD	A,(IX+-13)
+	CP	A,2
+	JR	NZ,L_186
+;  506	                    AnsToDE();
+	CALL	_AnsToDE
+;  507	                    if (outputPrevType == TYPE_VARIABLE) {
+	LD	A,(IX+-7)
+	CP	A,1
+	JR	NZ,L_186
+;  508	                        LD_HL_IND_IX_OFF(outputPrevOperand);
+	LD	C,(IX+-11)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  509	                    }
+;  510	                }
+L_186:
+;  511	                if (outputPrevPrevType == TYPE_VARIABLE) {
+	LD	A,(IX+-13)
+	CP	A,1
+	JR	NZ,L_191
+;  512	                    LD_DE_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-26)
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  513	                }
+L_191:
+;  514	                if (outputPrevType == TYPE_VARIABLE && outputPrevPrevType <= TYPE_VARIABLE) {
+	LD	A,(IX+-7)
+	CP	A,1
+	JR	NZ,L_196
+	LD	A,1
+	CP	A,(IX+-13)
+	JR	C,L_196
+;  515	                    LD_HL_IND_IX_OFF(outputPrevOperand);
+	LD	C,(IX+-11)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  516	                }
+L_196:
+;  517	                if (outputPrevPrevType == TYPE_NUMBER && outputPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	NZ,L_201
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	Z,L_201
+;  518	                    LD_DE_IMM(outputPrevPrevOperand - 1);
+	LD	IY,(IX+-26)
+	LEA	BC,IY+-1
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  519	                }
+L_201:
+;  520	                if (outputPrevType == TYPE_NUMBER && outputPrevPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	NZ,L_209
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	Z,L_209
+;  521	                    LD_HL_IMM(outputPrevOperand + 1);
+	LD	BC,(IX+-11)
+	INC	BC
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  522	                }
+L_209:
+;  523	
+;  524	                if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	NZ,L_208
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	Z,L_214
+L_208:
+;  525	                    PUSH_DE();
+	LD	BC,213
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  526	                    OR_A_SBC_HL_DE();
+	LD	BC,5434807
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  527	                }
+L_214:
+;  528	                if (outputPrevPrevType != TYPE_NUMBER && outputPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	Z,L_219
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	Z,L_219
+;  529	                    INC_HL();
+	LD	BC,35
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  530	                }
+L_219:
+;  531	                if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	NZ,L_218
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	Z,L_220
+L_218:
+;  532	                    PUSH_HL();
+	LD	BC,229
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  533	                }
+L_220:
+;  534	
+;  535	                ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  536	                CALL(ice.randAddr + SIZEOF_SRAND_DATA);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	IY,(_ice+10911)
+	LEA	BC,IY+17
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  537	
+;  538	                if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	NZ,L_228
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	Z,L_229
+L_228:
+;  539	                    POP_BC();
+	LD	BC,193
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetBC
+	JR	L_233
+;  540	                } else {
+L_229:
+;  541	                    LD_BC_IMM(outputPrevOperand - outputPrevPrevOperand + 1);
+	LD	BC,(IX+-26)
+	LD	HL,(IX+-11)
+	OR	A,A
+	SBC	HL,BC
+	INC	HL
+	PUSH	HL
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  542	                }
+L_233:
+;  543	                CALL(__idvrmu);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,324
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  544	                if (outputPrevType != TYPE_NUMBER || outputPrevPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	NZ,L_239
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	Z,L_240
+L_239:
+;  545	                    POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+	JR	L_246
+;  546	                } else {
+L_240:
+;  547	                    LD_DE_IMM(outputPrevPrevOperand);
+	LD	BC,(IX+-26)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  548	                }
+L_246:
+;  549	                if (outputPrevType == TYPE_NUMBER && outputPrevPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	NZ,L_249
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	Z,L_249
+;  550	                    INC_DE();
+	LD	BC,19
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+;  551	                }
+L_249:
+;  552	                ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  553	
+;  554	                ice.modifiedIY = true;
+	LD	A,1
+	LD	(_ice+10908),A
+;  555	                ResetHL();
+	CALL	_ResetHL
+;  556	                ResetDE();
+	CALL	_ResetDE
+;  557	                reg.AIsNumber = true;
+	LD	A,1
+	LD	(_reg+6),A
+;  558	                reg.AIsVariable = false;
+	XOR	A,A
+	LD	(_reg+7),A
+;  559	                reg.AValue = 0;
+	XOR	A,A
+	LD	(_reg+13),A
+;  560	            }
+;  561	            
+;  562	            // sub(
+;  563	            else if (function2 == tSubStrng) {
+	JR	L_740
+L_319:
+	LD	A,(IX+-14)
+	CP	A,12
+	JR	NZ,L_317
+;  564	                uint24_t outputPrevPrevPrevOperand = outputPrevPrevPrev->operand.num;
+	LD	IY,(IX+-29)
+	LD	BC,(IY+3)
+	LD	(IX+-63),BC
+;  565	                
+;  566	                // First argument should be a string
+;  567	                if (!outputPrevPrevPrev->isString) {
+	LD	A,(IY+0)
+	OR	A,A
+	JR	NZ,L_253
+;  568	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  569	                }
+L_253:
+;  570	
+;  571	                // Parse last 2 argument
+;  572	                if ((res = parseFunction2Args(index, REGISTER_BC, true)) != VALID) {
+	LD	BC,1
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction2Args
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_256
+;  573	                    return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  574	                }
+L_256:
+;  575	
+;  576	                // Get the string into DE
+;  577	                if (outputPrevPrevPrev->type == TYPE_STRING && !comparePtrToTempStrings(outputPrevPrevPrevOperand)) {
+	LD	IY,(IX+-29)
+	LD	A,(IY+1)
+	CP	A,4
+	JR	NZ,L_259
+	LD	BC,(IX+-63)
+	PUSH	BC
+	CALL	_comparePtrToTempStrings
+	POP	BC
+	OR	A,A
+	JR	NZ,L_259
+;  578	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  579	                }
+L_259:
+;  580	                LD_DE_IMM(outputPrevPrevPrevOperand);
+	LD	BC,(IX+-63)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  581	
+;  582	                // Add the offset to the string, and copy!
+;  583	                ADD_HL_DE();
+	LD	BC,25
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  584	                if (outputPrevPrevPrevOperand == prescan.tempStrings[TempString1]) {
+	LD	BC,_prescan+472
+	LD	(IX+-52),BC
+	LD	HL,BC
+	LD	HL,(HL)
+	LD	BC,(IX+-63)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_268
+;  585	                    LD_DE_IMM(prescan.tempStrings[TempString2]);
+	LD	IY,(IX+-52)
+	LEA	HL,IY+3
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_272
+;  586	                } else {
+L_268:
+;  587	                    LD_DE_IMM(prescan.tempStrings[TempString1]);
+	LD	HL,(IX+-52)
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  588	                }
+L_272:
+;  589	                PUSH_DE();
+	LD	BC,213
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  590	                LDIR();
+	LD	BC,45293
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,1
+	LD	(_reg+4),A
+	XOR	A,A
+	LD	(_reg+5),A
+	LD	BC,0
+	LD	(_reg+22),BC
+	CALL	_ResetHL
+	CALL	_ResetDE
+;  591	                OutputWrite3Bytes(OP_EX_DE_HL, OP_LD_HL_C, OP_POP_HL);
+	LD	BC,14774763
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  592	            }
+;  593	            
+;  594	            // length(
+;  595	            else if (function2 == tLength) {
+	JR	L_740
+L_317:
+	LD	A,(IX+-14)
+	CP	A,43
+	JR	NZ,L_315
+;  596	                if (outputPrevType == TYPE_STRING) {
+	LD	A,(IX+-7)
+	CP	A,4
+	JR	NZ,L_280
+;  597	                    LD_HL_STRING(outputPrev->operand.num, TYPE_STRING);
+	LD	BC,4
+	PUSH	BC
+	LD	IY,(IX+-20)
+	LD	BC,(IY+3)
+	PUSH	BC
+	CALL	_LD_HL_STRING
+	POP	BC
+	POP	BC
+;  598	                } else {
+	JR	L_281
+L_280:
+;  599	                    if ((res = parseFunction1Arg(index, REGISTER_HL_DE)) != VALID) {
+	LD	BC,3
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction1Arg
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_278
+;  600	                        return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  601	                    }
+L_278:
+;  602	                    MaybeAToHL();
+	CALL	_MaybeAToHL
+;  603	                }
+L_281:
+;  604	
+;  605	                PushHLDE();
+	CALL	_PushHLDE
+;  606	                CALL(__strlen);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,212
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  607	                POP_BC();
+	LD	BC,193
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetBC
+;  608	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_288
+;  609	                    reg.BCIsNumber = reg.HLIsNumber;
+	LD	A,(_reg)
+	LD	(_reg+4),A
+;  610	                    reg.BCIsVariable = reg.HLIsVariable;
+	LD	A,(_reg+1)
+	LD	(_reg+5),A
+;  611	                    reg.BCValue = reg.HLValue;
+	LD	BC,(_reg+16)
+	LD	(_reg+22),BC
+;  612	                    reg.BCVariable = reg.HLVariable;
+	LD	A,(_reg+10)
+	LD	(_reg+12),A
+;  613	                } else {
+	JR	L_290
+L_288:
+;  614	                    reg.BCIsNumber = reg.DEIsNumber;
+	LD	A,(_reg+2)
+	LD	(_reg+4),A
+;  615	                    reg.BCIsVariable = reg.DEIsVariable;
+	LD	A,(_reg+3)
+	LD	(_reg+5),A
+;  616	                    reg.BCValue = reg.DEValue;
+	LD	BC,(_reg+19)
+	LD	(_reg+22),BC
+;  617	                    reg.BCVariable = reg.DEVariable;
+	LD	A,(_reg+11)
+	LD	(_reg+12),A
+;  618	                }
+L_290:
+;  619	                ResetHL();
+	CALL	_ResetHL
+;  620	            }
+;  621	            
+;  622	            // dbd( - debug things
+;  623	            else if (function2 == tFinDBD) {
+	JR	L_740
+L_315:
+	LD	A,(IX+-14)
+	CP	A,7
+	JR	NZ,L_740
+;  624	                if (outputPrevType != TYPE_NUMBER || outputPrevOperand > 2) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	NZ,L_292
+	LD	BC,(IX+-11)
+	LD	HL,2
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_307
+L_292:
+;  625	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  626	                }
+L_307:
+;  627	                if (!outputPrevOperand) {
+	LD	HL,(IX+-11)
+	CALL	__icmpzero
+	JR	NZ,L_306
+;  628	                    // ld hl, (windowHookPtr) \ ld hl, (hl) \ ld de, FIRST_3_BYTES_OF_APPVAR \ or a, a \ sbc hl, de \ ld de, -1 \ add hl, de \ sbc hl, hl \ inc hl
+;  629	                    const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, 0xED, 0x27, OP_LD_DE, 0x83, OP_CP_A_A, OP_RET,
+;  630	                                           OP_OR_A_A, 0xED, 0x52, OP_LD_DE, 0xFF, 0xFF, 0xFF, OP_ADD_HL_DE, 0xED, 0x62, OP_INC_HL, 0};
+	LD	HL,IX
+	LD	BC,-136
+	ADD	HL,BC
+	LD	DE,HL
+	LD	HL,_0temp293
+	LD	BC,22
+	LDIR	
+;  631	                    
+;  632	                    OutputWriteMem(mem);
+	LD	HL,IX
+	LD	BC,-136
+	ADD	HL,BC
+	LD	BC,HL
+	PUSH	BC
+	CALL	_OutputWriteMem
+	POP	BC
+;  633	                    
+;  634	                    ResetHL();
+	CALL	_ResetHL
+;  635	                    reg.DEIsNumber = true;
+	LD	A,1
+	LD	(_reg+2),A
+;  636	                    reg.DEIsVariable = false;
+	XOR	A,A
+	LD	(_reg+3),A
+;  637	                    reg.DEValue = -1;
+	LD	BC,16777215
+	LD	(_reg+19),BC
+;  638	                    
+;  639	                    expr.AnsSetZeroFlagReversed = true;
+	LD	A,1
+	LD	(_expr+6),A
+;  640	                    expr.ZeroCarryFlagRemoveAmountOfBytes = 8;
+	LD	A,8
+	LD	(_expr+9),A
+;  641	                } else if (outputPrevOperand == 1) {
+	JR	L_312
+L_306:
+	LD	BC,1
+	LD	HL,(IX+-11)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_304
+;  642	                    const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, OP_INC_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
+	LEA	DE,IX+-114
+	LD	HL,_1temp294
+	LD	BC,10
+	LDIR	
+;  643	                    
+;  644	                    *--ice.programDataPtr = 0;
+	LD	IY,(_ice+66)
+	LEA	BC,IY+-1
+	LD	(_ice+66),BC
+	LD	HL,(_ice+66)
+	LD	(HL),0
+;  645	                    ice.programDataPtr -= strlen(ice.outName);
+	LEA	IY,IX+-128
+	LD	BC,_ice
+	LD	(IY+-11),BC
+	LD	BC,(IY+-11)
+	PUSH	BC
+	CALL	_strlen
+	POP	BC
+	LD	BC,HL
+	LD	HL,(_ice+66)
+	OR	A,A
+	SBC	HL,BC
+	LD	(_ice+66),HL
+;  646	                    strcpy((char*)ice.programDataPtr, ice.outName);
+	LEA	IY,IX+-128
+	LD	BC,(IY+-11)
+	PUSH	BC
+	LD	BC,(_ice+66)
+	PUSH	BC
+	CALL	_strcpy
+	POP	BC
+	POP	BC
+;  647	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  648	                    LD_DE_IMM((uint24_t)ice.programDataPtr);
+	LD	BC,(_ice+66)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  649	                    OutputWriteMem(mem);
+	PEA	IX+-114
+	CALL	_OutputWriteMem
+	POP	BC
+;  650	                    
+;  651	                    expr.AnsSetCarryFlag = true;
+	LD	A,1
+	LD	(_expr+7),A
+;  652	                    expr.ZeroCarryFlagRemoveAmountOfBytes = 0;
+	XOR	A,A
+	LD	(_expr+9),A
+;  653	                } else if (outputPrevOperand == 2) {
+	JR	L_312
+L_304:
+	LD	BC,2
+	LD	HL,(IX+-11)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_312
+;  654	                    const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
+	LEA	DE,IX+-104
+	LD	HL,_2temp298
+	LD	BC,8
+	LDIR	
+;  655	                    
+;  656	                    LD_DE_IMM(ice.currentLine);
+	LD	BC,(_ice+3386)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  657	                    OutputWriteMem(mem);
+	PEA	IX+-104
+	CALL	_OutputWriteMem
+	POP	BC
+;  658	                }
+L_312:
+;  659	                
+;  660	                if (outputPrevOperand) {
+	LD	HL,(IX+-11)
+	CALL	__icmpzero
+	JR	Z,L_740
+;  661	                    *--ice.programDataPtr = OP_JP_HL;
+	LD	IY,(_ice+66)
+	LEA	BC,IY+-1
+	LD	(_ice+66),BC
+	LD	HL,(_ice+66)
+	LD	(HL),233
+;  662	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  663	                    CALL((uint24_t)ice.programDataPtr);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_ice+66)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  664	                    
+;  665	                    ResetHL();
+	CALL	_ResetHL
+;  666	                }
+;  667	            }
+;  668	        }
+;  669	        
+;  670	        else if (function == tExtTok) {
+	JR	L_740
+L_719:
+	LD	A,(IX+-12)
+	CP	A,239
+	JR	NZ,L_717
+;  671	            // LEFT(
+;  672	            if (function2 == tLEFT) {
+	LD	A,(IX+-14)
+	CP	A,146
+	JR	Z,L_740
+;  673	            }
+;  674	            
+;  675	            // RIGHT(
+;  676	            else if (function2 == tRIGHT) {
+	LD	A,(IX+-14)
+	CP	A,148
+	JR	NZ,L_404
+;  677	                bool shouldParseArguments = true;
+	LD	(IX+-48),1
+;  678	                bool shouldCallRoutine = true;
+	LD	(IX+-49),1
+;  679	                
+;  680	                if (outputPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	NZ,L_335
+;  681	                    if (outputPrevPrevType == TYPE_VARIABLE) {
+	LD	A,(IX+-13)
+	CP	A,1
+	JR	NZ,L_331
+;  682	                        LD_HL_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-26)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  683	                        shouldParseArguments = false;
+	LD	(IX+-48),0
+;  684	                        if (outputPrevOperand & 0xFF) {
+	LD	A,(IX+-11)
+	UEXT	HL
+	LD	L,A
+	CALL	__icmpzero
+	JR	Z,L_326
+;  685	                            LD_A(outputPrevOperand);
+	LD	BC,62
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	C,(IX+-11)
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,1
+	LD	(_reg+6),A
+	XOR	A,A
+	LD	(_reg+7),A
+	LD	A,(IX+-11)
+	LD	(_reg+13),A
+	JR	L_335
+;  686	                        } else {
+L_326:
+;  687	                            shouldCallRoutine = false;
+	LD	(IX+-49),0
+;  688	                        }
+;  689	                    } else if (outputPrevPrevType == TYPE_CHAIN_ANS) {
+	JR	L_335
+L_331:
+	LD	A,(IX+-13)
+	CP	A,2
+	JR	NZ,L_329
+;  690	                        if (!outputPrevOperand) {
+	LD	HL,(IX+-11)
+	CALL	__icmpzero
+	JR	NZ,L_335
+;  691	                            shouldParseArguments = false;
+	LD	(IX+-48),0
+;  692	                            shouldCallRoutine = false;
+	LD	(IX+-49),0
+;  693	                            expr.outputReturnRegister = expr.outputRegister;
+	LD	A,(_expr+10)
+	LD	(_expr+11),A
+;  694	                        }
+;  695	                    } else {
+	JR	L_335
+L_329:
+;  696	                        return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  697	                    }
+;  698	                }
+L_335:
+;  699	                
+;  700	                if (shouldParseArguments) {
+	LD	A,(IX+-48)
+	OR	A,A
+	JR	Z,L_345
+;  701	                    if ((res = parseFunction2Args(index, REGISTER_A, true)) != VALID) {
+	LD	BC,1
+	PUSH	BC
+	LD	BC,4
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction2Args
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_345
+;  702	                        return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  703	                    }
+;  704	                }
+L_345:
+;  705	                
+;  706	                if (shouldCallRoutine) {
+	LD	A,(IX+-49)
+	OR	A,A
+	JR	Z,L_740
+;  707	                    OR_A_A();
+	LD	BC,183
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  708	                    
+;  709	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  710	                    if (!ice.usedAlreadyMean) {
+	LD	A,(_ice+10922)
+	OR	A,A
+	JR	NZ,L_342
+;  711	                        ice.programDataPtr -= SIZEOF_MEAN_DATA;
+	LD	IY,(_ice+66)
+	LEA	BC,IY+-24
+	LD	(_ice+66),BC
+;  712	                        ice.MeanAddr = (uintptr_t)ice.programDataPtr;
+;  713	                        memcpy(ice.programDataPtr, (uint8_t*)MeanData, SIZEOF_MEAN_DATA);
+	LD	DE,24
+	PUSH	DE
+	LD	(_ice+10923),BC
+	LD	BC,_MeanData
+	PUSH	BC
+	LD	BC,(_ice+66)
+	PUSH	BC
+	CALL	_memcpy
+	POP	BC
+	POP	BC
+	POP	BC
+;  714	                        ice.usedAlreadyMean = true;
+	LD	A,1
+	LD	(_ice+10922),A
+;  715	                    }
+L_342:
+;  716	                    
+;  717	                    CALL_NZ(ice.MeanAddr + 3);
+	LD	BC,196
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	IY,(_ice+10923)
+	LEA	BC,IY+3
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  718	                    ResetHL();
+	CALL	_ResetHL
+;  719	                    ResetBC();
+	CALL	_ResetBC
+;  720	                    ResetA();
+	CALL	_ResetA
+;  721	                }
+;  722	            }
+;  723	            
+;  724	            // remainder(
+;  725	            else if (function2 == tRemainder) {
+	JR	L_740
+L_404:
+	LD	A,(IX+-14)
+	CP	A,50
+	JR	NZ,L_402
+;  726	                if (outputPrevType == TYPE_NUMBER && outputPrevOperand <= 256 && !((uint8_t)outputPrevOperand & (uint8_t)(outputPrevOperand - 1))) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	NZ,L_381
+	LD	BC,(IX+-11)
+	LD	HL,256
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_381
+	LD	IY,(IX+-11)
+	LEA	HL,IY+-1
+	LD	A,L
+	LD	B,(IX+-11)
+	AND	A,B
+	JR	NZ,L_381
+;  727	                    if (outputPrevPrevType == TYPE_VARIABLE) {
+	LD	A,(IX+-13)
+	CP	A,1
+	JR	NZ,L_360
+;  728	                        LD_A_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-26)
+	LD	B,0
+	PUSH	BC
+	LD	BC,4
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_367
+;  729	                    } else if (outputPrevPrevType == TYPE_CHAIN_ANS) {
+L_360:
+	LD	A,(IX+-13)
+	CP	A,2
+	JR	NZ,L_358
+;  730	                        if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_356
+;  731	                            LD_A_L();
+	LD	BC,125
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_367
+;  732	                        } else if (expr.outputRegister == REGISTER_DE) {
+L_356:
+	LD	A,(_expr+10)
+	CP	A,1
+	JR	NZ,L_367
+;  733	                            LD_A_E();
+	LD	BC,123
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_367
+;  734	                        }
+;  735	                    } else {
+L_358:
+;  736	                        return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  737	                    }
+L_367:
+;  738	                    if (outputPrevOperand == 256) {
+	LD	BC,256
+	LD	HL,(IX+-11)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_366
+;  739	                        OR_A_A();
+	LD	BC,183
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	JR	L_370
+;  740	                    } else {
+L_366:
+;  741	                        AND_A(outputPrevOperand - 1);
+	LD	BC,230
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	C,(IX+-11)
+	DEC	C
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+;  742	                    }
+L_370:
+;  743	                    SBC_HL_HL();
+	LD	BC,25325
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_ResetHL
+;  744	                    LD_L_A();
+	LD	BC,111
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  745	                    reg.HLIsNumber = reg.AIsNumber;
+	LD	A,(_reg+6)
+	LD	(_reg),A
+;  746	                    reg.HLIsVariable = false;
+	XOR	A,A
+	LD	(_reg+1),A
+;  747	                    reg.HLValue = reg.AValue;
+	LD	A,(_reg+13)
+	UEXT	HL
+	LD	L,A
+	LD	(_reg+16),HL
+;  748	                    reg.HLVariable = reg.AVariable;
+	LD	A,(_reg+14)
+	LD	(_reg+10),A
+;  749	                } else {
+	JR	L_740
+L_381:
+;  750	                    if ((res = parseFunction2Args(index, REGISTER_BC, true)) != VALID) {
+	LD	BC,1
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction2Args
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_378
+;  751	                        return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  752	                    }
+L_378:
+;  753	                    CALL(__idvrmu);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,324
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  754	                    ResetHL();
+	CALL	_ResetHL
+;  755	                    ResetDE();
+	CALL	_ResetDE
+;  756	                    reg.AIsNumber = true;
+	LD	A,1
+	LD	(_reg+6),A
+;  757	                    reg.AIsVariable = false;
+	XOR	A,A
+	LD	(_reg+7),A
+;  758	                    reg.AValue = 0;
+	XOR	A,A
+	LD	(_reg+13),A
+;  759	                }
+;  760	            }
+;  761	            
+;  762	            // startTmr
+;  763	            else if (function2 == tStartTmr) {
+	JR	L_740
+L_402:
+	LD	A,(IX+-14)
+	CP	A,11
+	JR	NZ,L_400
+;  764	                CallRoutine(&ice.usedAlreadyTimer, &ice.TimerAddr, (uint8_t*)TimerData, SIZEOF_TIMER_DATA);
+	LD	BC,15
+	PUSH	BC
+	LD	BC,_TimerData
+	PUSH	BC
+	LD	BC,_ice+10951
+	PUSH	BC
+	LD	BC,_ice+10950
+	PUSH	BC
+	CALL	_CallRoutine
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  765	            }
+;  766	            
+;  767	            // checkTmr(
+;  768	            else if (function2 == tCheckTmr) {
+	JR	L_740
+L_400:
+	LD	A,(IX+-14)
+	CP	A,2
+	JR	NZ,L_740
+;  769	                if (outputPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	NZ,L_391
+;  770	                    LD_DE_IMM(outputPrevOperand);
+	LD	BC,(IX+-11)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_394
+;  771	                } else if (outputPrevType == TYPE_VARIABLE) {
+L_391:
+	LD	A,(IX+-7)
+	CP	A,1
+	JR	NZ,L_389
+;  772	                    LD_DE_IND_IX_OFF(outputPrevOperand);
+	LD	C,(IX+-11)
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_394
+;  773	                } else if (outputPrevType == TYPE_CHAIN_ANS) {
+L_389:
+	LD	A,(IX+-7)
+	CP	A,2
+	JR	NZ,L_387
+;  774	                    AnsToDE();
+	CALL	_AnsToDE
+;  775	                } else {
+	JR	L_394
+L_387:
+;  776	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  777	                }
+L_394:
+;  778	
+;  779	                LD_HL_IND(0xF20000);
+	LD	BC,42
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,15859712
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+;  780	                OR_A_SBC_HL_DE();
+	LD	BC,5434807
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	CALL	_ResetHL
+	JR	L_740
+;  781	            }
+;  782	        }
+;  783	        
+;  784	        else if (function == tVarOut && function2 != tCompare) {
+L_717:
+	LD	A,(IX+-12)
+	CP	A,98
+	JR	NZ,L_715
+	LD	A,(IX+-14)
+	CP	A,19
+	JR	Z,L_715
+;  785	            // Alloc(
+;  786	            if (function2 == tAlloc) {
+	LD	A,(IX+-14)
+	CP	A,14
+	JR	NZ,L_612
+;  787	                if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID) {
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction1Arg
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_409
+;  788	                    return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  789	                }
+L_409:
+;  790	
+;  791	                InsertMallocRoutine();
+	CALL	_InsertMallocRoutine
+;  792	            }
+;  793	            
+;  794	            // DefineSprite(
+;  795	            else if (function2 == tDefineSprite) {
+	JR	L_740
+L_612:
+	LD	A,(IX+-14)
+	CP	A,10
+	JR	NZ,L_610
+;  796	                /*****************************************************
+;  797	                * Inputs:
+;  798	                *  arg1: sprite width
+;  799	                *  arg2: sprite height
+;  800	                *  (arg3: sprite data)
+;  801	                *
+;  802	                * Returns: PTR to sprite
+;  803	                *****************************************************/
+;  804	
+;  805	                if (amountOfArguments == 2) {
+	LD	A,(IX+-15)
+	CP	A,2
+	JR	NZ,L_437
+;  806	                    uint8_t width = outputPrevPrevOperand;
+;  807	                    uint8_t height = outputPrev->operand.num;
+	LD	IY,(IX+-20)
+	LD	A,(IY+3)
+	LD	(IX+-53),A
+;  808	
+;  809	                    if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	NZ,L_411
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	Z,L_414
+L_411:
+;  810	                        return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  811	                    }
+L_414:
+;  812	
+;  813	                    LD_HL_IMM(width * height + 2);
+	LD	A,(IX+-26)
+	UEXT	HL
+	LD	L,A
+	LD	DE,HL
+	LD	A,(IX+-53)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,DE
+	CALL	__imulu
+	INC	HL
+	INC	HL
+	PUSH	HL
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  814	                    InsertMallocRoutine();
+	CALL	_InsertMallocRoutine
+;  815	                    OutputWrite2Bytes(OP_JR_NC, 6);
+	LD	BC,1584
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+;  816	                    LD_HL_VAL(width);
+	LD	BC,54
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	C,(IX+-26)
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  817	                    INC_HL();
+	LD	BC,35
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  818	                    LD_HL_VAL(height);
+	LD	BC,54
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	C,(IX+-53)
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  819	                    DEC_HL();
+	LD	BC,43
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+	JR	L_740
+;  820	                } else if (amountOfArguments == 3) {
+L_437:
+	LD	A,(IX+-15)
+	CP	A,3
+	JR	NZ,L_435
+;  821	                    uint8_t *a;
+;  822	
+;  823	                    if(outputPrevPrevPrev->type != TYPE_NUMBER || outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_STRING) {
+	LD	IY,(IX+-29)
+	LD	A,(IY+1)
+	OR	A,A
+	JR	NZ,L_429
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	NZ,L_429
+	LD	A,(IX+-7)
+	CP	A,4
+	JR	Z,L_430
+L_429:
+;  824	                        return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  825	                    }
+L_430:
+;  826	
+;  827	                    ice.programDataPtr -= 2;
+	LD	IY,(_ice+66)
+	LEA	BC,IY+-2
+	LD	(_ice+66),BC
+;  828	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  829	                    LD_HL_IMM((uint24_t)ice.programDataPtr);
+	LD	BC,(_ice+66)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+;  830	                    ResetHL();
+	CALL	_ResetHL
+;  831	
+;  832	                    *ice.programDataPtr = outputPrevPrevPrev->operand.num;
+	LD	IY,(IX+-29)
+	LD	A,(IY+3)
+	LD	HL,(_ice+66)
+	LD	(HL),A
+;  833	                    *(ice.programDataPtr + 1) = outputPrevPrevOperand;
+	LD	A,(IX+-26)
+	LD	HL,(_ice+66)
+	INC	HL
+	LD	(HL),A
+;  834	                } else {
+	JR	L_740
+L_435:
+;  835	                    return E_ARGUMENTS;
+	LD	A,10
+	JR	L_741
+;  836	                }
+;  837	            }
+;  838	            
+;  839	            // Data(
+;  840	            else if (function2 == tData) {
+L_610:
+	LD	A,(IX+-14)
+	CP	A,12
+	JR	NZ,L_608
+;  841	                /***********************************
+;  842	                * Inputs:
+;  843	                *  arg1: size in bytes of each entry
+;  844	                *  arg2-argX: entries, constants
+;  845	                *
+;  846	                * Returns: PTR to data
+;  847	                ***********************************/
+;  848	
+;  849	                startIndex = -1 - amountOfArguments;
+	LD	A,(IX+-15)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,16777215
+	OR	A,A
+	SBC	HL,BC
+	LD	(IX+-23),HL
+;  850	
+;  851	                if ((res = InsertDataElements(amountOfArguments, startIndex, outputPtr[getIndexOffset(startIndex)].operand.num, 1)) != VALID) {
+	LD	BC,1
+	PUSH	BC
+	LD	BC,(IX+-23)
+	PUSH	BC
+	CALL	_getIndexOffset
+	POP	BC
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	LD	BC,(IX+-32)
+	ADD	HL,BC
+	LD	IY,HL
+	LD	C,(IY+3)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+-23)
+	PUSH	BC
+	LD	C,(IX+-15)
+	LD	B,0
+	PUSH	BC
+	CALL	_InsertDataElements
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_740
+;  852	                    return res;
+	LD	A,(IX+-8)
+	JR	L_741
+;  853	                }
+;  854	            }
+;  855	            
+;  856	            // Copy(
+;  857	            else if (function2 == tCopy) {
+L_608:
+	LD	A,(IX+-14)
+	CP	A,13
+	JR	NZ,L_606
+;  858	                /*****************************************************
+;  859	                * Inputs:
+;  860	                *  arg1: PTR to destination
+;  861	                *  arg2: PTR to source
+;  862	                *  arg3: size in bytes
+;  863	                *****************************************************/
+;  864	
+;  865	                uint8_t outputPrevPrevPrevType = outputPrevPrevPrev->type;
+	LD	IY,(IX+-29)
+	LD	A,(IY+1)
+	LD	(IX+-37),A
+;  866	                uint24_t outputPrevPrevPrevOperand = outputPrevPrevPrev->operand.num;
+	LD	BC,(IY+3)
+	LD	(IX+-72),BC
+;  867	
+;  868	                if (amountOfArguments < 3 || amountOfArguments > 4) {
+	LD	A,(IX+-15)
+	CP	A,3
+	JR	C,L_440
+	LD	A,4
+	CP	A,(IX+-15)
+	JR	NC,L_464
+L_440:
+;  869	                    return E_ARGUMENTS;
+	LD	A,10
+	JR	L_741
+;  870	                }
+L_464:
+;  871	
+;  872	                if (outputPrevPrevPrevType <= TYPE_VARIABLE) {
+	LD	A,1
+	CP	A,(IX+-37)
+	JR	C,L_463
+;  873	                    if (outputPrevPrevType == TYPE_CHAIN_PUSH) {
+	LD	A,(IX+-13)
+	CP	A,3
+	JR	NZ,L_447
+;  874	                        if (outputPrevType != TYPE_CHAIN_ANS) {
+	LD	A,(IX+-7)
+	CP	A,2
+	JR	Z,L_442
+;  875	                            return E_ICE_ERROR;
+	LD	A,9
+	JR	L_741
+;  876	                        }
+L_442:
+;  877	                        AnsToBC();
+	CALL	_AnsToBC
+;  878	                        POP_HL();
+	LD	BC,225
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+;  879	                    }
+L_447:
+;  880	                    if (outputPrevPrevType == TYPE_CHAIN_ANS) {
+	LD	A,(IX+-13)
+	CP	A,2
+	JR	NZ,L_450
+;  881	                        AnsToHL();
+	CALL	_AnsToHL
+;  882	                    }
+L_450:
+;  883	                    if (outputPrevType == TYPE_CHAIN_ANS && outputPrevPrevType != TYPE_CHAIN_PUSH) {
+	LD	A,(IX+-7)
+	CP	A,2
+	JR	NZ,L_472
+	LD	A,(IX+-13)
+	CP	A,3
+	JR	Z,L_472
+;  884	                        AnsToBC();
+	CALL	_AnsToBC
+;  885	                    }
+;  886	                } else if (outputPrevPrevPrevType == TYPE_CHAIN_ANS) {
+	JR	L_472
+L_463:
+	LD	A,(IX+-37)
+	CP	A,2
+	JR	NZ,L_461
+;  887	                    AnsToDE();
+	CALL	_AnsToDE
+;  888	                } else if (outputPrevPrevPrevType == TYPE_CHAIN_PUSH) {
+	JR	L_472
+L_461:
+	LD	A,(IX+-37)
+	CP	A,3
+	JR	NZ,L_459
+;  889	                    if (outputPrevPrevType == TYPE_CHAIN_ANS) {
+	LD	A,(IX+-13)
+	CP	A,2
+	JR	NZ,L_454
+;  890	                        AnsToHL();
+	CALL	_AnsToHL
+;  891	                    } else if (outputPrevType == TYPE_CHAIN_ANS) {
+	JR	L_457
+L_454:
+	LD	A,(IX+-7)
+	CP	A,2
+	JR	NZ,L_452
+;  892	                        AnsToBC();
+	CALL	_AnsToBC
+;  893	                    } else {
+	JR	L_457
+L_452:
+;  894	                        return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  895	                    }
+L_457:
+;  896	                    POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+	JR	L_472
+;  897	                } else {
+L_459:
+;  898	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  899	                }
+L_472:
+;  900	
+;  901	                if (outputPrevPrevPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-37)
+	OR	A,A
+	JR	NZ,L_471
+;  902	                    LD_DE_IMM(outputPrevPrevPrevOperand);
+	LD	BC,(IX+-72)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_480
+;  903	                } else if (outputPrevPrevPrevType == TYPE_VARIABLE) {
+L_471:
+	LD	A,(IX+-37)
+	CP	A,1
+	JR	NZ,L_480
+;  904	                    LD_DE_IND_IX_OFF(outputPrevPrevPrevOperand);
+	LD	C,(IX+-72)
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  905	                }
+L_480:
+;  906	                if (outputPrevPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	NZ,L_479
+;  907	                    LD_HL_IMM(outputPrevPrevOperand);
+	LD	BC,(IX+-26)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_488
+;  908	                } else if (outputPrevPrevType == TYPE_VARIABLE) {
+L_479:
+	LD	A,(IX+-13)
+	CP	A,1
+	JR	NZ,L_488
+;  909	                    LD_HL_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-26)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  910	                }
+L_488:
+;  911	                if (outputPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	NZ,L_487
+;  912	                    LD_BC_IMM(outputPrevOperand);
+	LD	BC,(IX+-11)
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_495
+;  913	                } else if (outputPrevType == TYPE_VARIABLE) {
+L_487:
+	LD	A,(IX+-7)
+	CP	A,1
+	JR	NZ,L_495
+;  914	                    LD_BC_IND_IX_OFF(outputPrevOperand);
+	LD	C,(IX+-11)
+	LD	B,0
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  915	                }
+L_495:
+;  916	                if (amountOfArguments == 4) {
+	LD	A,(IX+-15)
+	CP	A,4
+	JR	NZ,L_494
+;  917	                    LDDR();
+	LD	BC,47341
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,1
+	LD	(_reg+4),A
+	XOR	A,A
+	LD	(_reg+5),A
+	LD	BC,0
+	LD	(_reg+22),BC
+	CALL	_ResetHL
+	CALL	_ResetDE
+	JR	L_740
+;  918	                } else {
+L_494:
+;  919	                    LDIR();
+	LD	BC,45293
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,1
+	LD	(_reg+4),A
+	XOR	A,A
+	LD	(_reg+5),A
+	LD	BC,0
+	LD	(_reg+22),BC
+	CALL	_ResetHL
+	CALL	_ResetDE
+	JR	L_740
+;  920	                }
+;  921	            }
+;  922	            
+;  923	            // DefineTilemap(
+;  924	            else if (function2 == tDefineSprite) {
+L_606:
+	LD	A,(IX+-14)
+	CP	A,10
+	JR	NZ,L_604
+;  925	                /****************************************************************
+;  926	                * C arguments:
+;  927	                *  - uint8_t *mapData (pointer to data)
+;  928	                *  - uint8_t **tilesData (pointer to table with pointers to data)
+;  929	                *  - uint8_t TILE_HEIGHT
+;  930	                *  - uint8_t TILE_WIDTH
+;  931	                *  - uint8_t DRAW_HEIGHT
+;  932	                *  - uint8_t DRAW_WIDTH
+;  933	                *  - uint8_t TYPE_WIDTH
+;  934	                *  - uint8_t TYPE_HEIGHT
+;  935	                *  - uint8_t HEIGHT
+;  936	                *  - uint8_t WIDTH
+;  937	                *  - uint8_t Y_LOC
+;  938	                *  - uint24_t X_LOC
+;  939	                *****************************************************************
+;  940	                * ICE arguments:
+;  941	                *  - uint8_t TILE_HEIGHT
+;  942	                *  - uint8_t TILE_WIDTH
+;  943	                *  - uint8_t DRAW_HEIGHT
+;  944	                *  - uint8_t DRAW_WIDTH
+;  945	                *  - uint8_t TYPE_WIDTH
+;  946	                *  - uint8_t TYPE_HEIGHT
+;  947	                *  - uint8_t HEIGHT
+;  948	                *  - uint8_t WIDTH
+;  949	                *  - uint8_t Y_LOC
+;  950	                *  - uint24_t X_LOC
+;  951	                *  - uint8_t **tilesData pointer to data, we have to
+;  952	                *       create our own table, by getting the size of
+;  953	                *       each sprite, and thus finding all the sprites
+;  954	                *  (- uint8_t *mapData (pointer to data))
+;  955	                *
+;  956	                * Returns: PTR to tilemap struct
+;  957	                ****************************************************************/
+;  958	
+;  959	                uint8_t *tempDataPtr = ice.programDataPtr - 18;                 // 18 = sizeof(tilemap_t)
+	LD	IY,(_ice+66)
+	LEA	IY,IY+-18
+	LD	(IX+-42),IY
+;  960	                element_t *outputTemp;
+;  961	                uint8_t a;
+;  962	
+;  963	                if (amountOfArguments < 11 || amountOfArguments > 12) {
+	LD	A,(IX+-15)
+	CP	A,11
+	JR	C,L_497
+	LD	A,12
+	CP	A,(IX+-15)
+	JR	NC,L_498
+L_497:
+;  964	                    return E_ARGUMENTS;
+	LD	A,10
+	JR	L_741
+;  965	                }
+L_498:
+;  966	                
+;  967	                startIndex = -1 - amountOfArguments;
+	LD	A,(IX+-15)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,16777215
+	OR	A,A
+	SBC	HL,BC
+	LD	(IX+-23),HL
+;  968	                ice.programDataPtr -= 18;
+	LD	IY,(_ice+66)
+	LEA	BC,IY+-18
+	LD	(_ice+66),BC
+;  969	
+;  970	                // Fetch the 8 uint8_t variables
+;  971	                for (a = 0; a < 9; a++) {
+	LD	(IX+-33),0
+	JR	L_504
+L_502:
+;  972	                    outputTemp = &outputPtr[getIndexOffset(startIndex + a)];
+	LD	A,(IX+-33)
+	UEXT	HL
+	LD	L,A
+	LD	BC,(IX+-23)
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_getIndexOffset
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	POP	BC
+	LD	BC,(IX+-32)
+	ADD	HL,BC
+	LD	(IX+-36),HL
+;  973	                    if (outputTemp->type != TYPE_NUMBER) {
+	LD	IY,(IX+-36)
+	LD	A,(IY+1)
+	OR	A,A
+	JR	Z,L_501
+;  974	                        return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  975	                    }
+L_501:
+;  976	                    *(tempDataPtr + a + 6) = outputTemp->operand.num;
+	LD	IY,(IX+-36)
+	LD	B,(IY+3)
+	LD	A,(IX+-33)
+	UEXT	HL
+	LD	L,A
+	LD	DE,(IX+-42)
+	ADD	HL,DE
+	LD	IY,HL
+	LEA	HL,IY+6
+	LD	(HL),B
+	INC	(IX+-33)
+;  977	                }
+L_504:
+	LD	A,(IX+-33)
+	CP	A,9
+	JR	C,L_502
+;  978	
+;  979	                // Fetch the only uint24_t variable (X_LOC)
+;  980	                outputTemp = &outputPtr[getIndexOffset(startIndex + 9)];
+	LD	IY,(IX+-23)
+	LEA	BC,IY+9
+	PUSH	BC
+	CALL	_getIndexOffset
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	POP	BC
+	LD	BC,(IX+-32)
+	ADD	HL,BC
+	LD	(IX+-36),HL
+;  981	                if (outputTemp->type != TYPE_NUMBER) {
+	LD	IY,(IX+-36)
+	LD	A,(IY+1)
+	OR	A,A
+	JR	Z,L_507
+;  982	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  983	                }
+L_507:
+;  984	                *(uint24_t*)(tempDataPtr + 15) = outputTemp->operand.num;
+	LD	IY,(IX+-42)
+	LEA	HL,IY+15
+	LD	IY,(IX+-36)
+	LD	BC,(IY+3)
+	LD	(HL),BC
+;  985	
+;  986	                // Fetch the tiles/sprites
+;  987	                outputTemp = &outputPtr[getIndexOffset(startIndex + 10)];
+	LD	IY,(IX+-23)
+	LEA	BC,IY+10
+	PUSH	BC
+	CALL	_getIndexOffset
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	POP	BC
+	LD	BC,(IX+-32)
+	ADD	HL,BC
+	LD	(IX+-36),HL
+;  988	                if (outputTemp->type != TYPE_VARIABLE) {
+	LD	IY,(IX+-36)
+	LD	A,(IY+1)
+	CP	A,1
+	JR	Z,L_511
+;  989	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+;  990	                }
+L_511:
+;  991	
+;  992	                LD_HL_IND_IX_OFF(outputTemp->operand.var);
+	LD	IY,(IX+-36)
+	LD	C,(IY+3)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+;  993	                ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  994	                LD_ADDR_HL((uint24_t)tempDataPtr + 3);
+	LD	BC,34
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	IY,(IX+-42)
+	LEA	BC,IY+3
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  995	
+;  996	                // Fetch the tilemap
+;  997	                if (amountOfArguments > 11) {
+	LD	A,11
+	CP	A,(IX+-15)
+	JR	NC,L_522
+;  998	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+;  999	                    LD_HL_IMM(outputPrevOperand);
+	LD	BC,(IX+-11)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1000	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1001	                    LD_ADDR_HL((uint24_t)tempDataPtr);
+	LD	BC,34
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(IX+-42)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1002	                }
+L_522:
+; 1003	
+; 1004	                // Build a new tilemap struct in the program data
+; 1005	                ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1006	                LD_HL_IMM((uint24_t)tempDataPtr);
+	LD	BC,(IX+-42)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_740
+; 1007	            }
+; 1008	            
+; 1009	            // CopyData(
+; 1010	            else if (function2 == tCopyData) {
+L_604:
+	LD	A,(IX+-14)
+	CP	A,16
+	JR	NZ,L_602
+; 1011	                /*****************************************************
+; 1012	                * Inputs:
+; 1013	                *  arg1: PTR to destination
+; 1014	                *  arg2: size in bytes of each entry
+; 1015	                *  arg3-argX: entries, constants
+; 1016	                *****************************************************/
+; 1017	
+; 1018	                element_t *outputTemp;
+; 1019	                uint8_t *prevProgDataPtr = ice.programDataPtr;
+	LD	BC,(_ice+66)
+	LD	(IX+-96),BC
+; 1020	                
+; 1021	                startIndex = -1 - amountOfArguments;
+	LD	A,(IX+-15)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,16777215
+	OR	A,A
+	SBC	HL,BC
+	LD	(IX+-23),HL
+; 1022	                outputTemp = &outputPtr[getIndexOffset(startIndex)];
+	LD	BC,HL
+	PUSH	BC
+	CALL	_getIndexOffset
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	POP	BC
+	LD	BC,(IX+-32)
+	ADD	HL,BC
+	LD	(IX+-69),HL
+; 1023	                if (outputTemp->type == TYPE_NUMBER) {
+	LD	IY,(IX+-69)
+	LD	A,(IY+1)
+	LD	(IX+-38),A
+	OR	A,A
+	JR	NZ,L_534
+; 1024	                    LD_DE_IMM(outputTemp->operand.num);
+	LD	IY,(IX+-69)
+	LD	BC,(IY+3)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_536
+; 1025	                } else if (outputTemp->type == TYPE_VARIABLE) {
+L_534:
+	LD	A,(IX+-38)
+	CP	A,1
+	JR	NZ,L_532
+; 1026	                    LD_DE_IND_IX_OFF(outputTemp->operand.var);
+	LD	IY,(IX+-69)
+	LD	C,(IY+3)
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_536
+; 1027	                } else if (outputTemp->type == TYPE_CHAIN_ANS) {
+L_532:
+	LD	A,(IX+-38)
+	CP	A,2
+	JR	NZ,L_530
+; 1028	                    AnsToDE();
+	CALL	_AnsToDE
+; 1029	                } else {
+	JR	L_536
+L_530:
+; 1030	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+; 1031	                }
+L_536:
+; 1032	
+; 1033	                if ((res = InsertDataElements(amountOfArguments, startIndex, (&outputPtr[getIndexOffset(startIndex + 1)])->operand.num, 2)) != VALID) {
+	LD	BC,2
+	PUSH	BC
+	LD	BC,(IX+-23)
+	INC	BC
+	PUSH	BC
+	CALL	_getIndexOffset
+	POP	BC
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	LD	BC,(IX+-32)
+	ADD	HL,BC
+	LD	IY,HL
+	LD	C,(IY+3)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+-23)
+	PUSH	BC
+	LD	C,(IX+-15)
+	LD	B,0
+	PUSH	BC
+	CALL	_InsertDataElements
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_539
+; 1034	                    return res;
+	LD	A,(IX+-8)
+	JR	L_741
+; 1035	                }
+L_539:
+; 1036	                LD_BC_IMM(prevProgDataPtr - ice.programDataPtr);
+	LD	BC,(_ice+66)
+	LD	HL,(IX+-96)
+	OR	A,A
+	SBC	HL,BC
+	PUSH	HL
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1037	                LDIR();
+	LD	BC,45293
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	A,1
+	LD	(_reg+4),A
+	XOR	A,A
+	LD	(_reg+5),A
+	LD	BC,0
+	LD	(_reg+22),BC
+	CALL	_ResetHL
+	CALL	_ResetDE
+	JR	L_740
+; 1038	            }
+; 1039	            
+; 1040	            // LoadData(
+; 1041	            else if (function2 == tLoadData) {
+L_602:
+	LD	A,(IX+-14)
+	CP	A,17
+	JR	NZ,L_600
+; 1042	                /*****************************************************
+; 1043	                * Inputs:
+; 1044	                *  arg1: appvar name as string
+; 1045	                *  arg2: offset in appvar
+; 1046	                *  arg3: amount of sprites (or tilemap)
+; 1047	                *
+; 1048	                * Returns: PTR to table with sprite pointers (tilemap)
+; 1049	                * Returns: PTR to sprite (sprite)
+; 1050	                *****************************************************/
+; 1051	
+; 1052	                if (outputPrevPrevType != TYPE_NUMBER || outputPrevType != TYPE_NUMBER) {
+	LD	A,(IX+-13)
+	OR	A,A
+	JR	NZ,L_544
+	LD	A,(IX+-7)
+	OR	A,A
+	JR	Z,L_585
+L_544:
+; 1053	                    return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+; 1054	                }
+L_585:
+; 1055	
+; 1056	                // Check if it's a sprite or a tilemap
+; 1057	                if (outputPrev->operand.num == 3) {
+	LD	IY,(IX+-20)
+	LD	HL,(IY+3)
+	LD	BC,3
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_584
+; 1058	                    // Copy the LoadData( routine to the data section
+; 1059	                    if (!ice.usedAlreadyLoadSprite) {
+	LD	A,(_ice+10938)
+	OR	A,A
+	JR	NZ,L_548
+; 1060	                        ice.programDataPtr -= 32;
+	LD	IY,(_ice+66)
+	LEA	BC,IY+-32
+	LD	(_ice+66),BC
+; 1061	                        ice.LoadSpriteAddr = (uintptr_t)ice.programDataPtr;
+; 1062	                        memcpy(ice.programDataPtr, LoadspriteData, 32);
+	LD	DE,32
+	PUSH	DE
+	LD	(_ice+10939),BC
+	LD	BC,_LoadspriteData
+	PUSH	BC
+	LD	BC,(_ice+66)
+	PUSH	BC
+	CALL	_memcpy
+	POP	BC
+	POP	BC
+	POP	BC
+; 1063	                        ice.usedAlreadyLoadSprite = true;
+	LD	A,1
+	LD	(_ice+10938),A
+; 1064	                    }
+L_548:
+; 1065	
+; 1066	                    // Set which offset
+; 1067	                    LD_HL_IMM(outputPrevPrevOperand + 2);
+	LD	IY,(IX+-26)
+	LEA	BC,IY+2
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1068	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1069	                    LD_ADDR_HL(ice.LoadSpriteAddr + 27);
+	LD	BC,34
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	IY,(_ice+10939)
+	LEA	BC,IY+27
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1070	
+; 1071	                    if (!outputPrevPrevPrev->isString) {
+	LD	IY,(IX+-29)
+	LD	A,(IY+0)
+	OR	A,A
+	JR	NZ,L_554
+; 1072	                        return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+; 1073	                    }
+L_554:
+; 1074	                    LD_HL_STRING(outputPrevPrevPrev->operand.num - 1, outputPrevPrevPrev->type);
+	LD	IY,(IX+-29)
+	LD	C,(IY+1)
+	LD	B,0
+	PUSH	BC
+	LD	IY,(IY+3)
+	LEA	BC,IY+-1
+	PUSH	BC
+	CALL	_LD_HL_STRING
+	POP	BC
+	POP	BC
+; 1075	
+; 1076	                    // Call the right routine
+; 1077	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1078	                    CALL(ice.LoadSpriteAddr);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_ice+10939)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1079	
+; 1080	                    ResetAllRegs();
+	CALL	_ResetAllRegs
+; 1081	                }
+; 1082	
+; 1083	                // It's a tilemap -.-
+; 1084	                else {
+	JR	L_740
+L_584:
+; 1085	                    // Copy the LoadData( routine to the data section
+; 1086	                    if (!ice.usedAlreadyLoadTilemap) {
+	LD	A,(_ice+10942)
+	OR	A,A
+	JR	NZ,L_561
+; 1087	                        ice.programDataPtr -= 59;
+	LD	IY,(_ice+66)
+	LEA	BC,IY+-59
+	LD	(_ice+66),BC
+; 1088	                        ice.LoadTilemapAddr = (uintptr_t)ice.programDataPtr;
+; 1089	                        memcpy(ice.programDataPtr, LoadtilemapData, 59);
+	LD	DE,59
+	PUSH	DE
+	LD	(_ice+10943),BC
+	LD	BC,_LoadtilemapData
+	PUSH	BC
+	LD	BC,(_ice+66)
+	PUSH	BC
+	CALL	_memcpy
+	POP	BC
+	POP	BC
+	POP	BC
+; 1090	                        ice.usedAlreadyLoadTilemap = true;
+	LD	A,1
+	LD	(_ice+10942),A
+; 1091	                    }
+L_561:
+; 1092	
+; 1093	                    // Set which offset
+; 1094	                    LD_HL_IMM(outputPrevPrevOperand + 2);
+	LD	IY,(IX+-26)
+	LEA	BC,IY+2
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1095	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1096	                    LD_ADDR_HL(ice.LoadTilemapAddr + 27);
+	LD	BC,34
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	IY,(_ice+10943)
+	LEA	BC,IY+27
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1097	
+; 1098	                    // Set table base
+; 1099	                    LD_HL_IMM(prescan.freeMemoryPtr);
+	LD	BC,(_prescan+469)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1100	                    prescan.freeMemoryPtr += outputPrev->operand.num;
+	LD	IY,(IX+-20)
+	LD	BC,(IY+3)
+	LD	HL,(_prescan+469)
+	ADD	HL,BC
+	LD	(_prescan+469),HL
+; 1101	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1102	                    LD_ADDR_HL(ice.LoadTilemapAddr + 40);
+	LD	BC,34
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	IY,(_ice+10943)
+	LEA	BC,IY+40
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1103	
+; 1104	                    // Set amount of sprites
+; 1105	                    LD_A(outputPrev->operand.num / 3);
+	LD	BC,62
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	IY,(IX+-20)
+	LD	HL,(IY+3)
+	LD	BC,3
+	CALL	__idivu
+	LD	C,L
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,1
+	LD	(_reg+6),A
+	XOR	A,A
+	LD	(_reg+7),A
+	LD	IY,(IX+-20)
+	LD	HL,(IY+3)
+	LD	BC,3
+	CALL	__idivu
+	LD	A,L
+	LD	(_reg+13),A
+; 1106	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1107	                    LD_ADDR_A(ice.LoadTilemapAddr + 45);
+	LD	BC,50
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	IY,(_ice+10943)
+	LEA	BC,IY+45
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1108	
+; 1109	                    if (!outputPrevPrevPrev->isString) {
+	LD	IY,(IX+-29)
+	LD	A,(IY+0)
+	OR	A,A
+	JR	NZ,L_579
+; 1110	                        return E_SYNTAX;
+	LD	A,6
+	JR	L_741
+; 1111	                    }
+L_579:
+; 1112	                    LD_HL_STRING(outputPrevPrevPrev->operand.num - 1, outputPrevPrevPrev->type);
+	LD	IY,(IX+-29)
+	LD	C,(IY+1)
+	LD	B,0
+	PUSH	BC
+	LD	IY,(IY+3)
+	LEA	BC,IY+-1
+	PUSH	BC
+	CALL	_LD_HL_STRING
+	POP	BC
+	POP	BC
+; 1113	
+; 1114	                    // Call the right routine
+; 1115	                    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1116	                    CALL(ice.LoadTilemapAddr);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,(_ice+10943)
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1117	
+; 1118	                    ResetAllRegs();
+	CALL	_ResetAllRegs
+; 1119	                    reg.AIsNumber = true;
+	LD	A,1
+	LD	(_reg+6),A
+; 1120	                    reg.AValue = 0;
+	XOR	A,A
+	LD	(_reg+13),A
+; 1121	                }
+; 1122	            }
+; 1123	            
+; 1124	            // SetBrightness(
+; 1125	            else if (function2 == tSetBrightness) {
+	JR	L_740
+L_600:
+	LD	A,(IX+-14)
+	CP	A,18
+	JR	NZ,L_740
+; 1126	                if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID) {
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_parseFunction1Arg
+	POP	BC
+	POP	BC
+	LD	(IX+-8),A
+	CP	A,255
+	JR	Z,L_594
+; 1127	                    return res;
+	LD	A,(IX+-8)
+	JR	L_741
+; 1128	                }
+L_594:
+; 1129	
+; 1130	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_593
+; 1131	                    LD_A_L();
+	LD	BC,125
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+	JR	L_597
+; 1132	                } else if (expr.outputRegister == REGISTER_DE) {
+L_593:
+	LD	A,(_expr+10)
+	CP	A,1
+	JR	NZ,L_597
+; 1133	                    LD_A_E();
+	LD	BC,123
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetA
+; 1134	                }
+L_597:
+; 1135	
+; 1136	                LD_IMM_A(mpBlLevel);
+	LD	BC,50
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,16121892
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_740
+; 1137	            }
+; 1138	        }
+; 1139	        
+; 1140	        // det(, sum(, Compare(, inString(
+; 1141	        else {
+L_715:
+; 1142	            /*****************************************************
+; 1143	            * Inputs:
+; 1144	            *  arg1: which det( or sum( function
+; 1145	            *  arg2-argX: arguments
+; 1146	            *
+; 1147	            * Returns: output of C function
+; 1148	            *****************************************************/
+; 1149	
+; 1150	            uint8_t smallArguments;
+; 1151	            uint8_t whichSmallArgument = 1 << (9 - amountOfArguments);
+	LD	A,9
+	SUB	A,(IX+-15)
+	LD	B,A
+	LD	A,1
+	CALL	__bshl
+	LD	(IX+-46),A
+; 1152	            uint8_t *startProgramPtr = 0;
+	LD	BC,0
+	LD	(IX+-66),BC
+; 1153	            
+; 1154	            if (function == tDet) {
+	LD	A,(IX+-12)
+	CP	A,179
+	JR	NZ,L_616
+; 1155	                smallArguments = GraphxArgs[function2].smallArgs;
+	LD	A,(IX+-14)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_GraphxArgs
+	ADD	HL,BC
+	LD	IY,HL
+	LD	A,(IY+1)
+	LD	(IX+-45),A
+; 1156	            } else if (function == tSum) {
+	JR	L_617
+L_616:
+	LD	A,(IX+-12)
+	CP	A,182
+	JR	NZ,L_614
+; 1157	                smallArguments = FileiocArgs[function2].smallArgs;
+	LD	A,(IX+-14)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_FileiocArgs
+	ADD	HL,BC
+	LD	IY,HL
+	LD	A,(IY+1)
+	LD	(IX+-45),A
+; 1158	            } else {
+	JR	L_617
+L_614:
+; 1159	                smallArguments = 0;
+	LD	(IX+-45),0
+; 1160	            }
+L_617:
+; 1161	
+; 1162	            endIndex = index;
+	LD	BC,(IX+6)
+	LD	(IX+-78),BC
+; 1163	            startIndex = index;
+	LD	BC,(IX+6)
+	LD	(IX+-23),BC
+; 1164	
+; 1165	            // Get all the arguments
+; 1166	            for (a = amountOfArguments; a >= 1; a--) {
+	LD	A,(IX+-15)
+	LD	(IX+-16),A
+	JR	L_666
+L_664:
+; 1167	                uint24_t *tempP1, *tempP2;
+; 1168	
+; 1169	                a--;
+	DEC	(IX+-16)
+; 1170	                temp = 0;
+	LD	(IX+-17),0
+; 1171	                while (1) {
+L_633:
+; 1172	                    uint8_t index;
+; 1173	                    
+; 1174	                    outputPrev = &outputPtr[--startIndex];
+	LD	IY,(IX+-23)
+	LEA	BC,IY+-1
+	LD	(IX+-23),BC
+	LD	HL,BC
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	LD	BC,(IX+-32)
+	ADD	HL,BC
+	LD	(IX+-20),HL
+; 1175	                    outputPrevType = outputPrev->type;
+	LD	IY,(IX+-20)
+	LD	A,(IY+1)
+	LD	(IX+-7),A
+; 1176	                    index = GetIndexOfFunction(outputPrev->operand.num, outputPrev->operand.func.function2);
+	LEA	BC,IY+3
+	LEA	IY,IX+-128
+	LD	(IY+-14),BC
+	LD	IY,(IY+-14)
+	LD	C,(IY+2)
+	LD	B,0
+	PUSH	BC
+	LEA	IY,IX+-128
+	LD	IY,(IY+-14)
+	LD	C,(IY+0)
+	PUSH	BC
+	CALL	_GetIndexOfFunction
+	POP	BC
+	POP	BC
+	LD	(IX+-54),A
+; 1177	
+; 1178	                    if (outputPrevType == TYPE_C_START) {
+	LD	A,(IX+-7)
+	CP	A,124
+	JR	NZ,L_628
+; 1179	                        if (!temp) {
+	LD	A,(IX+-17)
+	OR	A,A
+	JR	Z,L_638
+; 1180	                            break;
+; 1181	                        }
+; 1182	                        temp--;
+	DEC	(IX+-17)
+; 1183	                    }
+L_628:
+; 1184	
+; 1185	                    if (outputPrevType == TYPE_FUNCTION && index != 255 && implementedFunctions[index].pushBackwards) {
+	LD	A,(IX+-7)
+	CP	A,127
+	JR	NZ,L_631
+	LD	A,(IX+-54)
+	CP	A,255
+	JR	Z,L_631
+	LD	A,(IX+-54)
+	UEXT	HL
+	LD	L,A
+	LD	A,5
+	CALL	__imul_b
+	LD	BC,_implementedFunctions
+	ADD	HL,BC
+	LD	IY,HL
+	LD	A,(IY+4)
+	OR	A,A
+	JR	Z,L_631
+; 1186	                        temp++;
+	INC	(IX+-17)
+; 1187	                    }
+L_631:
+; 1188	
+; 1189	                    if (outputPrevType == TYPE_ARG_DELIMITER && !temp) {
+	LD	A,(IX+-7)
+	CP	A,125
+	JR	NZ,L_633
+	LD	A,(IX+-17)
+	OR	A,A
+	JR	NZ,L_633
+; 1190	                        break;
+; 1191	                    }
+; 1192	                }
+L_638:
+; 1193	
+; 1194	                // Check if it's the first argument or not
+; 1195	                if ((outputPrevType == TYPE_ARG_DELIMITER && !a) || (outputPrevType == TYPE_C_START && a)) {
+	LD	A,(IX+-7)
+	CP	A,125
+	JR	NZ,L_636
+	LD	A,(IX+-16)
+	OR	A,A
+	JR	Z,L_637
+L_636:
+	LD	A,(IX+-7)
+	CP	A,124
+	JR	NZ,L_639
+	LD	A,(IX+-16)
+	OR	A,A
+	JR	Z,L_639
+L_637:
+; 1196	                    return E_ARGUMENTS;
+	LD	A,10
+	JR	L_741
+; 1197	                }
+L_639:
+; 1198	
+; 1199	                // Setup a new stack
+; 1200	                tempP1 = getStackVar(0);
+	LD	BC,0
+	PUSH	BC
+	CALL	_getStackVar
+	POP	BC
+	LD	(IX+-87),HL
+; 1201	                tempP2 = getStackVar(1);
+	LD	BC,1
+	PUSH	BC
+	CALL	_getStackVar
+	POP	BC
+	LD	(IX+-90),HL
+; 1202	                ice.stackDepth++;
+	LD	A,(_ice+70)
+	INC	A
+	LD	(_ice+70),A
+; 1203	
+; 1204	                startProgramPtr = ice.programPtr;
+	LD	BC,(_ice+60)
+	LD	(IX+-66),BC
+; 1205	
+; 1206	                // And finally grab the argument, and return if an error occured
+; 1207	                if ((temp = parsePostFixFromIndexToIndex(startIndex + 1, endIndex - 1)) != VALID) {
+	LD	IY,(IX+-78)
+	LEA	BC,IY+-1
+	PUSH	BC
+	LD	BC,(IX+-23)
+	INC	BC
+	PUSH	BC
+	CALL	_parsePostFixFromIndexToIndex
+	POP	BC
+	POP	BC
+	LD	(IX+-17),A
+	CP	A,255
+	JR	Z,L_660
+; 1208	                    return temp;
+	LD	A,(IX+-17)
+	JR	L_741
+; 1209	                }
+L_660:
+; 1210	
+; 1211	                // If the last (first) argument is fetched, it's the det( function, so ignore all the optimizations
+; 1212	                // Ignore them too if it's optimized, like fetching variable A if it's already in register HL
+; 1213	                if (ice.programPtr != startProgramPtr && a) {
+	LD	BC,(IX+-66)
+	LD	HL,(_ice+60)
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_659
+	LD	A,(IX+-16)
+	OR	A,A
+	JR	Z,L_659
+; 1214	                    // Write pea instead of lea
+; 1215	                    if (expr.outputIsNumber && expr.outputNumber >= IX_VARIABLES - 0x80 && expr.outputNumber <= IX_VARIABLES + 0x7F) {
+	LD	A,(_expr+2)
+	OR	A,A
+	JR	Z,L_657
+	LD	BC,13713095
+	LD	HL,(_expr+13)
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_657
+	LD	BC,(_expr+13)
+	LD	HL,13713350
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_657
+; 1216	                        *(ice.programPtr - 2) = 0x65;
+	LD	IY,(_ice+60)
+	LEA	HL,IY+-2
+	LD	(HL),101
+; 1217	                    } else {
+	JR	L_662
+L_657:
+; 1218	                        if (smallArguments & whichSmallArgument) {
+	LD	A,(IX+-45)
+	AND	A,(IX+-46)
+	JR	Z,L_655
+; 1219	                            if (expr.outputIsNumber) {
+	LD	A,(_expr+2)
+	OR	A,A
+	JR	Z,L_650
+; 1220	                                ice.programPtr -= expr.SizeOfOutputNumber;
+	LD	A,(_expr+12)
+	UEXT	HL
+	LD	L,A
+	LD	DE,HL
+	LD	HL,(_ice+60)
+; 1221	                                LD_L(expr.outputNumber);
+	LD	BC,46
+	PUSH	BC
+	OR	A,A
+	SBC	HL,DE
+	LD	(_ice+60),HL
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(_expr+13)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+; 1222	                                ResetHL();
+	CALL	_ResetHL
+; 1223	                            } else if (expr.outputIsVariable) {
+	JR	L_653
+L_650:
+	LD	A,(_expr+3)
+	OR	A,A
+	JR	Z,L_653
+; 1224	                                *(ice.programPtr - 2) = 0x6E;
+	LD	IY,(_ice+60)
+	LEA	HL,IY+-2
+	LD	(HL),110
+; 1225	                                ResetHL();
+	CALL	_ResetHL
+; 1226	                            }
+L_653:
+; 1227	                            if (expr.outputRegister == REGISTER_A) {
+	LD	A,(_expr+10)
+	CP	A,4
+	JR	NZ,L_652
+; 1228	                                OutputWrite2Bytes(OP_LD_L_A, OP_PUSH_HL);
+	LD	BC,58735
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+; 1229	                            } else {
+	JR	L_662
+L_652:
+; 1230	                                PushHLDE();
+	CALL	_PushHLDE
+; 1231	                            }
+; 1232	                        } else {
+	JR	L_662
+L_655:
+; 1233	                            PushHLDE();
+	CALL	_PushHLDE
+; 1234	                        }
+; 1235	                    }
+; 1236	                } else {
+	JR	L_662
+L_659:
+; 1237	                    PushHLDE();
+	CALL	_PushHLDE
+; 1238	                }
+L_662:
+; 1239	
+; 1240	                ice.stackDepth--;
+	LD	A,(_ice+70)
+	DEC	A
+	LD	(_ice+70),A
+; 1241	
+; 1242	                // And restore the stack
+; 1243	                setStackValues(tempP1, tempP2);
+	LD	BC,(IX+-90)
+	PUSH	BC
+	LD	BC,(IX+-87)
+	PUSH	BC
+	CALL	_setStackValues
+	POP	BC
+	POP	BC
+; 1244	
+; 1245	                endIndex = startIndex;
+	LD	BC,(IX+-23)
+	LD	(IX+-78),BC
+; 1246	                whichSmallArgument <<= 1;
+	LD	A,(IX+-46)
+	ADD	A,A
+	LD	(IX+-46),A
+; 1247	                a++;
+	INC	(IX+-16)
+	DEC	(IX+-16)
+; 1248	            }
+L_666:
+	LD	A,(IX+-16)
+	CP	A,1
+	JR	NC,L_664
+; 1249	
+; 1250	            if (function == tDet || function == tSum) {
+	LD	A,(IX+-12)
+	CP	A,179
+	JR	Z,L_673
+	LD	A,(IX+-12)
+	CP	A,182
+	JR	NZ,L_690
+L_673:
+; 1251	                ice.programPtr = startProgramPtr;
+	LD	BC,(IX+-66)
+	LD	(_ice+60),BC
+; 1252	                
+; 1253	                // Wow, unknown C function?
+; 1254	                if (function2 >= (function == tDet ? AMOUNT_OF_GRAPHX_FUNCTIONS : AMOUNT_OF_FILEIOC_FUNCTIONS)) {
+	LD	A,(IX+-12)
+	CP	A,179
+	JR	NZ,L_670
+	LD	BC,94
+	LD	(IX+-81),BC
+	JR	L_671
+L_670:
+	LD	BC,34
+	LD	(IX+-81),BC
+L_671:
+	LD	A,(IX+-14)
+	UEXT	HL
+	LD	L,A
+	OR	A,A
+	LD	BC,(IX+-81)
+	SBC	HL,BC
+	JP	M,L_690
+; 1255	                    return E_UNKNOWN_C;
+	LD	A,11
+	JR	L_741
+; 1256	                }
+; 1257	            }
+L_690:
+; 1258	
+; 1259	            // Get the amount of arguments, and call the function
+; 1260	            if (function == tDet) {
+	LD	A,(IX+-12)
+	CP	A,179
+	JR	NZ,L_689
+; 1261	                temp = GraphxArgs[function2].retRegAndArgs;
+	LD	A,(IX+-14)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_GraphxArgs
+	ADD	HL,BC
+	LD	IY,HL
+	LD	A,(IY+0)
+	LD	(IX+-17),A
+; 1262	                CALL(prescan.GraphxRoutinesStack[function2] - (uint24_t)ice.programData + PRGM_START);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(IX+-14)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_prescan+25
+	ADD	HL,BC
+	LD	HL,(HL)
+	OR	A,A
+	LD	BC,(_ice+54)
+	SBC	HL,BC
+	LD	BC,13740162
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_696
+; 1263	            } else if (function == tSum) {
+L_689:
+	LD	A,(IX+-12)
+	CP	A,182
+	JR	NZ,L_687
+; 1264	                temp = FileiocArgs[function2].retRegAndArgs;
+	LD	A,(IX+-14)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_FileiocArgs
+	ADD	HL,BC
+	LD	IY,HL
+	LD	A,(IY+0)
+	LD	(IX+-17),A
+; 1265	                CALL(prescan.FileiocRoutinesStack[function2] - (uint24_t)ice.programData + PRGM_START);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(IX+-14)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_prescan+307
+	ADD	HL,BC
+	LD	HL,(HL)
+	OR	A,A
+	LD	BC,(_ice+54)
+	SBC	HL,BC
+	LD	BC,13740162
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_696
+; 1266	            } else {
+L_687:
+; 1267	                temp = 0;
+	LD	(IX+-17),0
+; 1268	                amountOfArguments++;
+	INC	(IX+-15)
+; 1269	                if (function == tVarOut) {
+	LD	A,(IX+-12)
+	CP	A,98
+	JR	NZ,L_685
+; 1270	                    CALL(__strcmp);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,200
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_696
+; 1271	                } else {
+L_685:
+; 1272	                    CALL(__strstr);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,240
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+; 1273	                }
+; 1274	            }
+L_696:
+; 1275	
+; 1276	            // Check if unimplemented function
+; 1277	            if (function == tDet || function == tSum) {
+	LD	A,(IX+-12)
+	CP	A,179
+	JR	Z,L_695
+	LD	A,(IX+-12)
+	CP	A,182
+	JR	NZ,L_703
+L_695:
+; 1278	                if (temp & UN) {
+	LD	A,(IX+-17)
+	AND	A,64
+	JR	Z,L_694
+; 1279	                    return E_UNKNOWN_C;
+	LD	A,11
+	JR	L_741
+; 1280	                }
+L_694:
+; 1281	
+; 1282	                // Check the right amount of arguments
+; 1283	                if ((temp & 7) != amountOfArguments - 1) {
+	LD	A,(IX+-15)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	DEC	BC
+	LD	A,(IX+-17)
+	AND	A,7
+	UEXT	HL
+	LD	L,A
+	LD	DE,HL
+	LD	HL,BC
+	OR	A,A
+	SBC	HL,DE
+	JR	Z,L_703
+; 1284	                    return E_ARGUMENTS;
+	LD	A,10
+	JR	L_741
+; 1285	                }
+; 1286	            }
+L_703:
+; 1287	
+; 1288	            // And pop the arguments
+; 1289	            for (a = 1; a < amountOfArguments; a++) {
+	LD	(IX+-16),1
+	JR	L_702
+L_700:
+; 1290	                POP_BC();
+	LD	BC,193
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetBC
+	INC	(IX+-16)
+; 1291	            }
+L_702:
+	LD	A,(IX+-16)
+	CP	A,(IX+-15)
+	JR	C,L_700
+; 1292	
+; 1293	            // Check if the output is 16-bits OR in A
+; 1294	            if (function == tDet || function == tSum) {
+	LD	A,(IX+-12)
+	CP	A,179
+	JR	Z,L_711
+	LD	A,(IX+-12)
+	CP	A,182
+	JR	NZ,L_713
+L_711:
+; 1295	                if (temp & RET_A) {
+	LD	A,(IX+-17)
+	AND	A,128
+	JR	Z,L_710
+; 1296	                    expr.outputReturnRegister = REGISTER_A;
+	LD	A,4
+	LD	(_expr+11),A
+; 1297	                } else if (temp & RET_HLs) {
+	JR	L_713
+L_710:
+	LD	A,(IX+-17)
+	AND	A,32
+	JR	Z,L_713
+; 1298	                    EX_S_DE_HL();
+	LD	BC,60242
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	CALL	_RegChangeHLDE
+; 1299	                    expr.outputReturnRegister = REGISTER_DE;
+	LD	A,1
+	LD	(_expr+11),A
+; 1300	                }
+; 1301	            }
+L_713:
+; 1302	
+; 1303	            ResetAllRegs();
+	CALL	_ResetAllRegs
+; 1304	            expr.outputIsNumber = expr.outputIsVariable = expr.outputIsString = false;
+	XOR	A,A
+	LD	(_expr+4),A
+	LD	(_expr+3),A
+	LD	(_expr+2),A
+; 1305	            ice.modifiedIY = true;
+	LD	A,1
+	LD	(_ice+10908),A
+; 1306	        }
+; 1307	    }
+L_740:
+; 1308	    
+; 1309	    expr.outputRegister = expr.outputReturnRegister;
+	LD	A,(_expr+11)
+	LD	(_expr+10),A
+; 1310	
+; 1311	    return VALID;
+	LD	A,255
+; 1312	}
+L_741:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _parseFunction ***************************
+;Name                         Addr/Register   Size   Type
+;_setStackValues                     IMPORT  -----   function
+;_parsePostFixFromIndexToIndex       IMPORT  -----   function
+;_getStackVar                        IMPORT  -----   function
+;_implementedFunctions               STATIC    165   variable
+;_GetIndexOfFunction                 IMPORT  -----   function
+;_FileiocArgs                        STATIC     68   variable
+;_GraphxArgs                         STATIC    188   variable
+;_LoadtilemapData                    IMPORT  -----   function
+;_LoadspriteData                     IMPORT  -----   function
+;_AnsToBC                            IMPORT  -----   function
+;_InsertDataElements                 IMPORT  -----   function
+;_InsertMallocRoutine                IMPORT  -----   function
+;_TimerData                          IMPORT  -----   function
+;_2temp298                           STATIC      8   variable
+;_strcpy                             IMPORT  -----   function
+;_strlen                             IMPORT  -----   function
+;_1temp294                           STATIC     10   variable
+;_OutputWriteMem                     IMPORT  -----   function
+;_0temp293                           STATIC     22   variable
+;_PushHLDE                           IMPORT  -----   function
+;_MaybeAToHL                         IMPORT  -----   function
+;_LD_HL_STRING                       IMPORT  -----   function
+;_prescan                            IMPORT   5833   variable
+;_reg                                IMPORT     28   variable
+;_AnsToDE                            IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+;_comparePtrToTempStrings            IMPORT  -----   function
+;_MeanData                           IMPORT  -----   function
+;_RegChangeHLDE                      IMPORT  -----   function
+;_parseFunction2Args                 IMPORT  -----   function
+;_SincosData                         IMPORT  -----   function
+;_memcpy                             IMPORT  -----   function
+;_SqrtData                           IMPORT  -----   function
+;_KeypadData                         IMPORT  -----   function
+;_CallRoutine                        IMPORT  -----   function
+;_loadGetKeyFastData2                IMPORT  -----   function
+;_loadGetKeyFastData1                IMPORT  -----   function
+;_LoadRegVariable                    IMPORT  -----   function
+;_ResetBC                            IMPORT  -----   function
+;_ResetAllRegs                       IMPORT  -----   function
+;_ProgramPtrToOffsetStack            IMPORT  -----   function
+;_ClearAnsFlags                      IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_ice                                IMPORT  10958   variable
+;_ResetA                             IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_parseFunction1Arg                  IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_getIndexOffset                     IMPORT  -----   function
+;_outputStack                        IMPORT    400   variable
+;mem                                 IX-136     22   variable
+;mem                                 IX-114     10   variable
+;mem                                 IX-104      8   variable
+;prevProgDataPtr                      IX-96      3   variable
+;tempProgPtr                          IX-93      3   variable
+;tempP2                               IX-90      3   variable
+;tempP1                               IX-87      3   variable
+;outputPrevPrev                       IX-84      3   variable
+;temp668                              IX-81      3   variable
+;endIndex                             IX-78      3   variable
+;temp81                               IX-75      3   variable
+;outputPrevPrevPrevOperand            IX-72      3   variable
+;outputTemp                           IX-69      3   variable
+;startProgramPtr                      IX-66      3   variable
+;outputPrevPrevPrevOperand            IX-63      3   variable
+;G_2                                  IX-60      1   variable
+;G_1                                  IX-59      1   variable
+;outputCurr                           IX-58      3   variable
+;G_0                                  IX-55      1   variable
+;index                                IX-54      1   variable
+;height                               IX-53      1   variable
+;G_3                                  IX-52      3   variable
+;shouldCallRoutine                    IX-49      1   variable
+;shouldParseArguments                 IX-48      1   variable
+;keyBit                               IX-47      1   variable
+;whichSmallArgument                   IX-46      1   variable
+;smallArguments                       IX-45      1   variable
+;key                                  IX-44      1   variable
+;temp                                 IX-43      1   variable
+;tempDataPtr                          IX-42      3   variable
+;temp                                 IX-39      1   variable
+;G_7                                  IX-38      1   variable
+;outputPrevPrevPrevType               IX-37      1   variable
+;outputTemp                           IX-36      3   variable
+;a                                    IX-33      1   variable
+;outputPtr                            IX-32      3   variable
+;outputPrevPrevPrev                   IX-29      3   variable
+;outputPrevPrevOperand                IX-26      3   variable
+;startIndex                           IX-23      3   variable
+;outputPrev                           IX-20      3   variable
+;temp                                 IX-17      1   variable
+;a                                    IX-16      1   variable
+;amountOfArguments                    IX-15      1   variable
+;function2                            IX-14      1   variable
+;outputPrevPrevType                   IX-13      1   variable
+;function                             IX-12      1   variable
+;outputPrevOperand                    IX-11      3   variable
+;res                                   IX-8      1   variable
+;outputPrevType                        IX-7      1   variable
+;index                                 IX+6      3   parameter
+
+
+; Stack Frame Size: 163 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+	SEGMENT TEXT
+_0temp293:
+	DB	42
+	DB	228
+	DB	37
+	DB	208
+	DB	237
+	DB	39
+	DB	17
+	DB	131
+	DB	191
+	DB	201
+	DB	183
+	DB	237
+	DB	82
+	DB	17
+	DB	255
+	DB	255
+	DB	255
+	DB	25
+	DB	237
+	DB	98
+	DB	35
+	DB	0
+_1temp294:
+	DB	42
+	DB	228
+	DB	37
+	DB	208
+	DB	35
+	DB	35
+	DB	35
+	DB	35
+	DB	35
+	DB	0
+_2temp298:
+	DB	42
+	DB	228
+	DB	37
+	DB	208
+	DB	35
+	DB	35
+	DB	35
+	DB	0
+	SEGMENT CODE
+; 1313	
+; 1314	uint8_t parseFunction1Arg(uint24_t index, uint8_t outputRegister1) {
+_parseFunction1Arg:
+	LD	HL,-4
+	CALL	__frameset
+; 1315	    element_t *outputPtr = (element_t*)outputStack, *outputPrev;
+; 1316	    uint8_t outputPrevType;
+; 1317	    
+; 1318	    outputPrev = &outputPtr[getIndexOffset(-2)];
+	LD	BC,16777214
+	PUSH	BC
+	CALL	_getIndexOffset
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	POP	BC
+	LD	BC,_outputStack
+	ADD	HL,BC
+	LD	(IX+-4),HL
+; 1319	    outputPrevType = outputPrev->type;
+	LD	IY,(IX+-4)
+	LD	A,(IY+1)
+	LD	(IX+-1),A
+; 1320	
+; 1321	    if (outputPrevType == TYPE_NUMBER) {
+	OR	A,A
+	JR	NZ,L_752
+; 1322	        LD_HL_IMM(outputPrev->operand.num);
+	LD	IY,(IX+-4)
+	LD	BC,(IY+3)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_753
+; 1323	    } else if (outputPrevType == TYPE_VARIABLE) {
+L_752:
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_750
+; 1324	        LD_HL_IND_IX_OFF(outputPrev->operand.var);
+	LD	IY,(IX+-4)
+	LD	C,(IY+3)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_753
+; 1325	    } else if (outputPrevType == TYPE_CHAIN_ANS) {
+L_750:
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_748
+; 1326	        if (outputRegister1 == REGISTER_HL) {
+	LD	A,(IX+9)
+	OR	A,A
+	JR	NZ,L_753
+; 1327	            AnsToHL();
+	CALL	_AnsToHL
+; 1328	        }
+; 1329	    } else {
+	JR	L_753
+L_748:
+; 1330	        return E_SYNTAX;
+	LD	A,6
+	JR	L_754
+; 1331	    }
+L_753:
+; 1332	
+; 1333	    return VALID;
+	LD	A,255
+; 1334	}
+L_754:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _parseFunction1Arg ***************************
+;Name                         Addr/Register   Size   Type
+;_AnsToHL                            IMPORT  -----   function
+;_LoadRegVariable                    IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_getIndexOffset                     IMPORT  -----   function
+;_outputStack                        IMPORT    400   variable
+;outputPrev                            IX-4      3   variable
+;outputPrevType                        IX-1      1   variable
+;outputRegister1                       IX+9      1   parameter
+;index                                 IX+6      3   parameter
+
+
+; Stack Frame Size: 16 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+; 1335	
+; 1336	void LoadVariableInReg(uint8_t reg, uint8_t var) {
+_LoadVariableInReg:
+	CALL	__frameset0
+; 1337	    if (reg == REGISTER_A) {
+	LD	A,(IX+6)
+	CP	A,4
+	JR	NZ,L_769
+; 1338	        LD_A_IND_IX_OFF(var);
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	LD	BC,4
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_770
+; 1339	    } else if (reg == REGISTER_BC) {
+L_769:
+	LD	A,(IX+6)
+	CP	A,2
+	JR	NZ,L_767
+; 1340	        LD_BC_IND_IX_OFF(var);
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_770
+; 1341	    } else if (reg == REGISTER_DE) {
+L_767:
+	LD	A,(IX+6)
+	CP	A,1
+	JR	NZ,L_765
+; 1342	        LD_DE_IND_IX_OFF(var);
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_770
+; 1343	    } else if (reg == REGISTER_HL) {
+L_765:
+	LD	A,(IX+6)
+	OR	A,A
+	JR	NZ,L_770
+; 1344	        LD_HL_IND_IX_OFF(var);
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1345	    }
+; 1346	}
+L_770:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _LoadVariableInReg ***************************
+;Name                         Addr/Register   Size   Type
+;_LoadRegVariable                    IMPORT  -----   function
+;var                                   IX+9      1   parameter
+;reg                                   IX+6      1   parameter
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+; 1347	
+; 1348	void LoadValueInReg(uint8_t reg2, uint24_t val) {
+_LoadValueInReg:
+	CALL	__frameset0
+; 1349	    if (reg2 == REGISTER_A) {
+	LD	A,(IX+6)
+	CP	A,4
+	JR	NZ,L_785
+; 1350	        LD_A(val);
+	LD	BC,62
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,1
+	LD	(_reg+6),A
+	XOR	A,A
+	LD	(_reg+7),A
+	LD	A,(IX+9)
+	LD	(_reg+13),A
+	JR	L_786
+; 1351	    } else if (reg2 == REGISTER_BC) {
+L_785:
+	LD	A,(IX+6)
+	CP	A,2
+	JR	NZ,L_783
+; 1352	        LD_BC_IMM(val);
+	LD	BC,(IX+9)
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_786
+; 1353	    } else if (reg2 == REGISTER_DE) {
+L_783:
+	LD	A,(IX+6)
+	CP	A,1
+	JR	NZ,L_781
+; 1354	        LD_DE_IMM(val);
+	LD	BC,(IX+9)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_786
+; 1355	    } else if (reg2 == REGISTER_HL) {
+L_781:
+	LD	A,(IX+6)
+	OR	A,A
+	JR	NZ,L_786
+; 1356	        LD_HL_IMM(val);
+	LD	BC,(IX+9)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1357	    }
+; 1358	}
+L_786:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _LoadValueInReg ***************************
+;Name                         Addr/Register   Size   Type
+;_LoadRegValue                       IMPORT  -----   function
+;_reg                                IMPORT     28   variable
+;_OutputWriteByte                    IMPORT  -----   function
+;val                                   IX+9      3   parameter
+;reg2                                  IX+6      1   parameter
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+; 1359	
+; 1360	void AnsToReg(uint8_t reg2) {
+_AnsToReg:
+	CALL	__frameset0
+; 1361	    if (reg2 == REGISTER_A) {
+	LD	A,(IX+6)
+	CP	A,4
+	JR	NZ,L_793
+; 1362	        AnsToA();
+	CALL	_AnsToA
+; 1363	    } else if (reg2 == REGISTER_BC) {
+	JR	L_794
+L_793:
+	LD	A,(IX+6)
+	CP	A,2
+	JR	NZ,L_791
+; 1364	        AnsToBC();
+	CALL	_AnsToBC
+; 1365	    } else if (reg2 == REGISTER_DE) {
+	JR	L_794
+L_791:
+	LD	A,(IX+6)
+	CP	A,1
+	JR	NZ,L_789
+; 1366	        AnsToDE();
+	CALL	_AnsToDE
+; 1367	    } else if (reg2 == REGISTER_HL) {
+	JR	L_794
+L_789:
+	LD	A,(IX+6)
+	OR	A,A
+	JR	NZ,L_794
+; 1368	        AnsToHL();
+	CALL	_AnsToHL
+; 1369	    }
+; 1370	}
+L_794:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _AnsToReg ***************************
+;Name                         Addr/Register   Size   Type
+;_AnsToHL                            IMPORT  -----   function
+;_AnsToDE                            IMPORT  -----   function
+;_AnsToBC                            IMPORT  -----   function
+;_AnsToA                             IMPORT  -----   function
+;reg2                                  IX+6      1   parameter
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+; 1371	
+; 1372	uint8_t parseFunction2Args(uint24_t index, uint8_t outputReturnRegister, bool orderDoesMatter) {
+_parseFunction2Args:
+	LD	HL,-17
+	CALL	__frameset
+; 1373	    element_t *outputPtr = (element_t*)outputStack, *outputPrev, *outputPrevPrev;
+	LD	BC,_outputStack
+	LD	(IX+-17),BC
+; 1374	    uint8_t outputPrevType, outputPrevPrevType;
+; 1375	    uint24_t outputPrevOperand, outputPrevPrevOperand;
+; 1376	
+; 1377	    outputPrev            = &outputPtr[getIndexOffset(-2)];
+	LD	BC,16777214
+	PUSH	BC
+	CALL	_getIndexOffset
+	POP	BC
+; 1378	    outputPrevPrev        = &outputPtr[getIndexOffset(-3)];
+	LD	DE,16777213
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	LD	BC,_outputStack
+	ADD	HL,BC
+	LD	(IX+-11),HL
+	PUSH	DE
+	CALL	_getIndexOffset
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	POP	BC
+	LD	BC,(IX+-17)
+	ADD	HL,BC
+	LD	(IX+-14),HL
+; 1379	    outputPrevType        = outputPrev->type;
+	LD	IY,(IX+-11)
+	LD	A,(IY+1)
+	LD	(IX+-1),A
+; 1380	    outputPrevOperand     = outputPrev->operand.num;
+	LD	BC,(IY+3)
+	LD	(IX+-4),BC
+; 1381	    outputPrevPrevType    = outputPrevPrev->type;
+	LD	IY,(IX+-14)
+	LD	A,(IY+1)
+	LD	(IX+-8),A
+; 1382	    outputPrevPrevOperand = outputPrevPrev->operand.num;
+	LD	BC,(IY+3)
+	LD	(IX+-7),BC
+; 1383	
+; 1384	    if (outputPrevPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-8)
+	OR	A,A
+	JR	NZ,L_885
+; 1385	        if (outputPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_816
+; 1386	            LD_HL_IMM(outputPrevPrevOperand);
+	LD	BC,(IX+-7)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1387	            LoadValueInReg(outputReturnRegister, outputPrevOperand);
+	LD	BC,(IX+-4)
+	PUSH	BC
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	CALL	_LoadValueInReg
+	POP	BC
+	POP	BC
+; 1388	        } else if (outputPrevType == TYPE_VARIABLE) {
+	JR	L_886
+L_816:
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_814
+; 1389	            LD_HL_IMM(outputPrevPrevOperand);
+	LD	BC,(IX+-7)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1390	            LoadVariableInReg(outputReturnRegister, outputPrevOperand);
+	LD	C,(IX+-4)
+	LD	B,0
+	PUSH	BC
+	LD	C,(IX+9)
+	PUSH	BC
+	CALL	_LoadVariableInReg
+	POP	BC
+	POP	BC
+; 1391	        } else if (outputPrevType == TYPE_CHAIN_ANS) {
+	JR	L_886
+L_814:
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_812
+; 1392	            if (orderDoesMatter) {
+	LD	A,(IX+12)
+	OR	A,A
+	JR	Z,L_810
+; 1393	                AnsToReg(outputReturnRegister);
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	CALL	_AnsToReg
+	POP	BC
+; 1394	                LD_HL_IMM(outputPrevPrevOperand);
+	LD	BC,(IX+-7)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1395	            } else {
+L_810:
+; 1396	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_808
+; 1397	                    LD_DE_IMM(outputPrevPrevOperand);
+	LD	BC,(IX+-7)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1398	                } else {
+L_808:
+; 1399	                    LD_HL_IMM(outputPrevPrevOperand);
+	LD	BC,(IX+-7)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1400	                }
+; 1401	            }
+; 1402	        } else {
+L_812:
+; 1403	            return E_SYNTAX;
+	LD	A,6
+	JR	L_887
+; 1404	        }
+; 1405	    } else if (outputPrevPrevType == TYPE_VARIABLE) {
+L_885:
+	LD	A,(IX+-8)
+	CP	A,1
+	JR	NZ,L_883
+; 1406	        if (outputPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_845
+; 1407	            if (orderDoesMatter) {
+	LD	A,(IX+12)
+	OR	A,A
+	JR	Z,L_826
+; 1408	                LD_HL_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-7)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1409	                LoadValueInReg(outputReturnRegister, outputPrevOperand);
+	LD	BC,(IX+-4)
+	PUSH	BC
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	CALL	_LoadValueInReg
+	POP	BC
+	POP	BC
+; 1410	            } else {
+	JR	L_886
+L_826:
+; 1411	                LD_HL_IMM(outputPrevOperand);
+	LD	BC,(IX+-4)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1412	                LD_DE_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-7)
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1413	            }
+; 1414	        } else if (outputPrevType == TYPE_VARIABLE) {
+L_845:
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_843
+; 1415	            LD_HL_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-7)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+; 1416	            LoadVariableInReg(outputReturnRegister, outputPrevOperand);
+	LD	C,(IX+-4)
+	LD	B,0
+	PUSH	BC
+	LD	C,(IX+9)
+	PUSH	BC
+	CALL	_LoadVariableInReg
+	POP	BC
+	POP	BC
+; 1417	        } else if (outputPrevType == TYPE_CHAIN_ANS) {
+	JR	L_886
+L_843:
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	NZ,L_841
+; 1418	            if (orderDoesMatter) {
+	LD	A,(IX+12)
+	OR	A,A
+	JR	Z,L_839
+; 1419	                AnsToReg(outputReturnRegister);
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	CALL	_AnsToReg
+	POP	BC
+; 1420	                LD_HL_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-7)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1421	            } else {
+L_839:
+; 1422	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_837
+; 1423	                    LD_DE_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-7)
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1424	                } else {
+L_837:
+; 1425	                    LD_HL_IND_IX_OFF(outputPrevPrevOperand);
+	LD	C,(IX+-7)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1426	                }
+; 1427	            }
+; 1428	        } else {
+L_841:
+; 1429	            return E_SYNTAX;
+	LD	A,6
+	JR	L_887
+; 1430	        }
+; 1431	    } else if (outputPrevPrevType == TYPE_CHAIN_ANS) {
+L_883:
+	LD	A,(IX+-8)
+	CP	A,2
+	JR	NZ,L_881
+; 1432	        if (outputPrevType == TYPE_NUMBER) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_865
+; 1433	            AnsToHL();
+	CALL	_AnsToHL
+; 1434	            if (orderDoesMatter) {
+	LD	A,(IX+12)
+	OR	A,A
+	JR	Z,L_853
+; 1435	                LoadValueInReg(outputReturnRegister, outputPrevOperand);
+	LD	BC,(IX+-4)
+	PUSH	BC
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	CALL	_LoadValueInReg
+	POP	BC
+	POP	BC
+; 1436	            } else {
+	JR	L_886
+L_853:
+; 1437	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_851
+; 1438	                    LD_DE_IMM(outputPrevOperand);
+	LD	BC,(IX+-4)
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1439	                } else {
+L_851:
+; 1440	                    LD_HL_IMM(outputPrevOperand);
+	LD	BC,(IX+-4)
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1441	                }
+; 1442	            }
+; 1443	        } else if (outputPrevType == TYPE_VARIABLE) {
+L_865:
+	LD	A,(IX+-1)
+	CP	A,1
+	JR	NZ,L_863
+; 1444	            AnsToHL();
+	CALL	_AnsToHL
+; 1445	            if (orderDoesMatter) {
+	LD	A,(IX+12)
+	OR	A,A
+	JR	Z,L_861
+; 1446	                LoadVariableInReg(outputReturnRegister, outputPrevOperand);
+	LD	C,(IX+-4)
+	LD	B,0
+	PUSH	BC
+	LD	C,(IX+9)
+	PUSH	BC
+	CALL	_LoadVariableInReg
+	POP	BC
+	POP	BC
+; 1447	            } else {
+	JR	L_886
+L_861:
+; 1448	                if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_859
+; 1449	                    LD_DE_IND_IX_OFF(outputPrevOperand);
+	LD	C,(IX+-4)
+	LD	B,0
+	PUSH	BC
+	LD	BC,1
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1450	                } else {
+L_859:
+; 1451	                    LD_HL_IND_IX_OFF(outputPrevOperand);
+	LD	C,(IX+-4)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegVariable
+	POP	BC
+	POP	BC
+	JR	L_886
+; 1452	                }
+; 1453	            }
+; 1454	        } else {
+L_863:
+; 1455	            return E_SYNTAX;
+	LD	A,6
+	JR	L_887
+; 1456	        }
+; 1457	    } else if (outputPrevPrevType == TYPE_CHAIN_PUSH) {
+L_881:
+	LD	A,(IX+-8)
+	CP	A,3
+	JR	NZ,L_879
+; 1458	        if (outputPrevType != TYPE_CHAIN_ANS) {
+	LD	A,(IX+-1)
+	CP	A,2
+	JR	Z,L_877
+; 1459	            return E_ICE_ERROR;
+	LD	A,9
+	JR	L_887
+; 1460	        }
+L_877:
+; 1461	        if (orderDoesMatter) {
+	LD	A,(IX+12)
+	OR	A,A
+	JR	Z,L_876
+; 1462	            AnsToReg(outputReturnRegister);
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	CALL	_AnsToReg
+	POP	BC
+; 1463	            POP_HL();
+	LD	BC,225
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+	JR	L_886
+; 1464	        } else {
+L_876:
+; 1465	            MaybeAToHL();
+	CALL	_MaybeAToHL
+; 1466	            if (expr.outputRegister == REGISTER_HL) {
+	LD	A,(_expr+10)
+	OR	A,A
+	JR	NZ,L_874
+; 1467	                POP_DE();
+	LD	BC,209
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetDE
+	JR	L_886
+; 1468	            } else {
+L_874:
+; 1469	                POP_HL();
+	LD	BC,225
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	CALL	_ResetHL
+	JR	L_886
+; 1470	            }
+; 1471	        }
+; 1472	    } else {
+L_879:
+; 1473	        return E_SYNTAX;
+	LD	A,6
+	JR	L_887
+; 1474	    }
+L_886:
+; 1475	
+; 1476	    return VALID;
+	LD	A,255
+; 1477	}
+L_887:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _parseFunction2Args ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetDE                            IMPORT  -----   function
+;_MaybeAToHL                         IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_AnsToHL                            IMPORT  -----   function
+;_LoadRegVariable                    IMPORT  -----   function
+;_expr                               IMPORT     16   variable
+;_LoadVariableInReg                  IMPORT  -----   function
+;_LoadValueInReg                     IMPORT  -----   function
+;_LoadRegValue                       IMPORT  -----   function
+;_getIndexOffset                     IMPORT  -----   function
+;_outputStack                        IMPORT    400   variable
+;outputPtr                            IX-17      3   variable
+;outputPrevPrev                       IX-14      3   variable
+;outputPrev                           IX-11      3   variable
+;outputPrevPrevType                    IX-8      1   variable
+;outputPrevPrevOperand                 IX-7      3   variable
+;outputPrevOperand                     IX-4      3   variable
+;outputPrevType                        IX-1      1   variable
+;orderDoesMatter                      IX+12      1   parameter
+;outputReturnRegister                  IX+9      1   parameter
+;index                                 IX+6      3   parameter
+
+
+; Stack Frame Size: 32 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+; 1478	
+; 1479	uint8_t InsertDataElements(uint8_t amountOfArguments, uint24_t startIndex, uint8_t dataSize, uint8_t startA) {
+_InsertDataElements:
+	LD	HL,-7
+	CALL	__frameset
+; 1480	    uint8_t a;
+; 1481	    uint8_t *newProgramDataPtr;
+; 1482	
+; 1483	    ProgramPtrToOffsetStack();
+	CALL	_ProgramPtrToOffsetStack
+; 1484	    ice.programDataPtr -= dataSize * (amountOfArguments - startA);
+	LD	A,(IX+6)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	A,(IX+15)
+	UEXT	HL
+	LD	L,A
+	LD	DE,HL
+	LD	HL,BC
+	OR	A,A
+	SBC	HL,DE
+	LD	DE,HL
+	LD	A,(IX+12)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,DE
+	CALL	__imuls
+	LD	BC,HL
+	LD	HL,(_ice+66)
+	OR	A,A
+	SBC	HL,BC
+	LD	(_ice+66),HL
+; 1485	    newProgramDataPtr = ice.programDataPtr;
+	LD	BC,(_ice+66)
+	LD	(IX+-7),BC
+; 1486	    LD_HL_IMM((uint24_t)newProgramDataPtr);
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	CALL	_LoadRegValue
+	POP	BC
+	POP	BC
+; 1487	
+; 1488	    for (a = startA; a < amountOfArguments; a++) {
+	LD	A,(IX+15)
+	LD	(IX+-1),A
+	JR	L_900
+L_898:
+; 1489	        element_t *outputPtr = (element_t*)outputStack;
+; 1490	        element_t *outputTemp = &outputPtr[getIndexOffset(startIndex + a)];
+	LD	A,(IX+-1)
+	UEXT	HL
+	LD	L,A
+	LD	BC,(IX+9)
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_getIndexOffset
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	ADD	HL,BC
+	POP	BC
+	LD	BC,_outputStack
+	ADD	HL,BC
+	LD	(IX+-4),HL
+; 1491	        
+; 1492	        if (outputTemp->type != TYPE_NUMBER) {
+	LD	IY,(IX+-4)
+	LD	A,(IY+1)
+	OR	A,A
+	JR	Z,L_892
+; 1493	            return E_SYNTAX;
+	LD	A,6
+	JR	L_903
+; 1494	        }
+L_892:
+; 1495	        memset(ice.programDataPtr, 0, dataSize);
+	LD	A,(IX+12)
+	UEXT	HL
+	LD	L,A
+	PUSH	HL
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(_ice+66)
+	PUSH	BC
+	CALL	_memset
+	POP	BC
+	POP	BC
+	POP	BC
+; 1496	        if (dataSize == 1) {
+	LD	A,(IX+12)
+	CP	A,1
+	JR	NZ,L_896
+; 1497	            *ice.programDataPtr = outputTemp->operand.num;
+	LD	IY,(IX+-4)
+	LD	A,(IY+3)
+	LD	HL,(_ice+66)
+	LD	(HL),A
+; 1498	        } else if (dataSize == 2) {
+	JR	L_897
+L_896:
+	LD	A,(IX+12)
+	CP	A,2
+	JR	NZ,L_894
+; 1499	            *(uint16_t*)ice.programDataPtr = outputTemp->operand.num;
+	LD	IY,(IX+-4)
+	LD	BC,(IY+3)
+	LD	HL,(_ice+66)
+	LD	(HL),C
+	INC	HL
+	LD	(HL),B
+; 1500	        } else {
+	JR	L_897
+L_894:
+; 1501	            w24(ice.programDataPtr, outputTemp->operand.num);
+	LD	HL,(_ice+66)
+	LD	IY,(IX+-4)
+	LD	BC,(IY+3)
+	LD	(HL),BC
+; 1502	        }
+L_897:
+; 1503	        ice.programDataPtr += dataSize;
+	LD	A,(IX+12)
+	UEXT	HL
+	LD	L,A
+	LD	BC,(_ice+66)
+	ADD	HL,BC
+	LD	(_ice+66),HL
+	INC	(IX+-1)
+; 1504	    }
+L_900:
+	LD	A,(IX+-1)
+	CP	A,(IX+6)
+	JR	C,L_898
+; 1505	
+; 1506	    ice.programDataPtr = newProgramDataPtr;
+	LD	BC,(IX+-7)
+	LD	(_ice+66),BC
+; 1507	
+; 1508	    return VALID;
+	LD	A,255
+; 1509	}
+L_903:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _InsertDataElements ***************************
+;Name                         Addr/Register   Size   Type
+;_memset                             IMPORT  -----   function
+;_getIndexOffset                     IMPORT  -----   function
+;_outputStack                        IMPORT    400   variable
+;_LoadRegValue                       IMPORT  -----   function
+;_ice                                IMPORT  10958   variable
+;_ProgramPtrToOffsetStack            IMPORT  -----   function
+;newProgramDataPtr                     IX-7      3   variable
+;outputTemp                            IX-4      3   variable
+;a                                     IX-1      1   variable
+;startA                               IX+15      1   parameter
+;dataSize                             IX+12      1   parameter
+;startIndex                            IX+9      3   parameter
+;amountOfArguments                     IX+6      1   parameter
+
+
+; Stack Frame Size: 25 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+; 1510	
+; 1511	void loadGetKeyFastData1(void) {
+_loadGetKeyFastData1:
+	LD	HL,-12
+	CALL	__frameset
+; 1512	    uint8_t mem[] = {OP_AND_A, 7, OP_LD_B_A, OP_LD_A, 1, OP_JR_Z, 3, OP_ADD_A_A, OP_DJNZ, -3, OP_LD_C_A, 0};
+	LEA	DE,IX+-12
+; 1513	    
+; 1514	    OutputWriteMem(mem);
+	PEA	IX+-12
+	LD	HL,_3temp904
+	LD	BC,12
+	LDIR	
+	CALL	_OutputWriteMem
+	POP	BC
+; 1515	    ResetBC();
+	CALL	_ResetBC
+; 1516	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _loadGetKeyFastData1 ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetBC                            IMPORT  -----   function
+;_OutputWriteMem                     IMPORT  -----   function
+;_3temp904                           STATIC     12   variable
+;mem                                  IX-12     12   variable
+
+
+; Stack Frame Size: 18 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+	SEGMENT TEXT
+_3temp904:
+	DB	230
+	DB	7
+	DB	71
+	DB	62
+	DB	1
+	DB	40
+	DB	3
+	DB	135
+	DB	16
+	DB	253
+	DB	79
+	DB	0
+	SEGMENT CODE
+; 1517	
+; 1518	void loadGetKeyFastData2(void) {
+_loadGetKeyFastData2:
+	LD	HL,-12
+	CALL	__frameset
+; 1519	    uint8_t mem[] = {0xCB, 0x3F, 0xCB, 0x3F, OP_AND_A, 14, OP_LD_D_A, OP_LD_A, 30, OP_SUB_A_D, OP_LD_B_A, 0};
+	LEA	DE,IX+-12
+; 1520	    
+; 1521	    OutputWriteMem(mem);
+	PEA	IX+-12
+	LD	HL,_4temp906
+	LD	BC,12
+	LDIR	
+	CALL	_OutputWriteMem
+	POP	BC
+; 1522	    ResetDE();
+	CALL	_ResetDE
+; 1523	    ResetBC();
+	CALL	_ResetBC
+; 1524	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _loadGetKeyFastData2 ***************************
+;Name                         Addr/Register   Size   Type
+;_ResetBC                            IMPORT  -----   function
+;_ResetDE                            IMPORT  -----   function
+;_OutputWriteMem                     IMPORT  -----   function
+;_4temp906                           STATIC     12   variable
+;mem                                  IX-12     12   variable
+
+
+; Stack Frame Size: 18 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+	SEGMENT TEXT
+_4temp906:
+	DB	203
+	DB	63
+	DB	203
+	DB	63
+	DB	230
+	DB	14
+	DB	87
+	DB	62
+	DB	30
+	DB	146
+	DB	71
+	DB	0
+	SEGMENT CODE
+; 1525	
+; 1526	void InsertMallocRoutine(void) {
+_InsertMallocRoutine:
+	LD	HL,-1
+	CALL	__frameset
+; 1527	    bool boolUsed = ice.usedAlreadyMalloc;
+	LD	A,(_ice+10946)
+	LD	(IX+-1),A
+; 1528	    
+; 1529	    CallRoutine(&ice.usedAlreadyMalloc, &ice.MallocAddr, (uint8_t*)MallocData, SIZEOF_MALLOC_DATA);
+	LD	BC,21
+	PUSH	BC
+	LD	BC,_MallocData
+	PUSH	BC
+	LD	BC,_ice+10947
+	PUSH	BC
+	LD	BC,_ice+10946
+	PUSH	BC
+	CALL	_CallRoutine
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+; 1530	    w24((uint8_t*)ice.MallocAddr + 1, prescan.freeMemoryPtr);
+	LD	HL,(_ice+10947)
+	INC	HL
+	LD	BC,(_prescan+469)
+	LD	(HL),BC
+; 1531	
+; 1532	    if (!boolUsed) {
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_910
+; 1533	        ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.MallocAddr + 6);
+	LD	BC,(_ice+3077)
+	LD	HL,3
+	CALL	__imulu
+	LD	IY,(_ice+10947)
+	LD	BC,_ice+77
+	ADD	HL,BC
+	LEA	BC,IY+6
+	LD	(HL),BC
+	LD	BC,(_ice+3077)
+	INC	BC
+	LD	(_ice+3077),BC
+; 1534	        w24((uint8_t*)ice.MallocAddr + 6, ice.MallocAddr + 1);
+	LD	IY,(_ice+10947)
+	LEA	HL,IY+6
+	LD	BC,(_ice+10947)
+	INC	BC
+	LD	(HL),BC
+; 1535	    }
+L_910:
+; 1536	
+; 1537	    ResetHL();
+	CALL	_ResetHL
+; 1538	    ResetDE();
+	CALL	_ResetDE
+; 1539	    reg.BCIsVariable = false;
+	XOR	A,A
+	LD	(_reg+5),A
+; 1540	    reg.BCIsNumber = true;
+	LD	A,1
+	LD	(_reg+4),A
+; 1541	    reg.BCValue = 0xD13EC5;
+	LD	BC,13713093
+	LD	(_reg+22),BC
+; 1542	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _InsertMallocRoutine ***************************
+;Name                         Addr/Register   Size   Type
+;_reg                                IMPORT     28   variable
+;_ResetDE                            IMPORT  -----   function
+;_ResetHL                            IMPORT  -----   function
+;_prescan                            IMPORT   5833   variable
+;_MallocData                         IMPORT  -----   function
+;_CallRoutine                        IMPORT  -----   function
+;_ice                                IMPORT  10958   variable
+;boolUsed                              IX-1      1   variable
+
+
+; Stack Frame Size: 7 (bytes)
+;       Spill Code: -2 (instruction)
+
+
+	XREF _outputStack:ROM
+	XREF _CallRoutine:ROM
+	XREF _MaybeAToHL:ROM
+	XREF _AnsToA:ROM
+	XREF _AnsToBC:ROM
+	XREF _AnsToDE:ROM
+	XREF _AnsToHL:ROM
+	XREF _PushHLDE:ROM
+	XREF _RegChangeHLDE:ROM
+	XREF _ResetA:ROM
+	XREF _ResetBC:ROM
+	XREF _ResetDE:ROM
+	XREF _ResetHL:ROM
+	XREF _ResetAllRegs:ROM
+	XREF _LoadRegVariable:ROM
+	XREF _LoadRegValue:ROM
+	XREF _ClearAnsFlags:ROM
+	XREF _ProgramPtrToOffsetStack:ROM
+	XREF _OutputWriteMem:ROM
+	XREF _OutputWriteLong:ROM
+	XREF _OutputWriteWord:ROM
+	XREF _OutputWriteByte:ROM
+	XREF _GetIndexOfFunction:ROM
+	XREF _LD_HL_STRING:ROM
+	XREF _comparePtrToTempStrings:ROM
+	XREF _SqrtData:ROM
+	XREF _MeanData:ROM
+	XREF _LoadtilemapData:ROM
+	XREF _LoadspriteData:ROM
+	XREF _TimerData:ROM
+	XREF _SincosData:ROM
+	XREF _MallocData:ROM
+	XREF _KeypadData:ROM
+	XREF _reg:ROM
+	XREF _prescan:ROM
+	XREF _expr:ROM
+	XREF _ice:ROM
+	XREF _parsePostFixFromIndexToIndex:ROM
+	XREF _setStackValues:ROM
+	XREF _getStackVar:ROM
+	XREF _getIndexOffset:ROM
+	XREF _strlen:ROM
+	XREF _strcpy:ROM
+	XREF _memset:ROM
+	XREF _memcpy:ROM
+	XREF __imuls:ROM
+	XREF __idivu:ROM
+	XREF __imulu:ROM
+	XREF __bshl:ROM
+	XREF __ildix:ROM
+	XREF __istix:ROM
+	XREF __frameset0:ROM
+	XREF __frameset:ROM
+	XREF __icmpzero:ROM
+	XREF __imul_b:ROM
+	XREF __ishrs_b:ROM
+	XDEF _InsertMallocRoutine
+	XDEF _loadGetKeyFastData2
+	XDEF _loadGetKeyFastData1
+	XDEF _InsertDataElements
+	XDEF _parseFunction2Args
+	XDEF _AnsToReg
+	XDEF _LoadValueInReg
+	XDEF _LoadVariableInReg
+	XDEF _parseFunction1Arg
+	XDEF _parseFunction
+	XDEF _implementedFunctions
+	END

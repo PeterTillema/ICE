@@ -1,0 +1,1213 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"..\SRC\PRESCAN.C"
+	.assume ADL=1
+	SEGMENT BSS
+_prescan:
+	DS	5833
+	SEGMENT TEXT
+_colorTable:
+	DB	255
+	DB	24
+	DB	224
+	DB	0
+	DB	248
+	DB	36
+	DB	227
+	DB	97
+	DB	9
+	DB	19
+	DB	230
+	DB	255
+	DB	181
+	DB	107
+	DB	106
+	DB	74
+;    1	#include "defines.h"
+;    2	#include "prescan.h"
+;    3	
+;    4	#include "ast.h"
+;    5	#include "stack.h"
+;    6	#include "parse.h"
+;    7	#include "main.h"
+;    8	#include "output.h"
+;    9	#include "operator.h"
+;   10	#include "functions.h"
+;   11	#include "routines.h"
+;   12	#include "errors.h"
+;   13	
+;   14	#ifndef CALCULATOR
+;   15	extern const uint8_t CheaderData[];
+;   16	extern const uint8_t FileiocheaderData[];
+;   17	
+;   18	extern char *str_dupcat(const char *s, const char *c);
+;   19	#endif
+;   20	
+;   21	extern const uint8_t implementedFunctions[AMOUNT_OF_FUNCTIONS][4];
+;   22	prescan_t prescan;
+;   23	const uint8_t colorTable[16] = {255,24,224,0,248,36,227,97,9,19,230,255,181,107,106,74};    // Thanks Cesium :D
+	SEGMENT CODE
+;   24	
+;   25	void preScanProgram(void) {
+_preScanProgram:
+	LD	HL,-27
+	CALL	__frameset
+;   26	    bool inString = false, afterNewLine = true;
+	LD	(IX+-6),0
+	LD	(IX+-5),1
+;   27	    int token;
+;   28	    
+;   29	    _rewind(ice.inPrgm);
+	LD	A,(_ice+10904)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_ti_Rewind
+	POP	BC
+;   30	
+;   31	    // Scan the entire program
+;   32	    while ((token = _getc()) != EOF) {
+	JR	L_87
+L_88:
+;   33	        uint8_t tok = token, tok2 = 0;
+	LD	A,(IX+-3)
+	LD	(IX+-12),A
+	LD	(IX+-4),0
+;   34	        
+;   35	        if (IsA2ByteTok(tok)) {
+	LD	C,(IX+-3)
+	LD	B,0
+	PUSH	BC
+	CALL	_IsA2ByteTok
+	POP	BC
+	OR	A,A
+	JR	Z,L_11
+;   36	            tok2 = _getc();
+	CALL	_getNextToken
+	LD	(IX+-4),L
+;   37	        }
+L_11:
+;   38	
+;   39	        if (afterNewLine) {
+	LD	A,(IX+-5)
+	OR	A,A
+	JR	Z,L_86
+;   40	            afterNewLine = false;
+	LD	(IX+-5),0
+;   41	            if (tok == tii) {
+	LD	A,(IX+-3)
+	CP	A,44
+	JR	NZ,L_9
+;   42	                skipLine();
+	CALL	_skipLine
+;   43	                afterNewLine = true;
+	LD	(IX+-5),1
+;   44	            } else if (tok == tLbl) {
+	JR	L_86
+L_9:
+	LD	A,(IX+-3)
+	CP	A,214
+	JR	NZ,L_7
+;   45	                prescan.amountOfLbls++;
+	LD	BC,(_prescan+19)
+	INC	BC
+	LD	(_prescan+19),BC
+;   46	                skipLine();
+	CALL	_skipLine
+;   47	                afterNewLine = true;
+	LD	(IX+-5),1
+;   48	            } else if (tok == tGoto || (tok == tVarOut && tok2 == tCall)) {
+	JR	L_86
+L_7:
+	LD	A,(IX+-3)
+	CP	A,215
+	JR	Z,L_5
+	LD	A,(IX+-3)
+	CP	A,98
+	JR	NZ,L_86
+	LD	A,(IX+-4)
+	CP	A,11
+	JR	NZ,L_86
+L_5:
+;   49	                prescan.amountOfGotos++;
+	LD	BC,(_prescan+22)
+	INC	BC
+	LD	(_prescan+22),BC
+;   50	                skipLine();
+	CALL	_skipLine
+;   51	                afterNewLine = true;
+	LD	(IX+-5),1
+;   52	            }
+;   53	        }
+L_86:
+;   54	
+;   55	        if (tok == tString) {
+	LD	A,(IX+-3)
+	CP	A,42
+	JR	NZ,L_85
+;   56	            prescan.usedTempStrings = true;
+	LD	A,1
+	LD	(_prescan+1),A
+;   57	            inString = !inString;
+	LD	A,(IX+-6)
+	OR	A,A
+	JR	NZ,L_13
+	LD	BC,1
+	LD	(IX+-15),BC
+	JR	L_14
+L_13:
+	LD	BC,0
+	LD	(IX+-15),BC
+L_14:
+	LD	A,(IX+-15)
+	LD	(IX+-6),A
+;   58	        } else if (tok == tStore) {
+	JR	L_87
+L_85:
+	LD	A,(IX+-3)
+	CP	A,4
+	JR	NZ,L_83
+;   59	            inString = false;
+	LD	(IX+-6),0
+;   60	        } else {
+	JR	L_87
+L_83:
+;   61	            if (tok == tEnter || (tok == tColon && !inString)) {
+	LD	A,(IX+-3)
+	CP	A,63
+	JR	Z,L_80
+	LD	A,(IX+-3)
+	CP	A,62
+	JR	NZ,L_81
+	LD	A,(IX+-6)
+	OR	A,A
+	JR	NZ,L_81
+L_80:
+;   62	                inString = false;
+	LD	(IX+-6),0
+;   63	                afterNewLine = true;
+	LD	(IX+-5),1
+;   64	            } else if (!inString) {
+	JR	L_87
+L_81:
+	LD	A,(IX+-6)
+	OR	A,A
+	JR	NZ,L_87
+;   65	                if (tok >= tA && tok <= tTheta) {
+	LD	A,(IX+-3)
+	CP	A,65
+	JR	C,L_78
+	LD	B,(IX+-3)
+	LD	A,91
+	CP	A,B
+	JR	C,L_78
+;   66	                    GetVariableOffset(tok);
+	LD	C,(IX+-3)
+	LD	B,0
+	PUSH	BC
+	CALL	_GetVariableOffset
+	POP	BC
+;   67	                } else if (tok == tRand) {
+	JR	L_87
+L_78:
+	LD	A,(IX+-3)
+	CP	A,171
+	JR	NZ,L_76
+;   68	                    prescan.amountOfRandRoutines++;
+	LD	A,(_prescan+7)
+	INC	A
+	LD	(_prescan+7),A
+;   69	                    prescan.modifiedIY = true;
+	LD	A,1
+	LD	(_prescan),A
+;   70	                } else if (tok == tSqrt) {
+	JR	L_87
+L_76:
+	LD	A,(IX+-3)
+	CP	A,188
+	JR	NZ,L_74
+;   71	                    prescan.amountOfSqrtRoutines++;
+	LD	A,(_prescan+8)
+	INC	A
+	LD	(_prescan+8),A
+;   72	                    prescan.modifiedIY = true;
+	LD	A,1
+	LD	(_prescan),A
+;   73	                } else if (tok == tMean) {
+	JR	L_87
+L_74:
+	LD	A,(IX+-3)
+	CP	A,33
+	JR	NZ,L_72
+;   74	                    prescan.amountOfMeanRoutines++;
+	LD	A,(_prescan+9)
+	INC	A
+	LD	(_prescan+9),A
+;   75	                } else if (tok == tInput) {
+	JR	L_87
+L_72:
+	LD	A,(IX+-3)
+	CP	A,220
+	JR	NZ,L_70
+;   76	                    prescan.amountOfInputRoutines++;
+	LD	A,(_prescan+10)
+	INC	A
+	LD	(_prescan+10),A
+;   77	                } else if (tok == tPause) {
+	JR	L_87
+L_70:
+	LD	A,(IX+-3)
+	CP	A,216
+	JR	NZ,L_68
+;   78	                    prescan.amountOfPauseRoutines++;
+	LD	A,(_prescan+11)
+	INC	A
+	LD	(_prescan+11),A
+;   79	                } else if (tok == tVarLst) {
+	JR	L_87
+L_68:
+	LD	A,(IX+-3)
+	CP	A,93
+	JR	NZ,L_66
+;   80	                    if (!prescan.OSLists[tok2]) {
+	LD	A,(IX+-4)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_prescan+439
+	ADD	HL,BC
+	LD	(IX+-18),HL
+	LD	HL,(HL)
+	CALL	__icmpzero
+	JR	NZ,L_87
+;   81	                        prescan.OSLists[tok2] = pixelShadow + 2000 * (prescan.amountOfOSVarsUsed++);
+	LD	A,(_prescan+17)
+	UEXT	HL
+	LD	L,A
+	LD	BC,2000
+	CALL	__imuls
+	LD	BC,13644278
+	ADD	HL,BC
+	LD	IY,(IX+-18)
+	LD	(IY),HL
+	LD	A,(_prescan+17)
+	INC	A
+	LD	(_prescan+17),A
+;   82	                    }
+;   83	                } else if (tok == tVarStrng) {
+	JR	L_87
+L_66:
+	LD	A,(IX+-3)
+	CP	A,170
+	JR	NZ,L_64
+;   84	                    prescan.usedTempStrings = true;
+	LD	A,1
+	LD	(_prescan+1),A
+;   85	                    if (!prescan.OSStrings[tok2]) {
+	LD	A,(IX+-4)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_prescan+409
+	ADD	HL,BC
+	LD	(IX+-21),HL
+	LD	HL,(HL)
+	CALL	__icmpzero
+	JR	NZ,L_87
+;   86	                        prescan.OSStrings[tok2] = pixelShadow + 2000 * (prescan.amountOfOSVarsUsed++);
+	LD	A,(_prescan+17)
+	UEXT	HL
+	LD	L,A
+	LD	BC,2000
+	CALL	__imuls
+	LD	BC,13644278
+	ADD	HL,BC
+	LD	IY,(IX+-21)
+	LD	(IY),HL
+	LD	A,(_prescan+17)
+	INC	A
+	LD	(_prescan+17),A
+;   87	                    }
+;   88	                } else if (tok == t2ByteTok) {
+	JR	L_87
+L_64:
+	LD	A,(IX+-3)
+	CP	A,187
+	JR	NZ,L_62
+;   89	                    // AsmComp(
+;   90	                    if (tok2 == tAsmComp) {
+	LD	A,(IX+-4)
+	CP	A,107
+	JR	NZ,L_35
+;   91	                        prog_t *newProg = GetProgramName();
+	CALL	_GetProgramName
+	LD	(IX+-10),HL
+;   92	                        if (newProg->errorCode == VALID) {
+	LD	IY,(IX+-10)
+	LD	A,(IY+0)
+	CP	A,255
+	JR	NZ,L_31
+;   93	                            ti_var_t tempProg = ice.inPrgm;
+	LD	A,(_ice+10904)
+	LD	(IX+-11),A
+;   94	#ifdef CALCULATOR
+;   95	                            if ((ice.inPrgm = _open(newProg->prog))) {
+	LD	BC,5
+	PUSH	BC
+	LD	BC,L__28
+	PUSH	BC
+	LD	IY,(IX+-10)
+	PEA	IY+1
+	CALL	_ti_OpenVar
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(_ice+10904),A
+	OR	A,A
+	JR	Z,L_29
+;   96	#else
+;   97	                            char *inName = str_dupcat(newProg->prog, ".8xp");
+;   98				    if ((ice.inPrgm = _open(inName))) {
+;   99	#endif
+;  100	                                preScanProgram();
+	CALL	_preScanProgram
+;  101	                                _close(ice.inPrgm);
+	LD	A,(_ice+10904)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_ti_Close
+	POP	BC
+;  102	                            }
+L_29:
+;  103	#ifndef CALCULATOR
+;  104	                            free(inName);
+;  105	#endif
+;  106	                            ice.inPrgm = tempProg;
+	LD	A,(IX+-11)
+	LD	(_ice+10904),A
+;  107	                        }
+L_31:
+;  108	                        free(newProg);
+	LD	BC,(IX+-10)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  109	                        afterNewLine = true;
+	LD	(IX+-5),1
+;  110	                    } else if (tok2 == tRandInt) {
+	JR	L_87
+L_35:
+	LD	A,(IX+-4)
+	CP	A,10
+	JR	NZ,L_87
+;  111	                        prescan.amountOfRandRoutines++;
+	LD	A,(_prescan+7)
+	INC	A
+	LD	(_prescan+7),A
+;  112	                        prescan.modifiedIY = true;
+	LD	A,1
+	LD	(_prescan),A
+;  113	                    }
+;  114	                } else if (tok == tExtTok) {
+	JR	L_87
+L_62:
+	LD	A,(IX+-3)
+	CP	A,239
+	JR	NZ,L_60
+;  115	                    if (tok2 == tStartTmr) {
+	LD	A,(IX+-4)
+	CP	A,11
+	JR	NZ,L_87
+;  116	                        prescan.amountOfTimerRoutines++;
+	LD	A,(_prescan+16)
+	INC	A
+	LD	(_prescan+16),A
+;  117	                    }
+;  118	                } else if (tok == tDet || tok == tSum) {
+	JR	L_87
+L_60:
+	LD	A,(IX+-3)
+	CP	A,179
+	JR	Z,L_58
+	LD	A,(IX+-3)
+	CP	A,182
+	JR	NZ,L_87
+L_58:
+;  119	                    uint8_t tok1 = _getc();
+	CALL	_getNextToken
+	LD	(IX+-7),L
+;  120	                    tok2 = _getc();
+	CALL	_getNextToken
+	LD	(IX+-4),L
+;  121	
+;  122	                    prescan.modifiedIY = true;
+	LD	A,1
+	LD	(_prescan),A
+;  123	
+;  124	                    // Invalid det( command
+;  125	                    if (tok1 < t0 || tok1 > t9) {
+	LD	A,(IX+-7)
+	CP	A,48
+	JR	C,L_89
+	LD	A,57
+	CP	A,(IX+-7)
+	JR	C,L_89
+;  126	                        break;
+;  127	                    }
+;  128	
+;  129	                    // Get the det( command
+;  130	                    if (tok2 < t0 || tok2 > t9) {
+	LD	A,(IX+-4)
+	CP	A,48
+	JR	C,L_44
+	LD	A,57
+	CP	A,(IX+-4)
+	JR	NC,L_45
+L_44:
+;  131	                        token = tok1 - t0;
+	LD	A,(IX+-7)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	IY,IY+-48
+	LD	(IX+-3),IY
+;  132	                        if (tok2 == tEnter || tok2 == tColon) {
+	LD	A,(IX+-4)
+	CP	A,63
+	JR	Z,L_43
+	LD	A,(IX+-4)
+	CP	A,62
+	JR	NZ,L_57
+L_43:
+;  133	                            afterNewLine = true;
+	LD	(IX+-5),1
+;  134	                        }
+;  135	                    } else {
+	JR	L_57
+L_45:
+;  136	                        token = (tok1 - t0) * 10 + (tok2 - t0);
+	LD	A,(IX+-7)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	HL,IY+-48
+	LD	A,10
+	CALL	__imul_b
+	LD	BC,HL
+	LD	A,(IX+-4)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	DE,IY+-48
+	LD	HL,BC
+	ADD	HL,DE
+	LD	(IX+-3),HL
+;  137	                    }
+L_57:
+;  138	
+;  139	                    if (tok == tDet) {
+	LD	A,(IX+-12)
+	CP	A,179
+	JR	NZ,L_56
+;  140	                        prescan.hasGraphxFunctions = true;
+	LD	A,1
+	LD	(_prescan+5),A
+;  141	                        if (!token) {
+	LD	HL,(IX+-3)
+	CALL	__icmpzero
+	JR	NZ,L_49
+;  142	                            prescan.hasGraphxStart = true;
+	LD	(_prescan+2),A
+;  143	                        }
+L_49:
+;  144	                        if (token == 1) {
+	LD	BC,1
+	LD	HL,(IX+-3)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_51
+;  145	                            prescan.hasGraphxEnd = true;
+	LD	A,1
+	LD	(_prescan+3),A
+;  146	                        }
+L_51:
+;  147	                        if (!prescan.GraphxRoutinesStack[token]) {
+	LD	HL,(IX+-3)
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_prescan+25
+	ADD	HL,BC
+	LD	(IX+-24),HL
+	LD	HL,(HL)
+	CALL	__icmpzero
+	JR	NZ,L_87
+;  148	                            prescan.GraphxRoutinesStack[token] = 1;
+	LD	HL,(IX+-24)
+	LD	BC,1
+	LD	(HL),BC
+;  149	                        }
+;  150	                    } else {
+	JR	L_87
+L_56:
+;  151	                        prescan.hasFileiocFunctions = true;
+	LD	A,1
+	LD	(_prescan+6),A
+;  152	                        if (!token) {
+	LD	HL,(IX+-3)
+	CALL	__icmpzero
+	JR	NZ,L_54
+;  153	                            prescan.hasFileiocStart = true;
+	LD	(_prescan+4),A
+;  154	                        }
+L_54:
+;  155	                        if (!prescan.FileiocRoutinesStack[token]) {
+	LD	HL,(IX+-3)
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_prescan+307
+	ADD	HL,BC
+	LD	(IX+-27),HL
+	LD	HL,(HL)
+	CALL	__icmpzero
+	JR	NZ,L_87
+;  156	                            prescan.FileiocRoutinesStack[token] = 1;
+	LD	HL,(IX+-27)
+	LD	BC,1
+	LD	(HL),BC
+;  157	                        }
+;  158	                    }
+;  159	                }
+;  160	            }
+;  161	        }
+;  162	    }
+L_87:
+	CALL	_getNextToken
+	LD	(IX+-3),HL
+	LD	BC,16777215
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_88
+L_89:
+;  163	
+;  164	    _rewind(ice.inPrgm);
+	LD	A,(_ice+10904)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_ti_Rewind
+	POP	BC
+;  165	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _preScanProgram ***************************
+;Name                         Addr/Register   Size   Type
+;_free                               IMPORT  -----   function
+;_ti_Close                           IMPORT  -----   function
+;_ti_OpenVar                         IMPORT  -----   function
+;_GetProgramName                     IMPORT  -----   function
+;_GetVariableOffset                  IMPORT  -----   function
+;_prescan                            STATIC   5833   variable
+;_skipLine                           IMPORT  -----   function
+;_getNextToken                       IMPORT  -----   function
+;_IsA2ByteTok                        IMPORT  -----   function
+;_ice                                IMPORT  10958   variable
+;_ti_Rewind                          IMPORT  -----   function
+;G_3                                  IX-27      3   variable
+;G_2                                  IX-24      3   variable
+;G_1                                  IX-21      3   variable
+;G_0                                  IX-18      3   variable
+;temp15                               IX-15      3   variable
+;tok                                  IX-12      1   variable
+;tempProg                             IX-11      1   variable
+;newProg                              IX-10      3   variable
+;tok1                                  IX-7      1   variable
+;inString                              IX-6      1   variable
+;afterNewLine                          IX-5      1   variable
+;tok2                                  IX-4      1   variable
+;token                                 IX-3      3   variable
+
+
+; Stack Frame Size: 33 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	SEGMENT STRSECT
+L__28:
+	DB	"r"
+	DB	0
+	SEGMENT CODE
+;  166	
+;  167	uint8_t getNameIconDescription(void) {
+_getNameIconDescription:
+	LD	HL,-6
+	CALL	__frameset
+;  168	    uint8_t res;
+;  169	    prog_t *outputPrgm;
+;  170	    
+;  171	    if (_getc() != 0x2C) {
+	CALL	_getNextToken
+	LD	BC,44
+	OR	A,A
+	SBC	HL,BC
+	JR	Z,L_92
+;  172	        return E_NOT_ICE_PROG;
+	LD	A,17
+	JR	L_108
+;  173	    }
+L_92:
+;  174	    
+;  175	    outputPrgm = GetProgramName();
+	CALL	_GetProgramName
+	LD	(IX+-6),HL
+;  176	    if ((res = outputPrgm->errorCode) != VALID) {
+	LD	IY,(IX+-6)
+	LD	A,(IY+0)
+	LD	(IX+-2),A
+	CP	A,255
+	JR	Z,L_94
+;  177	        free(outputPrgm);
+	LD	BC,(IX+-6)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  178	        return res;
+	LD	A,(IX+-2)
+	JR	L_108
+;  179	    }
+L_94:
+;  180	    strcpy(ice.outName, outputPrgm->prog);
+	LD	IY,(IX+-6)
+	PEA	IY+1
+	LD	BC,_ice
+	PUSH	BC
+	CALL	_strcpy
+	POP	BC
+	POP	BC
+;  181	    free(outputPrgm);
+	LD	BC,(IX+-6)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  182	    
+;  183	    // Has icon
+;  184	    if ((uint8_t)_getc() == tii && (uint8_t)_getc() == tString) {
+	CALL	_getNextToken
+	LD	A,L
+	CP	A,44
+	JR	NZ,L_107
+	CALL	_getNextToken
+	LD	A,L
+	CP	A,42
+	JR	NZ,L_107
+;  185	        uint8_t b = 0;
+	LD	(IX+-1),0
+;  186	
+;  187	        *ice.programPtr = OP_JP;
+	LD	HL,(_ice+60)
+	LD	(HL),195
+;  188	        w24(ice.programPtr + 4, 0x101001);
+	LD	IY,(_ice+60)
+	LEA	HL,IY+4
+	LD	BC,1052673
+	LD	(HL),BC
+;  189	        ice.programPtr += 7;
+	LD	IY,(_ice+60)
+	LEA	BC,IY+7
+	LD	(_ice+60),BC
+;  190	
+;  191	        // Get hexadecimal
+;  192	        do {
+L_98:
+;  193	            uint8_t temp;
+;  194	            
+;  195	            if ((temp = IsHexadecimal(_getc())) == 16) {
+	CALL	_getNextToken
+	PUSH	HL
+	CALL	_IsHexadecimal
+	POP	BC
+	LD	(IX+-3),A
+	CP	A,16
+	JR	NZ,L_97
+;  196	                return E_INVALID_HEX;
+	LD	A,8
+	JR	L_108
+;  197	            }
+L_97:
+;  198	            OutputWriteByte(colorTable[temp]);
+	LD	A,(IX+-3)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_colorTable
+	ADD	HL,BC
+	LD	C,(HL)
+	LD	B,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  199	        } while (++b);
+	INC	(IX+-1)
+	LD	A,(IX+-1)
+	OR	A,A
+	JR	NZ,L_98
+;  200	
+;  201	        if ((uint8_t)_getc() != tString || (uint8_t)_getc() != tEnter) {
+	CALL	_getNextToken
+	LD	A,L
+	CP	A,42
+	JR	NZ,L_101
+	CALL	_getNextToken
+	LD	A,L
+	CP	A,63
+	JR	Z,L_104
+L_101:
+;  202	            return E_SYNTAX;
+	LD	A,6
+	JR	L_108
+;  203	        }
+L_104:
+;  204	
+;  205	        // Check description
+;  206	        if ((uint8_t)_getc() == tii) {
+	CALL	_getNextToken
+	LD	A,L
+	CP	A,44
+	JR	NZ,L_105
+;  207	            grabString(&ice.programPtr, false);
+	LD	BC,0
+	PUSH	BC
+	LD	BC,_ice+60
+	PUSH	BC
+	CALL	_grabString
+	POP	BC
+	POP	BC
+;  208	        }
+L_105:
+;  209	        OutputWriteByte(0);
+	LD	BC,0
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  210	
+;  211	        // Write the right jp offset
+;  212	        w24(ice.programData + 1, ice.programPtr - ice.programData + PRGM_START);
+	LD	HL,(_ice+60)
+	LD	DE,(_ice+54)
+	LD	IY,(_ice+54)
+	LD	BC,13740162
+	OR	A,A
+	SBC	HL,DE
+	ADD	HL,BC
+	LD	(IY+1),HL
+;  213	    }
+L_107:
+;  214	    
+;  215	    _rewind(ice.inPrgm);
+	LD	A,(_ice+10904)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_ti_Rewind
+	POP	BC
+;  216	    
+;  217	    return VALID;
+	LD	A,255
+;  218	}
+L_108:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _getNameIconDescription ***************************
+;Name                         Addr/Register   Size   Type
+;_ti_Rewind                          IMPORT  -----   function
+;_grabString                         IMPORT  -----   function
+;_colorTable                         STATIC     16   variable
+;_OutputWriteByte                    IMPORT  -----   function
+;_IsHexadecimal                      IMPORT  -----   function
+;_ice                                IMPORT  10958   variable
+;_strcpy                             IMPORT  -----   function
+;_free                               IMPORT  -----   function
+;_GetProgramName                     IMPORT  -----   function
+;_getNextToken                       IMPORT  -----   function
+;outputPrgm                            IX-6      3   variable
+;temp                                  IX-3      1   variable
+;res                                   IX-2      1   variable
+;b                                     IX-1      1   variable
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  219	
+;  220	uint8_t parsePrescan(void) {
+_parsePrescan:
+	LD	HL,-14
+	CALL	__frameset
+;  221	    // Insert C functions
+;  222	    if (prescan.hasGraphxFunctions) {
+	LD	A,(_prescan+5)
+	OR	A,A
+	JR	Z,L_118
+;  223	        uint8_t a;
+;  224	
+;  225	        memcpy(ice.programPtr, CheaderData, SIZEOF_CHEADER);
+	LD	BC,116
+	PUSH	BC
+	LD	BC,_CheaderData
+	PUSH	BC
+	LD	BC,(_ice+60)
+	PUSH	BC
+	CALL	_memcpy
+;  226	        ice.programPtr += SIZEOF_CHEADER;
+	LD	IY,(_ice+60)
+	LEA	BC,IY+116
+	LD	(_ice+60),BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  227	        for (a = 0; a < AMOUNT_OF_GRAPHX_FUNCTIONS; a++) {
+	LD	(IX+-1),0
+	JR	L_115
+L_113:
+;  228	            if (prescan.GraphxRoutinesStack[a]) {
+	LD	A,(IX+-1)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_prescan+25
+	ADD	HL,BC
+	LD	(IX+-8),HL
+	LD	HL,(HL)
+	CALL	__icmpzero
+	JR	Z,L_114
+;  229	                prescan.GraphxRoutinesStack[a] = (uint24_t)ice.programPtr;
+	LD	HL,(IX+-8)
+;  230	                JP(a * 3);
+	LD	BC,195
+	PUSH	BC
+	LD	BC,(_ice+60)
+	LD	(HL),BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(IX+-1)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_OutputWriteLong
+	POP	BC
+;  231	            }
+;  232	        }
+L_114:
+	INC	(IX+-1)
+L_115:
+	LD	A,(IX+-1)
+	CP	A,94
+	JR	C,L_113
+	JR	L_127
+;  233	    } else if (prescan.hasFileiocFunctions) {
+L_118:
+	LD	A,(_prescan+6)
+	OR	A,A
+	JR	Z,L_127
+;  234	        memcpy(ice.programPtr, CheaderData, SIZEOF_CHEADER - 9);
+	LD	BC,107
+	PUSH	BC
+	LD	BC,_CheaderData
+	PUSH	BC
+	LD	BC,(_ice+60)
+	PUSH	BC
+	CALL	_memcpy
+	POP	BC
+	POP	BC
+	POP	BC
+;  235	        ice.programPtr += SIZEOF_CHEADER - 9;
+	LD	IY,(_ice+60)
+	LEA	BC,IY+107
+	LD	(_ice+60),BC
+;  236	    }
+L_127:
+;  237	
+;  238	    if (prescan.hasFileiocFunctions) {
+	LD	A,(_prescan+6)
+	OR	A,A
+	JR	Z,L_128
+;  239	        uint8_t a;
+;  240	
+;  241	        memcpy(ice.programPtr, FileiocheaderData, 10);
+	LD	BC,10
+	PUSH	BC
+	LD	BC,_FileiocheaderData
+	PUSH	BC
+	LD	BC,(_ice+60)
+	PUSH	BC
+	CALL	_memcpy
+;  242	        ice.programPtr += 10;
+	LD	IY,(_ice+60)
+	LEA	BC,IY+10
+	LD	(_ice+60),BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  243	        for (a = 0; a < AMOUNT_OF_FILEIOC_FUNCTIONS; a++) {
+	LD	(IX+-2),0
+	JR	L_125
+L_123:
+;  244	            if (prescan.FileiocRoutinesStack[a]) {
+	LD	A,(IX+-2)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_prescan+307
+	ADD	HL,BC
+	LD	(IX+-5),HL
+	LD	HL,(HL)
+	CALL	__icmpzero
+	JR	Z,L_124
+;  245	                prescan.FileiocRoutinesStack[a] = (uint24_t)ice.programPtr;
+	LD	HL,(IX+-5)
+;  246	                JP(a * 3);
+	LD	BC,195
+	PUSH	BC
+	LD	BC,(_ice+60)
+	LD	(HL),BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	A,(IX+-2)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_OutputWriteLong
+	POP	BC
+;  247	            }
+;  248	        }
+L_124:
+	INC	(IX+-2)
+L_125:
+	LD	A,(IX+-2)
+	CP	A,34
+	JR	C,L_123
+;  249	    }
+L_128:
+;  250	    
+;  251	    // Set free RAM pointers (for strings)
+;  252	    prescan.freeMemoryPtr = (prescan.tempStrings[1] = (prescan.tempStrings[0] = pixelShadow + 2000 * prescan.amountOfOSVarsUsed) + 2000) + 2000;
+	LD	BC,_prescan+472
+	LD	(IX+-14),BC
+	LD	A,(_prescan+17)
+	UEXT	HL
+	LD	L,A
+	LD	BC,2000
+	CALL	__imuls
+	LD	BC,13644278
+	ADD	HL,BC
+	LD	IY,(IX+-14)
+	LD	(IY),HL
+	LEA	IY,IY+3
+	LD	(IX+-11),IY
+	LD	HL,(IX+-14)
+	LD	HL,(HL)
+	LD	BC,2000
+	ADD	HL,BC
+	LD	IY,(IX+-11)
+	LD	(IY),HL
+	LD	HL,(IX+-11)
+	LD	HL,(HL)
+	ADD	HL,BC
+	LD	(_prescan+469),HL
+;  253	    
+;  254	    // Cleanup code
+;  255	    if (prescan.hasGraphxFunctions) {
+	LD	A,(_prescan+5)
+	OR	A,A
+	JR	Z,L_150
+;  256	        CALL(_RunIndicOff);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,133192
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  257	        CALL(ice.programPtr - ice.programData + PRGM_START + 12);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	HL,(_ice+60)
+	LD	BC,(_ice+54)
+	OR	A,A
+	SBC	HL,BC
+	LD	BC,13740174
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_OutputWriteLong
+	POP	BC
+;  258	        LD_IY_IMM(flags);
+	LD	BC,8701
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	BC,13631616
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  259	        JP(_DrawStatusBar);
+	LD	BC,195
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	BC,137788
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+	JR	L_151
+;  260	    } else if (prescan.modifiedIY) {
+L_150:
+	LD	A,(_prescan)
+	OR	A,A
+	JR	Z,L_151
+;  261	        CALL(ice.programPtr - ice.programData + PRGM_START + 9);
+	LD	BC,205
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+	LD	HL,(_ice+60)
+	LD	BC,(_ice+54)
+	OR	A,A
+	SBC	HL,BC
+	LD	BC,13740171
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_OutputWriteLong
+	POP	BC
+;  262	        LD_IY_IMM(flags);
+	LD	BC,8701
+	PUSH	BC
+	CALL	_OutputWriteWord
+	POP	BC
+	LD	BC,13631616
+	PUSH	BC
+	CALL	_OutputWriteLong
+	POP	BC
+;  263	        RET();
+	LD	BC,201
+	PUSH	BC
+	CALL	_OutputWriteByte
+	POP	BC
+;  264	    }
+L_151:
+;  265	    
+;  266	    // Check free RAM for Lbls and Gotos
+;  267	    ice.LblStack = (label_t*)malloc(prescan.amountOfLbls * sizeof(label_t));
+	LD	HL,(_prescan+19)
+	LD	A,26
+	CALL	__imul_b
+	PUSH	HL
+	CALL	_malloc
+	POP	BC
+	LD	(_ice+71),HL
+;  268	    ice.GotoStack = (label_t*)malloc(prescan.amountOfGotos * sizeof(label_t));
+	LD	HL,(_prescan+22)
+	LD	A,26
+	CALL	__imul_b
+	PUSH	HL
+	CALL	_malloc
+	POP	BC
+	LD	(_ice+74),HL
+;  269	    if (!ice.LblStack || !ice.GotoStack) {
+	LD	HL,(_ice+71)
+	CALL	__icmpzero
+	JR	Z,L_153
+	LD	HL,(_ice+74)
+	CALL	__icmpzero
+	JR	NZ,L_154
+L_153:
+;  270	        return E_MEM_LABEL;
+	LD	A,15
+	JR	L_155
+;  271	    }
+L_154:
+;  272	    
+;  273	    return VALID;
+	LD	A,255
+L_155:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _parsePrescan ***************************
+;Name                         Addr/Register   Size   Type
+;_malloc                             IMPORT  -----   function
+;_OutputWriteWord                    IMPORT  -----   function
+;_FileiocheaderData                  IMPORT  -----   function
+;_OutputWriteLong                    IMPORT  -----   function
+;_OutputWriteByte                    IMPORT  -----   function
+;_ice                                IMPORT  10958   variable
+;_CheaderData                        IMPORT  -----   function
+;_memcpy                             IMPORT  -----   function
+;_prescan                            STATIC   5833   variable
+;G_4                                   IX-8      3   variable
+;G_5                                   IX-5      3   variable
+;a                                     IX-2      1   variable
+;a                                     IX-1      1   variable
+
+
+; Stack Frame Size: 20 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	XREF _grabString:ROM
+	XREF _getNextToken:ROM
+	XREF _GetVariableOffset:ROM
+	XREF _IsHexadecimal:ROM
+	XREF _GetProgramName:ROM
+	XREF _IsA2ByteTok:ROM
+	XREF _OutputWriteLong:ROM
+	XREF _OutputWriteWord:ROM
+	XREF _OutputWriteByte:ROM
+	XREF _FileiocheaderData:ROM
+	XREF _CheaderData:ROM
+	XREF _ice:ROM
+	XREF _skipLine:ROM
+	XREF _strcpy:ROM
+	XREF _memcpy:ROM
+	XREF _ti_Rewind:ROM
+	XREF _ti_Close:ROM
+	XREF _ti_OpenVar:ROM
+	XREF _free:ROM
+	XREF _malloc:ROM
+	XREF __imuls:ROM
+	XREF __frameset:ROM
+	XREF __icmpzero:ROM
+	XREF __imul_b:ROM
+	XDEF _parsePrescan
+	XDEF _getNameIconDescription
+	XDEF _preScanProgram
+	XDEF _colorTable
+	XDEF _prescan
+	END
