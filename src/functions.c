@@ -128,6 +128,8 @@ static const uint8_t GraphxArgs[] = {
     RET_HL   | 4, SMALL_34,    // RotateScaleSprite
     RET_HL   | 5, SMALL_345,   // RotatedScaledTransparentSprite_NoClip
     RET_HL   | 5, SMALL_345,   // RotatedScaledSprite_NoClip
+    RET_HL   | 2, SMALL_1,     // SetCharData
+    RET_NONE | 0, ARG_NORM,    // Wait
 };
 
 static const uint8_t FileiocArgs[] = {
@@ -152,6 +154,19 @@ static const uint8_t FileiocArgs[] = {
     RET_HL   | 1, SMALL_1,     // GetDataPtr
     RET_HL   | 2, ARG_NORM,    // Detect
     RET_HL   | 3, SMALL_3,     // DetectVar
+    UN       | 3, SMALL_1,     // SetVar
+    UN       | 4, SMALL_13,    // StoVar
+    UN       | 3, SMALL_1,     // RclVar
+    UN       | 2, ARG_NORM,    // AllocString
+    UN       | 2, ARG_NORM,    // AllocList
+    UN       | 3, SMALL_12,    // AllocMatrix
+    UN       | 2, ARG_NORM,    // AllocCplxList
+    UN       | 2, ARG_NORM,    // AllocEqu
+    RET_HL   | 3, ARG_NORM,    // DetectAny
+    RET_HL   | 1, SMALL_1,     // GetVATPtr
+    RET_NONE | 2, SMALL_2,     // GetName
+    RET_A    | 2, ARG_NORM,    // Rename
+    RET_A    | 3, SMALL_3,     // RenameVar
 };
 
 const function_t implementedFunctions[AMOUNT_OF_FUNCTIONS] = {
