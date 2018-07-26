@@ -1035,11 +1035,11 @@ uint8_t parseFunction(NODE *top) {
             uint8_t whichSmallArgument = 1 << (9 - amountOfArgs);
             
             if (function == tDet) {
-                smallArguments = GraphxArgs[childOperand * 2 + 1];
-                temp = GraphxArgs[childOperand * 2];
+                smallArguments = GraphxArgs[function2].smallArgs;
             } else if (function == tSum) {
-                smallArguments = FileiocArgs[childOperand * 2 + 1];
-                temp = FileiocArgs[childOperand * 2];
+                smallArguments = FileiocArgs[function2].smallArgs;
+            } else {
+                smallArguments = 0;
             }
             
             child = (child->sibling = reverseNode(child->sibling));
@@ -1098,6 +1098,15 @@ uint8_t parseFunction(NODE *top) {
                 } else if (temp & UN) {
                     res = E_UNKNOWN_C;
                 }
+            }
+
+            // Get the amount of arguments, and call the function
+            if (function == tDet) {
+                temp = GraphxArgs[function2].retRegAndArgs;
+                CALL(prescan.GraphxRoutinesStack[function2] - (uint24_t)ice.programData + PRGM_START);
+            } else if (function == tSum) {
+                temp = FileiocArgs[function2].retRegAndArgs;
+                CALL(prescan.FileiocRoutinesStack[function2] - (uint24_t)ice.programData + PRGM_START);
             } else {
                 if (function == tVarOut) {
                     CALL(__strcmp);
