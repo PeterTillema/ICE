@@ -234,6 +234,8 @@ void SqrtData(void);
 void PauseData(void);
 void GotoEditor(char*, uint16_t);
 void RunPrgm(char*);
+void SetHooks1(uint8_t*);
+void SetHooks2(uint8_t*);
 #endif
 
 #endif

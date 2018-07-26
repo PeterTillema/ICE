@@ -59,30 +59,12 @@ void main(void) {
     ti_CloseAll();
     if ((tempProg = ti_Open("ICEHOOKS", "r"))) {
         ti_SetArchiveStatus(true, tempProg);
-        ti_GetDataPtr(tempProg);
-
-        // Manually set the hooks
-        asm("ld iy, 0D00080h");
-        asm("ld de, 18");
-        asm("add hl, de");
-        asm("call 00213CCh");
-        asm("ld de, 688");
-        asm("add hl, de");
-        asm("call 00213F8h");
-        asm("ld de, 32");
-        asm("add hl, de");
-        asm("call 00213C4h");
+        SetHooks1(ti_GetDataPtr(tempProg));
     }
     
     if ((tempProg = ti_Open("ICEDEBUG", "r"))) {
         ti_SetArchiveStatus(true, tempProg);
-        ti_GetDataPtr(tempProg);
-        
-        // Manually set the hooks
-        asm("ld iy, 0D00080h");
-        asm("ld de, 18");
-        asm("add hl, de");
-        asm("call 0021418h");
+        SetHooks2(ti_GetDataPtr(tempProg));
     }
     
     // Enable lowercase
