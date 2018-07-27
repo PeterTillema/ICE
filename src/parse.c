@@ -408,13 +408,16 @@ uint8_t parseExpression(int token) {
                     goto parseError;
                 }
                 
+                // L1(..) hack
                 if (function == 0x0F) {
                     tempElement.operand.func.function = tLBrace;
                 }
                 
-                if ((outputNode = insertData(outputNode, tempElement, tempElement.operand.func.amountOfArgs)) == NULL) {
-                    res = E_ARGUMENTS;
-                    goto parseError;
+                if (function != tLParen) {
+                    if ((outputNode = insertData(outputNode, tempElement, tempElement.operand.func.amountOfArgs)) == NULL) {
+                        res = E_ARGUMENTS;
+                        goto parseError;
+                    }
                 }
             }
         }

@@ -93,14 +93,21 @@ NODE *stackToOutput(NODE *outputNode, NODE **stackNode) {
         *stackNode = pop(*stackNode, &tempElement);
         if (tempElement.type == TYPE_FUNCTION) {
             uint8_t argsShouldHave = implementedFunctions[tempElement.operand.func.index].amountOfArgs;
+            uint8_t function = tempElement.operand.func.function;
             
             amountOfArgs = tempElement.operand.func.amountOfArgs;
             if (argsShouldHave != 255 && argsShouldHave != amountOfArgs) {
                 return NULL;
             }
             
-            if (tempElement.operand.func.function == 0x0F) {
+            // Hack for L1(..)
+            if (function == 0x0F) {
                 tempElement.operand.func.function = tLBrace;
+            }
+            
+            // Ignore parenthesis function
+            if (function == tLParen) {
+                continue;
             }
         }
         if ((outputNode = insertData(outputNode, tempElement, amountOfArgs)) == NULL) {
