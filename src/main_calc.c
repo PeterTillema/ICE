@@ -27,7 +27,7 @@ static int myCompare(const void * a, const void * b) {
     return strcmp(*(const char **)a, *(const char **)b);
 }
 
-void displayProgramList(int beginList, int amountOfProgramsToDisplay) {
+void displayProgramList(uint24_t beginList, uint24_t amountOfProgramsToDisplay) {
     uint24_t i;
     
     for (i = 0; i < amountOfProgramsToDisplay; i++) {
@@ -194,6 +194,8 @@ displayMainScreen:
     strcpy(var_name, inputPrograms[selectedProgram - 1]);
     didCompile = true;
     memset(&ice, 0, sizeof ice);
+    memset(&expr, 0, sizeof expr);
+    memset(&reg, 0, sizeof reg);
     for (selectedProgram = 0; selectedProgram < amountOfPrograms; selectedProgram++) {
         free(inputPrograms[selectedProgram]);
     }
