@@ -164,6 +164,7 @@ void ChangeRegValue(uint24_t inValue, uint24_t outValue, uint8_t opcodes[7]) {
 
     if (reg.allowedToOptimize) {
         uint8_t a;
+        
         if (outValue - inValue < 5) {
             for (a = 0; a < (uint8_t)(outValue - inValue); a++) {
                 OutputWriteByte(opcodes[0]);
@@ -219,13 +220,23 @@ void LoadRegValue(uint8_t reg2, uint24_t val) {
             uint8_t opcodes[7] = {OP_INC_HL, OP_DEC_HL, OP_INC_H, OP_DEC_H, OP_LD_L, OP_LD_H, OP_LD_HL};
 
             ChangeRegValue(reg.HLValue, val, opcodes);
+            if (expr.SizeOfOutputNumber > 2 && !val) {
+                ice.programPtr -= expr.SizeOfOutputNumber;
+                OutputWrite3Bytes(OP_OR_A_A, 0xED, 0x62);
+                expr.SizeOfOutputNumber = 3;
+            }
         } else if (val) {
-            OutputWriteByte(OP_LD_HL);
-            OutputWriteLong(val);
-            expr.SizeOfOutputNumber = 4;
+            if (val >= IX_VARIABLES - 0x80 && val <= IX_VARIABLES + 0x7F) {
+                OutputWrite2Bytes(0xED, 0x22);
+                OutputWriteByte(val - IX_VARIABLES);
+                expr.SizeOfOutputNumber = 3;
+            } else {
+                OutputWriteByte(OP_LD_HL);
+                OutputWriteLong(val);
+                expr.SizeOfOutputNumber = 4;
+            }
         } else {
-            OR_A_A();
-            SBC_HL_HL();
+            OutputWrite3Bytes(OP_OR_A_A, 0xED, 0x62);
             expr.SizeOfOutputNumber = 3;
         }
         reg.HLIsNumber = true;
@@ -237,9 +248,15 @@ void LoadRegValue(uint8_t reg2, uint24_t val) {
 
             ChangeRegValue(reg.DEValue, val, opcodes);
         } else {
-            OutputWriteByte(OP_LD_DE);
-            OutputWriteLong(val);
-            expr.SizeOfOutputNumber = 4;
+            if (val >= IX_VARIABLES - 0x80 && val <= IX_VARIABLES + 0x7F) {
+                OutputWrite2Bytes(0xED, 0x12);
+                OutputWriteByte(val - IX_VARIABLES);
+                expr.SizeOfOutputNumber = 3;
+            } else {
+                OutputWriteByte(OP_LD_DE);
+                OutputWriteLong(val);
+                expr.SizeOfOutputNumber = 4;
+            }
         }
         reg.DEIsNumber = true;
         reg.DEIsVariable = false;

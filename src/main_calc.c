@@ -52,7 +52,7 @@ void main(void) {
     ti_var_t tempProg;
     char buf[30], *temp_name = "", var_name[9];
     sk_key_t key;
-    void *search_pos = NULL;
+    void *search_pos;
     bool didCompile;
 
     // Install hooks
@@ -87,6 +87,7 @@ displayMainScreen:
     didCompile = false;
     ti_CloseAll();
     
+    search_pos = NULL;
     while ((temp_name = ti_DetectAny(&search_pos, ICEheader, &type)) != NULL) {
         if (type == TI_PRGM_TYPE || type == TI_PPRGM_TYPE) {
             if ((uint8_t)(*temp_name) < 64) {

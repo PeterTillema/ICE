@@ -1202,7 +1202,7 @@ uint8_t parseFunction(uint24_t index) {
                 ice.stackDepth++;
 
                 startProgramPtr = ice.programPtr;
-
+                
                 // And finally grab the argument, and return if an error occured
                 if ((temp = parsePostFixFromIndexToIndex(startIndex + 1, endIndex - 1)) != VALID) {
                     return temp;
