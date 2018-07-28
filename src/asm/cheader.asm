@@ -4,7 +4,7 @@ segment data
 .def _GraphxHeader
 
 _CheaderData:
-	ld	hl, LibLoadAppVar - $ + 0D1A882h
+	ld	hl, LibLoadAppVar - _CheaderData + 0D1A882h
 	call	0020320h
 	ld	a, 015h
 	ld	(0D005F8h), a
