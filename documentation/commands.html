@@ -120,8 +120,16 @@
                                 <td>Returns 1 if the key <code><span class="or">KEY</span></code> is pressed, 0 otherwise. This routine is much faster than <code><span class="bl">getKey</span></code>, and handles repeated keypresses as well. See <i>keycodes.png</i> for the keycodes.</td>
                             </tr>
                             <tr>
+                                <td><code><span class="bl">Ans</span></code></td>
+                                <td>Returns Ans, the last answer that is stored in the calculator. An error is generated if Ans > 9999.</td>
+                            </tr>
+                            <tr>
                                 <td><code><span class="bl">rand</span></code></td>
                                 <td>Returns a random number between 0 and 16777215.</td>
+                            </tr>
+                            <tr>
+                                <td><code><span class="bl">randInt(</span><span class="red">EXP1</span>,<span class="red">EXP2</span><span class="bl">)</span></code></td>
+                                <td>Returns a random number between <code><span class="red">EXP1</span></code> and <code><span class="red">EXP2</span></code> inclusive.</td>
                             </tr>
                             <tr>
                                 <td><code><span class="bl">Asm(</span><span class="grey">HEX</span><span class="bl">)</span></code></td>
@@ -897,6 +905,18 @@
                                 <td>Fixed Rotation with scaling fator for sprites without transparency. <i>A scale factor of 64 represents 100% scaling. This routine only accepts square input sprites.</i></td>
                                 <td>The size of the sprite after scaling.</td>
                             </tr>
+                            <tr>
+                                <td><code><span class="bl">det(</span>92,<span class="red">INDEX</span>,<span class="grey">"DATA"</span><span class="bl">)</span></code></td>
+                                <td>SetCharData</td>
+                                <td>Sets the font data for a specific character. If using the default font, <code><span class="red">INDEX</span></code> range from 0-127, custom font can have indexes 0-255. <code><span class="grey">"DATA"</span></code> should be 0 if you want to get the current character data.</td>
+                                <td>Pointer to current character data if <code><span class="grey">"DATA"</span></code> is 0, otherwise a pointer to next character data.</td>
+                            </tr>
+                            <tr>
+                                <td><code><span class="bl">det(</span>93<span class="bl">)</span></code></td>
+                                <td>Wait</td>
+                                <td>Waits for the screen buffer to finish being displayed after <code><span class="bl">SwapDraw</span></code>. <i>In practice, this function should not need to be invoked by user code. It should be invoked by custom drawing functions (as late as reasonably possible) before writing to the drawing buffer.</i></td>
+                                <td>-</td>
+                            </tr>
                         </table>
                         <h3 id="fileioc">File I/O</h3>
                         <table class="special">
@@ -1036,6 +1056,31 @@
                                 <td>DetectVar</td>
                                 <td>Finds the first variable with type <code><span class="red">TYPE</span></code> starting at <code><span class="gr">POS</span></code> which starts with the data <code><span class="grey">"DATA"</span></code>. If you want to search for all variables with type <code><span class="red">TYPE</span></code>, you can replace <code><span class="grey">"DATA"</span></code> with <code>0</code>. Returns the pointer to the filename. <code><span class="gr">POS</span></code> is updated each call, and should be <code>0</code> to start the search. Returns <code>0</code> if no more variables found. See <code><span class="bl">sum(</span>2</code> for the types.</td>
                             </tr>
+                            <tr>
+                                <td><code><span class="bl">sum(</span>29,°<span class="gr">POS</span>,<span class="grey">"DATA"</span>,°<span class="gr">TYPE</span><span class="bl">)</span></code></td>
+                                <td>DetectAny</td>
+                                <td>Finds the first variable starting at <code><span class="gr">POS</span></code> which starts with the data <code><span class="grey">"DATA"</span></code>. If you want to search for all variables, you can replace <code><span class="grey">"DATA"</span></code> with <code>0</code>. Returns the pointer to the filename. <code><span class="gr">POS</span></code> is updated each call, and should be <code>0</code> to start the search. <code><span class="gr">TYPE</span></code> is updated each call with the found filetype. Returns <code>0</code> if no more variables found. See <code><span class="bl">sum(</span>2</code> for the types.</td>
+                            </tr>
+                            <tr>
+                                <td><code><span class="bl">sum(</span>30,<span class="red">SLOT</span><span class="bl">)</span></code></td>
+                                <td>GetVATPtr</td>
+                                <td>Gets the VAT location of the variable in slot <code><span class="red">SLOT</span></code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code><span class="bl">sum(</span>31,<span class="red">PTR</span>,<span class="red">SLOT</span><span class="bl">)</span></code></td>
+                                <td>GetName</td>
+                                <td>Gets the variable name of the variable in slot <code><span class="red">SLOT</span></code> and writes it to <code><span class="red">PTR</span></code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code><span class="bl">sum(</span>32,<span class="grey">"OLD"</span>,<span class="grey">"NEW"</span><span class="bl">)</span></code></td>
+                                <td>Rename</td>
+                                <td>Renames the appvar <code><span class="grey">"OLD"</span></code> to <code><span class="grey">"NEW"</span></code>. Returns 0 on success, 1 if the file already exists and 2 when any other error occurs. <b><i>It is potentially hazardous to rename an open file. Be sure to close the open file before renaming!</i></b></td>
+                            </tr>
+                            <tr>
+                                <td><code><span class="bl">sum(</span>33,<span class="grey">"OLD"</span>,<span class="grey">"NEW"</span>,<span class="red">TYPE</span>,<span class="bl">)</span></code></td>
+                                <td>RenameVar</td>
+                                <td>Renames the variable with type <code><span class="red">TYPE</span></code> and name <code><span class="grey">"OLD"</span></code> to <code><span class="grey">"NEW"</span></code>. Returns 0 on success, 1 if the file already exists and 2 when any other error occurs. <b><i>It is potentially hazardous to rename an open file. Be sure to close the open file before renaming!</i></b></td>
+                            </tr>
                         </table>
                         <h3 id="memory">Memory</h3>
                         <table>
@@ -1087,6 +1132,10 @@
                             <tr>
                                 <td><code><span class="bl">LoadData(</span><span class="grey">"APPVAR"</span>,<span class="red">OFFSET</span>,<span class="red">SIZE</span><span class="bl">)</span></code></td>
                                 <td>Returns a pointer to the table with pointers to the tiles from the tilemap in appvar <code><span class="grey">"APPVAR"</span></code>. This pointer should be used in <code><span class="bl">DefineTilemap(</span></code>. You can get these values from <code>ConvPNG</code>. <i>See tilemaps.txt for more information</i>.</td>
+                            </tr>
+                            <tr>
+                                <td><code><span class="bl">Compare(</span><span class="red">PTR1</span>,<span class="red">PTR2</span><span class="bl">)</span></code></td>
+                                <td>Compares the string pointed to by <code><span class="red">PTR1</span></code> with the string pointed to by <code><span class="red">PTR2</span></code>. Returns 0 if both strings (zero-terminated) are the same, -1 if the ASCII value of the first unmatched character is less than the second and 1 if the ASCII value of the first unmatched character is greater than the second.</td>
                             </tr>
                             <tr>
                                 <td><code><span class="grey">L₁</span>...<span class="grey">L₆</span></code></td>
@@ -1145,11 +1194,15 @@
                             </tr>
                             <tr>
                                 <td><code><span class="bl">sub(</span><span class="grey">"STRING"</span>,<span class="red">OFFSET</span>,<span class="red">SIZE</span><span class="bl">)</span></code></td>
-                                <td>Copies <code><span class="red">SIZE</span></code> bytes starting at offset <code><span class="red">OFFSET</span></code> from <code><span class="grey">STRING</span></code> to a temporary location and returns a pointer to it. String variables are valid as well.</td>
+                                <td>Copies <code><span class="red">SIZE</span></code> bytes starting at offset <code><span class="red">OFFSET</span></code> from <code><span class="grey">"STRING"</span></code> to a temporary location and returns a pointer to it. String variables are valid as well.</td>
                             </tr>
                             <tr>
                                 <td><code><span class="bl">length(</span><span class="grey">"STRING"</span><span class="bl">)</span></code></td>
-                                <td>Returns the length of <code><span class="grey">STRING</span></code>. String variables are valid as well.</td>
+                                <td>Returns the length of <code><span class="grey">"STRING"</span></code>. String variables are valid as well.</td>
+                            </tr>
+                            <tr>
+                                <td><code><span class="bl">inString(</span><span class="grey">"STR1"</span>,<span class="grey">"STR2"</span><span class="bl">)</span></code></td>
+                                <td>Finds the first occurence of <code><span class="grey">"STR2"</span></code> in <code><span class="grey">"STR1"</span></code>. Returns a pointer to the substring if the substring is found, or 0 otherwise.</td>
                             </tr>
                         </table>
                         <h3 id="text">Text</h3>

@@ -222,7 +222,7 @@ uint8_t parsePrescan(void) {
     uint24_t offset = ice.programPtr - ice.programData;
     
     // Copy C header to program and write the pointers to the LibLoad data string correctly
-    memcpy(ice.programPtr, CheaderData, SIZEOF_CHEADER);
+    memcpy(programPtr, CheaderData, SIZEOF_CHEADER);
     w24(programPtr + 1, r24(programPtr + 1) + offset);
     w24(programPtr + 52, r24(programPtr + 52) + offset);
     w24(programPtr + 65, r24(programPtr + 65) + offset);
