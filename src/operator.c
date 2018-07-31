@@ -793,19 +793,28 @@ void GEChainAnsNumber(void) {
         expr.outputReturnRegister = REGISTER_A;
         expr.ZeroCarryFlagRemoveAmountOfBytes = 2;
     } else {
-        AnsToHL();
-        LD_DE_IMM(entry2_operand);
-        GEInsert();
+        MaybeAToHL();
+        if (expr.outputRegister == REGISTER_HL) {
+            LD_DE_IMM(-entry2_operand - (oper == tLE || oper == tGT));
+        } else {
+            LD_HL_IMM(-entry2_operand - (oper == tLE || oper == tGT));
+        }
+        ADD_HL_DE();
+        if (oper == tGE || oper == tGT) {
+            CCF();
+            expr.AnsSetCarryFlagReversed = true;
+            expr.ZeroCarryFlagRemoveAmountOfBytes = 4;
+        } else {
+            expr.AnsSetCarryFlag = true;
+            expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
+        }
+        SBC_HL_HL_INC_HL();
     }
 }
 void GEChainAnsVariable(void) {
     AnsToHL();
     LD_DE_IND_IX_OFF(entry2_operand);
     GEInsert();
-}
-void GENumberVariable(void) {
-    LD_HL_IMM(entry1_operand);
-    GEChainAnsVariable();
 }
 void GENumberChainAns(void) {
     if (expr.outputRegister == REGISTER_A && entry1_operand < 256) {
@@ -815,10 +824,27 @@ void GENumberChainAns(void) {
         expr.outputReturnRegister = REGISTER_A;
         expr.ZeroCarryFlagRemoveAmountOfBytes = 2;
     } else {
-        AnsToDE();
-        LD_HL_IMM(entry1_operand);
-        GEInsert();
+        MaybeAToHL();
+        if (expr.outputRegister == REGISTER_HL) {
+            LD_DE_IMM(-entry1_operand - (oper == tGE || oper == tLT));
+        } else {
+            LD_HL_IMM(-entry1_operand - (oper == tGE || oper == tLT));
+        }
+        ADD_HL_DE();
+        if (oper == tLE || oper == tLT) {
+            CCF();
+            expr.AnsSetCarryFlagReversed = true;
+            expr.ZeroCarryFlagRemoveAmountOfBytes = 4;
+        } else {
+            expr.AnsSetCarryFlag = true;
+            expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
+        }
+        SBC_HL_HL_INC_HL();
     }
+}
+void GENumberVariable(void) {
+    LD_HL_IND_IX_OFF(entry2_operand);
+    GENumberChainAns();
 }
 void GEVariableNumber(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
