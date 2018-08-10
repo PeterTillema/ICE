@@ -95,7 +95,7 @@ uint8_t parseProgram(void) {
         for (currentLbl = 0; currentLbl < ice.curLbl; currentLbl++) {
             label_t *curLbl = &ice.LblStack[currentLbl];
 
-            if (!memcmp(curLbl->name, curGoto->name, 20)) {
+            if (!strcmp(curLbl->name, curGoto->name)) {
                 w24(curGoto->addr + 1, (uint24_t)curLbl->addr - (uint24_t)ice.programData + PRGM_START);
                 goto findNextLabel;
             }

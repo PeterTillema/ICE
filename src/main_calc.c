@@ -197,6 +197,7 @@ displayMainScreen:
     memset(&ice, 0, sizeof ice);
     memset(&expr, 0, sizeof expr);
     memset(&reg, 0, sizeof reg);
+    memset(&prescan, 0, sizeof prescan);
     for (selectedProgram = 0; selectedProgram < amountOfPrograms; selectedProgram++) {
         free(inputPrograms[selectedProgram]);
     }
