@@ -80,9 +80,9 @@ void main(void) {
     ti_CloseAll();
     ice.usingInputProgram = false;
     inputProgram = os_RclAns(&inputProgramType);
-    if (inputProgram && inputProgramType == TI_STRING_TYPE && (inputProgramSize = *inputProgram) < 9) {
+    if (inputProgram && inputProgramType == TI_STRING_TYPE && inputProgram[2] == tProg && (inputProgramSize = *inputProgram) < 10) {
         memset(var_name, 0, sizeof var_name);
-        memcpy(var_name, inputProgram + 2, inputProgramSize);
+        memcpy(var_name, inputProgram + 3, inputProgramSize - 1);
         programSlot = ti_OpenVar(var_name, "r", TI_PRGM_TYPE);
         ti_CloseAll();
 	    if (programSlot) {
