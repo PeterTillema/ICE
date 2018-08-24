@@ -44,6 +44,11 @@ void clearProgramList() {
 }
 
 void main(void) {
+    uint8_t inputProgramType;
+    char *inputProgram;
+    uint16_t inputProgramSize;
+    uint16_t inputProgramString[10];
+    ti_var_t programSlot;
     uint8_t selectedProgram, amountOfPrograms, res = VALID, type;
     uint24_t programDataSize, offset, totalSize;
     uint8_t beginList, amountOfProgramsToDisplay;
@@ -51,7 +56,7 @@ void main(void) {
     const char ICEheader[] = {tii, 0};
     ti_var_t tempProg;
     char buf[30], *temp_name = "", var_name[9];
-    sk_key_t key;
+    sk_key_t key = 0;
     void *search_pos;
     bool didCompile;
 
@@ -71,6 +76,20 @@ void main(void) {
     asm("ld iy, 0D00080h");
     asm("set 3, (iy+024h)");
 
+    // check if a program was used as input
+    ti_CloseAll();
+    ice.usingInputProgram = false;
+    inputProgram = os_RclAns(&inputProgramType);
+    if (inputProgram && inputProgramType == TI_STRING_TYPE && (inputProgramSize = *inputProgram) < 9) {
+        memset(var_name, 0, sizeof var_name);
+        memcpy(var_name, inputProgram + 2, inputProgramSize);
+        programSlot = ti_OpenVar(var_name, "r", TI_PRGM_TYPE);
+        ti_CloseAll();
+	    if (programSlot) {
+            ice.usingInputProgram = true;
+	    }
+    }
+
     // Yay, GUI! :)
 displayMainScreen:
     gfx_Begin();
@@ -86,7 +105,11 @@ displayMainScreen:
     selectedProgram = 0;
     didCompile = false;
     ti_CloseAll();
-    
+
+    if (ice.usingInputProgram) {
+        goto compile_program;
+    }
+
     search_pos = NULL;
     while ((temp_name = ti_DetectAny(&search_pos, ICEheader, &type)) != NULL) {
         if (type == TI_PRGM_TYPE || type == TI_PPRGM_TYPE) {
@@ -185,22 +208,25 @@ displayMainScreen:
             }
         }
     }
+    
+    // Set some vars
+    strcpy(var_name, inputPrograms[selectedProgram - 1]);
+    for (selectedProgram = 0; selectedProgram < amountOfPrograms; selectedProgram++) {
+        free(inputPrograms[selectedProgram]);
+    }
+
+compile_program:
 
     // Erase screen
     gfx_SetColor(255);
     gfx_FillRectangle_NoClip(0, 11, 320, 210);
     gfx_FillRectangle_NoClip(0, 220, 270, 20);
-    
-    // Set some vars
-    strcpy(var_name, inputPrograms[selectedProgram - 1]);
+
     didCompile = true;
     memset(&ice, 0, sizeof ice);
     memset(&expr, 0, sizeof expr);
     memset(&reg, 0, sizeof reg);
     memset(&prescan, 0, sizeof prescan);
-    for (selectedProgram = 0; selectedProgram < amountOfPrograms; selectedProgram++) {
-        free(inputPrograms[selectedProgram]);
-    }
     
     // Output debug appvar
     if (key == sk_Window) {
@@ -317,12 +343,14 @@ stop:
         }
         gfx_PrintStringXY("Back", 70, 232);
         printButton(65);
+        gfx_PrintStringXY("Quit", 285, 232);
+        printButton(279);
     }
     while (!(key = os_GetCSC()));
 err:
     gfx_End();
 
-    if (didCompile) {
+    if (key != sk_Graph && didCompile) {
         if (key == sk_Yequ && res == VALID) {
             RunPrgm(ice.outName);
         }
