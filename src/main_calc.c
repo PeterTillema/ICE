@@ -47,7 +47,6 @@ void main(void) {
     uint8_t inputProgramType;
     char *inputProgram;
     uint16_t inputProgramSize;
-    uint16_t inputProgramString[10];
     ti_var_t programSlot;
     uint8_t selectedProgram, amountOfPrograms, res = VALID, type;
     uint24_t programDataSize, offset, totalSize;
@@ -80,14 +79,13 @@ void main(void) {
     ti_CloseAll();
     ice.usingInputProgram = false;
     inputProgram = os_RclAns(&inputProgramType);
-    if (inputProgram && inputProgramType == TI_STRING_TYPE && inputProgram[2] == tProg && (inputProgramSize = *inputProgram) < 10) {
+    if (inputProgram && inputProgramType == TI_STRING_TYPE && inputProgram[2] == tProg && (inputProgramSize = *(uint16_t*)inputProgram) < 10) {
         memset(var_name, 0, sizeof var_name);
         memcpy(var_name, inputProgram + 3, inputProgramSize - 1);
         programSlot = ti_OpenVar(var_name, "r", TI_PRGM_TYPE);
-        ti_CloseAll();
-	    if (programSlot) {
+        if (programSlot) {
             ice.usingInputProgram = true;
-	    }
+        }
     }
 
     // Yay, GUI! :)
