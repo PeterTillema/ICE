@@ -46,6 +46,8 @@ typedef struct {
 } variable_t;
 
 typedef struct {
+    bool     usingInputProgram;                             // Using input program from string
+
     char     outName[9];                                    // Output variable name
     char     currProgName[5][9];                            // Current program compiling
 
