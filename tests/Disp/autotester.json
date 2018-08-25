@@ -10,6 +10,7 @@
   },
   "sequence": [
     "action|launch",
+    "delay|300",
     "key|enter",
     "hashWait|1",
     "key|clear",
