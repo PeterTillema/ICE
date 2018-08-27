@@ -14,6 +14,7 @@
 #define SIZEOF_SINCOS_DATA 99
 #define SIZEOF_MEAN_DATA   24
 #define SIZEOF_OR_DATA     10
+#define SIZEOF_PRGM_DATA   40
 #define SIZEOF_AND_DATA    11
 #define SIZEOF_XOR_DATA    13
 #define SIZEOF_INPUT_DATA  96
@@ -118,6 +119,9 @@ typedef struct {
     
     bool     usedAlreadyDisp;                               // Only once the Disp routine in the program data
     uint24_t DispAddr;                                      // Address of the Disp routine in the program data
+    
+    bool     usedAlreadyPrgm;                               // Only once the prgm routine in the program data
+    uint24_t PrgmAddr;                                      // Address of the prgm routine in the program data
 } ice_t;
 
 typedef struct {

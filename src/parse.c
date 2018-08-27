@@ -1557,40 +1557,35 @@ static uint8_t functionFor(int token) {
 }
 
 static uint8_t functionPrgm(int token) {
+    bool tempAlreadyUsedPrgm = ice.usedAlreadyPrgm;
     uint24_t length;
-    uint8_t a = 0;
-    uint8_t *tempProgramPtr;
-
-    MaybeLDIYFlags();
-    tempProgramPtr = ice.programPtr;
-
-    OutputWriteByte(TI_PRGM_TYPE);
-
-    // Fetch the name
-    while ((token = _getc()) != EOF && (uint8_t)token != tEnter && (uint8_t)token != tColon && ++a < 9) {
-        OutputWriteByte(token);
+    uint8_t res;
+    prog_t *outputPrgm;
+        
+    outputPrgm = GetProgramName();
+    if ((res = outputPrgm->errorCode) != VALID) {
+        free(outputPrgm);
+        return res;
     }
-    OutputWriteByte(0);
-
-    // Check if valid program name
-    if (!a || a == 9) {
-        return E_INVALID_PROG;
-    }
-
-    length = ice.programPtr - tempProgramPtr;
-    ice.programDataPtr -= length;
-    memcpy(ice.programDataPtr, tempProgramPtr, length);
-    ice.programPtr = tempProgramPtr;
-
+    
+    length = strlen(outputPrgm->prog);
+    ice.programDataPtr -= length + 2;
+    *ice.programDataPtr = TI_PRGM_TYPE;
+    memcpy(ice.programDataPtr + 1, outputPrgm->prog, length + 1);
+    
     ProgramPtrToOffsetStack();
     LD_HL_IMM((uint24_t)ice.programDataPtr);
-
-    // Insert the routine to run it
     CALL(_Mov9ToOP1);
-    LD_HL_IMM(tempProgramPtr - ice.programData + PRGM_START + 28);
-    memcpy(ice.programPtr, PrgmData, 20);
-    ice.programPtr += 20;
+    CallRoutine(&ice.usedAlreadyPrgm, &ice.PrgmAddr, (uint8_t*)PrgmData, SIZEOF_PRGM_DATA);
+    
+    if (!tempAlreadyUsedPrgm) {
+        ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.PrgmAddr + 11);
+        w24(ice.PrgmAddr + 11, (uint24_t)ice.PrgmAddr + 30);
+    }
+    
     ResetAllRegs();
+    ice.modifiedIY = false;
+    free(outputPrgm);
 
     return VALID;
 }

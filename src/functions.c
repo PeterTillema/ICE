@@ -388,7 +388,7 @@ uint8_t parseFunction(uint24_t index) {
                 ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.programDataPtr + 16);
 
                 // This is the "ld de, SinTable", 18 is the distance from "ld de, SinTable" to "SinTable"
-                *(uint24_t*)(ice.programDataPtr + 16) = (uint24_t)ice.programDataPtr + 18 + 16;
+                w24(ice.programDataPtr + 16, (uint24_t)ice.programDataPtr + 18 + 16);
                 ice.usedAlreadySinCos = true;
             }
 
@@ -639,6 +639,7 @@ uint8_t parseFunction(uint24_t index) {
                     expr.AnsSetZeroFlagReversed = true;
                     expr.ZeroCarryFlagRemoveAmountOfBytes = 8;
                 } else if (outputPrevOperand == 1) {
+                    // ld de, OUTPUT_NAME \ ld hl, (windowHookPtr) \ inc hl \ inc hl \ inc hl \ inc hl \ inc hl
                     const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, OP_INC_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
                     
                     *--ice.programDataPtr = 0;
@@ -651,6 +652,7 @@ uint8_t parseFunction(uint24_t index) {
                     expr.AnsSetCarryFlag = true;
                     expr.ZeroCarryFlagRemoveAmountOfBytes = 0;
                 } else if (outputPrevOperand == 2) {
+                    // ld de, CURRENT_LINE \ ld hl, (windowHookPtr) \ inc hl \ inc hl \ inc hl
                     const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
                     
                     LD_DE_IMM(ice.currentLine);
