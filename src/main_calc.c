@@ -311,6 +311,9 @@ compile_program:
         // Yep, we are really done!
         gfx_SetTextFGColor(4);
         displayMessageLineScroll("Successfully compiled!");
+        if (ice.debug) {
+            displayMessageLineScroll("Successfully exported debug appvar");
+        }
 
         // Skip line
         displayMessageLineScroll(" ");

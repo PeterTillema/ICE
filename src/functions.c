@@ -621,6 +621,7 @@ uint8_t parseFunction(uint24_t index) {
             
             // dbd( - debug things
             else if (function2 == tFinDBD) {
+#ifdef CALCULATOR
                 if (outputPrevType != TYPE_NUMBER || outputPrevOperand > 2) {
                     return E_SYNTAX;
                 }
@@ -641,10 +642,12 @@ uint8_t parseFunction(uint24_t index) {
                 } else if (outputPrevOperand == 1) {
                     // ld de, OUTPUT_NAME \ ld hl, (windowHookPtr) \ inc hl \ inc hl \ inc hl \ inc hl \ inc hl
                     const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, OP_INC_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
+                    char buf[10];
                     
                     *--ice.programDataPtr = 0;
-                    ice.programDataPtr -= strlen(ice.outName);
-                    strcpy((char*)ice.programDataPtr, ice.outName);
+                    sprintf(buf, "%c%.5sDBG", TI_APPVAR_TYPE, ice.outName);
+                    ice.programDataPtr -= strlen(buf);
+                    strcpy((char*)ice.programDataPtr, buf);
                     ProgramPtrToOffsetStack();
                     LD_DE_IMM((uint24_t)ice.programDataPtr);
                     OutputWriteMem(mem);
@@ -666,6 +669,9 @@ uint8_t parseFunction(uint24_t index) {
                     
                     ResetHL();
                 }
+#else
+                fprintf(stdout, "Debugging not allowed - use the calculator version!");
+#endif
             }
         }
         

@@ -4,10 +4,12 @@ Variable viewer: names + offsets
 Set breakpoint on label: names + offsets
 Memory editor
 Stack view?
-Open on reset?
 
 Debug appvar:
-- program name
-- labels + addresses
-- variables + offsets
-- line lengths in assembly
+- source program name (max 10 bytes)
+- amount of variables (1 byte)
+- variables + offsets (max 85*21 bytes)
+- amount of lines (3 bytes)
+- line lengths in assembly (max 16777215*2 bytes)
+- amount of labels (1 byte)
+- labels + addresses (max 255*(21+3) bytes)

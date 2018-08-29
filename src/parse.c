@@ -27,7 +27,7 @@ element_t outputStack[400];
 element_t stack[50];
 
 uint8_t parseProgram(void) {
-    uint8_t currentGoto, currentLbl, ret, *randAddr;
+    uint8_t currentGoto, currentLbl, ret, *randAddr, *amountOfLinesOffset = 0;
     
     LD_IX_IMM(IX_VARIABLES);
     
@@ -77,6 +77,11 @@ uint8_t parseProgram(void) {
             sprintf(buf, "%s\x00", prescan.variables[curVar].name);
             ti_Write(buf, strlen(buf) + 1, 1, ice.dbgPrgm);
         }
+        
+        amountOfLinesOffset = ti_GetDataPtr(ice.dbgPrgm);
+        ti_PutC(0, ice.dbgPrgm);
+        ti_PutC(0, ice.dbgPrgm);
+        ti_PutC(0, ice.dbgPrgm);
     }
 #endif
 
@@ -87,6 +92,20 @@ uint8_t parseProgram(void) {
     if (!ice.lastTokenIsReturn) {
         RET();
     }
+    
+#ifdef CALCULATOR
+    if (ice.debug) {
+        w24(amountOfLinesOffset, ice.currentLine);
+        ti_PutC(ice.curLbl, ice.dbgPrgm);
+        
+        for (currentLbl = 0; currentLbl < ice.curLbl; currentLbl++) {
+            label_t *curLbl = &ice.LblStack[currentLbl];
+            
+            ti_Write(curLbl->name, strlen(curLbl->name) + 1, 1, ice.dbgPrgm);
+            ti_Write(&curLbl->addr, 3, 1, ice.dbgPrgm);
+        }
+    }
+#endif
     
     // Find all the matching Goto's/Lbl's
     for (currentGoto = 0; currentGoto < ice.curGoto; currentGoto++) {
@@ -114,10 +133,21 @@ findNextLabel:;
 
 uint8_t parseProgramUntilEnd(void) {
     int token;
+    uint8_t *tempProgramPtr = ice.programData;
     
     // Do things based on the token
     while ((token = _getc()) != EOF) {
         uint8_t ret;
+        
+#ifdef CALCULATOR
+        if (ice.debug) {
+            uint16_t offset = ice.programPtr - tempProgramPtr;
+            
+            ti_PutC(offset >> 8, ice.dbgPrgm);
+            ti_PutC(offset, ice.dbgPrgm);
+            tempProgramPtr = ice.programPtr;
+        }
+#endif
         
         ice.lastTokenIsReturn = false;
         ice.currentLine++;
@@ -128,6 +158,10 @@ uint8_t parseProgramUntilEnd(void) {
 
 #ifdef CALCULATOR
         displayLoadingBar();
+    }
+    
+    if (ice.debug) {
+        ti_PutC(0xFF, ice.dbgPrgm);
 #endif
     }
     
