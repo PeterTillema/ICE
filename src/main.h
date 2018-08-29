@@ -34,7 +34,9 @@
 #define tSetBrightness     0x12
 #define tCompare           0x13
 
-#define IX_VARIABLES       0xD13F47
+#define END_MALLOC         0xD13703
+#define DEBUGGER_CODE      0xD13704         // saveSScreen + 21945 - 260 - 2000
+#define IX_VARIABLES       0xD13F56         // saveSScreen + 21945 - 130
 
 typedef struct {
     char     name[20];

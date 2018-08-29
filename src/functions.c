@@ -640,8 +640,8 @@ uint8_t parseFunction(uint24_t index) {
                     expr.AnsSetZeroFlagReversed = true;
                     expr.ZeroCarryFlagRemoveAmountOfBytes = 8;
                 } else if (outputPrevOperand == 1) {
-                    // ld de, OUTPUT_NAME \ ld hl, (windowHookPtr) \ inc hl \ inc hl \ inc hl \ inc hl \ inc hl
-                    const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, OP_INC_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
+                    // ld de, OUTPUT_NAME \ ld hl, (windowHookPtr) \ inc hl \ inc hl \ inc hl
+                    const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
                     char buf[10];
                     
                     *--ice.programDataPtr = 0;
@@ -652,22 +652,14 @@ uint8_t parseFunction(uint24_t index) {
                     LD_DE_IMM((uint24_t)ice.programDataPtr);
                     OutputWriteMem(mem);
                     
-                    expr.AnsSetCarryFlag = true;
-                    expr.ZeroCarryFlagRemoveAmountOfBytes = 0;
-                } else if (outputPrevOperand == 2) {
-                    // ld de, CURRENT_LINE \ ld hl, (windowHookPtr) \ inc hl \ inc hl \ inc hl
-                    const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
-                    
-                    LD_DE_IMM(ice.currentLine);
-                    OutputWriteMem(mem);
-                }
-                
-                if (outputPrevOperand) {
                     *--ice.programDataPtr = OP_JP_HL;
                     ProgramPtrToOffsetStack();
                     CALL((uint24_t)ice.programDataPtr);
                     
-                    ResetHL();
+                    ResetAllRegs();
+                } else if (outputPrevOperand == 2) {
+                    LD_DE_IMM(ice.currentLine);
+                    CALL(DEBUGGER_CODE);
                 }
 #else
                 fprintf(stdout, "Debugging not allowed - use the calculator version!");

@@ -100,9 +100,10 @@ uint8_t parseProgram(void) {
         
         for (currentLbl = 0; currentLbl < ice.curLbl; currentLbl++) {
             label_t *curLbl = &ice.LblStack[currentLbl];
+            uint24_t addr = curLbl->addr - ice.programData + PRGM_START;
             
             ti_Write(curLbl->name, strlen(curLbl->name) + 1, 1, ice.dbgPrgm);
-            ti_Write(&curLbl->addr, 3, 1, ice.dbgPrgm);
+            ti_Write(&addr, 3, 1, ice.dbgPrgm);
         }
     }
 #endif

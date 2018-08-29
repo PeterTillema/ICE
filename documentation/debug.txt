@@ -3,7 +3,6 @@ Jump to label: all labels + addresses
 Variable viewer: names + offsets
 Set breakpoint on label: names + offsets
 Memory editor
-Stack view?
 
 Debug appvar:
 - source program name (max 10 bytes)

@@ -6,7 +6,7 @@ _MallocData:
 	ld	de, 0
 	add	hl, de
 	ld	(0), hl
-	ld	bc, 0D13EC5h
+	ld	bc, 0D13704h		; See ../main.h - DEBUGGER_CODE
 	or	a, a
 	sbc	hl, bc
 	sbc	hl, hl
