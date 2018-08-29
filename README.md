@@ -1,4 +1,4 @@
-# ICE Compiler [![Build Status](https://api.travis-ci.org/PeterTillema/ICE.svg)](https://travis-ci.org/PeterTillema/ICE)
+# ICE Compiler [![Build Status](https://api.travis-ci.org/PeterTillema/ICE.svg)](https://travis-ci.org/PeterTillema/ICE) [![IRC badge](https://img.shields.io/badge/IRC%20channel-%23icedev%20on%20EFNet-blue.svg)](http://chat.efnet.org/irc.cgi?adv=1&nick=ICEuser&chan=%23icedev)
 ![](http://i.imgur.com/yLPnSG7.png)
 
 ICE Compiler is a program that compiles TI-BASIC-like language to assembly. Create insane games, take full advanage of the color screen, and close the gap to using other languages! Not only will your BASIC programs enjoy increased speed, it is also easy to use. Type your program in the normal BASIC editor, compile within seconds\*, for hours of fun! No shell is required.
