@@ -27,6 +27,7 @@ element_t outputStack[400];
 element_t stack[50];
 
 uint8_t parseProgram(void) {
+    char buf[21];
     uint8_t currentGoto, currentLbl, ret, *randAddr, *amountOfLinesOffset = 0;
     
     LD_IX_IMM(IX_VARIABLES);
@@ -60,12 +61,13 @@ uint8_t parseProgram(void) {
     
     // Open debug appvar to store things to
 #ifdef CALCULATOR
+    sprintf(buf, "%.5sDBG", ice.outName);
+    ice.dbgPrgm = ti_Open(buf, "w");
+    
     if (ice.debug) {
-        char buf[21];
         uint8_t curVar;
         
-        sprintf(buf, "%.5sDBG", ice.outName);
-        if (!(ice.dbgPrgm = ti_Open(buf, "w"))) {
+        if (!ice.dbgPrgm) {
             return E_NO_DBG_FILE;
         }
         
@@ -86,6 +88,8 @@ uint8_t parseProgram(void) {
         ti_PutC(0, ice.dbgPrgm);
         ti_PutC(0, ice.dbgPrgm);
         ti_PutC(0, ice.dbgPrgm);
+    } else if (ice.dbgPrgm) {
+        ti_Delete(buf);
     }
 #endif
 
