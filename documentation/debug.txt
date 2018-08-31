@@ -1,14 +1,31 @@
-Jump line by line: line length in assembly
-Jump to label: all labels + addresses
-Variable viewer: names + offsets
-Set breakpoint on label: names + offsets
-Memory editor
-
-Debug appvar:
+Debug appvar
+===============================================
 - source program name (max 10 bytes)
+- pointer to slot functions (3 bytes)
 - amount of variables (1 byte)
-- variables + offsets (max 85*21 bytes)
+- variables (max 85*21 bytes)
 - amount of lines (3 bytes)
 - line lengths in assembly (max 16777215*2 bytes)
 - amount of labels (1 byte)
 - labels + addresses (max 255*(21+3) bytes)
+
+Slots
+===============================================
+Check if open: GetSize != -1 (5 chars)
+- (#)Name - # if archived (10 chars)
+- DataPtr (8 chars)
+- Size (6 chars)
+- Offset (7 chars)
+
+Example:
+Slot Type Name      DataPtr Size  Offset
+1:   15   #HDPICCNV $D01256 65535 65535
+2:   5    TEST      $0C0C01 15    3
+
+Needed functions:
+ti_GetName()
+ti_IsArchived()
+ti_GetDataPtr()
+ti_GetSize()
+ti_Tell()
+ti_GetVATPtr()

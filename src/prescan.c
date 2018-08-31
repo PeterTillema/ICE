@@ -233,7 +233,7 @@ uint8_t parsePrescan(void) {
 
         ice.programPtr += SIZEOF_CHEADER;
         for (a = 0; a < AMOUNT_OF_GRAPHX_FUNCTIONS; a++) {
-            if (prescan.GraphxRoutinesStack[a]) {
+            if (prescan.GraphxRoutinesStack[a] == 1) {
                 prescan.GraphxRoutinesStack[a] = (uint24_t)ice.programPtr;
                 JP(a * 3);
             }
@@ -241,14 +241,37 @@ uint8_t parsePrescan(void) {
     } else if (prescan.hasFileiocFunctions) {
         ice.programPtr += SIZEOF_CHEADER - 9;
     }
-
+    
     if (prescan.hasFileiocFunctions) {
         uint8_t a;
 
         memcpy(ice.programPtr, FileiocheaderData, 10);
         ice.programPtr += 10;
+        
+#ifdef CALCULATOR
+        // Manually add debug functions
+        if (ice.debug) {
+            // Write program pointer to debug appvar
+            ice.FileiocFunctionsPointer = ice.programPtr - ice.programData + (uint8_t*)PRGM_START;
+            
+            // Insert FILEIOC functions which are necessary
+            prescan.FileiocRoutinesStack[TI_ISARCHIVED_INDEX] = (uint24_t)ice.programPtr;
+            JP(TI_ISARCHIVED_INDEX * 3);
+            prescan.FileiocRoutinesStack[TI_TELL_INDEX] = (uint24_t)ice.programPtr;
+            JP(TI_TELL_INDEX * 3);
+            prescan.FileiocRoutinesStack[TI_GETSIZE_INDEX] = (uint24_t)ice.programPtr;
+            JP(TI_GETSIZE_INDEX * 3);
+            prescan.FileiocRoutinesStack[TI_GETDATAPTR_INDEX] = (uint24_t)ice.programPtr;
+            JP(TI_GETDATAPTR_INDEX * 3);
+            prescan.FileiocRoutinesStack[TI_GETVATPTR_INDEX] = (uint24_t)ice.programPtr;
+            JP(TI_GETVATPTR_INDEX * 3);
+            prescan.FileiocRoutinesStack[TI_GETNAME_INDEX] = (uint24_t)ice.programPtr;
+            JP(TI_GETNAME_INDEX * 3);
+        }
+#endif
+        
         for (a = 0; a < AMOUNT_OF_FILEIOC_FUNCTIONS; a++) {
-            if (prescan.FileiocRoutinesStack[a]) {
+            if (prescan.FileiocRoutinesStack[a] == 1) {
                 prescan.FileiocRoutinesStack[a] = (uint24_t)ice.programPtr;
                 JP(a * 3);
             }

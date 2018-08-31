@@ -22,6 +22,13 @@
 #define SMALL_34      (SMALL_3 | SMALL_4)
 #define SMALL_345     (SMALL_3 | SMALL_45)
 
+#define TI_ISARCHIVED_INDEX 12
+#define TI_TELL_INDEX       14
+#define TI_GETSIZE_INDEX    16
+#define TI_GETDATAPTR_INDEX 18
+#define TI_GETVATPTR_INDEX  30
+#define TI_GETNAME_INDEX    31
+
 uint8_t parseFunction(uint24_t);
 uint8_t parseFunction1Arg(uint24_t, uint8_t);
 uint8_t parseFunction2Args(uint24_t, uint8_t, bool);

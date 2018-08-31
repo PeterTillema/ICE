@@ -35,7 +35,7 @@
 #define tCompare           0x13
 
 #define END_MALLOC         0xD13703
-#define DEBUGGER_CODE      0xD13704         // saveSScreen + 21945 - 260 - 2000
+#define DEBUGGER_CODE      0xD12F34         // saveSScreen + 21945 - 260 - 4000
 #define IX_VARIABLES       0xD13F56         // saveSScreen + 21945 - 130
 
 typedef struct {
@@ -61,6 +61,7 @@ typedef struct {
     uint8_t  *programDataPtr;                               // Pointer to the program data
     uint8_t  tempToken;                                     // Used for functions, i.e. For(, where an argument can stop with either a comma or a parentheses
     uint8_t  stackDepth;                                    // Used for compiling arguments of C functions
+    uint8_t *FileiocFunctionsPointer;                       // Used for debugging
     
     label_t  *LblStack;                                     // Pointer to label stack
     label_t  *GotoStack;                                    // Pointer to goto stack
