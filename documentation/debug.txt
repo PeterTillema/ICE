@@ -5,14 +5,20 @@ Debug appvar
 - amount of variables (1 byte)
 - variables (max 85*21 bytes)
 - amount of lines (3 bytes)
-- line lengths in assembly (max 16777215*2 bytes)
+- for each line:
+	- address in compiled program (3 bytes)
+	- if If/Repeat/While/For/Call/Goto: jump address
+		- else if Return/ReturnIf: -1
+		- else: 0
+- amount of startup breakpoints (1 byte)
+- breakpoints line numbers (max 255*3 bytes)
 - amount of labels (1 byte)
 - labels + addresses (max 255*(21+3) bytes)
 
 Slots
 ===============================================
 Check if open: GetSize != -1 (5 chars)
-- (#)Name - # if archived (10 chars)
+- (*)Name - * if archived (10 chars)
 - DataPtr (8 chars)
 - Size (6 chars)
 - Offset (7 chars)

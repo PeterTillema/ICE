@@ -658,13 +658,14 @@ uint8_t parseFunction(uint24_t index) {
                     ProgramPtrToOffsetStack();
                     CALL((uint24_t)ice.programDataPtr);
                     
-                    OutputWrite2Bytes(OP_ADD_HL_DE, OP_OR_A_A);
-                    OutputWrite3Bytes(0xED, 0x52, OP_RET_Z);
+                    LD_IY_IMM(flags);
+                    OutputWriteByte(OP_RET_C);
+                    ice.modifiedIY = false;
                     
                     ResetAllRegs();
                 } else {
-                    LD_DE_IMM(ice.currentLine);
-                    CALL(DEBUGGER_CODE);
+                    // Add ice.currentLine to the stack of startup breakpoints
+                    ice.breakPointLines[ice.currentBreakPointLine++] = ice.currentLine - 1;
                 }
 #else
                 fprintf(stdout, "Debugging not allowed - use the calculator version!");

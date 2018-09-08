@@ -1,0 +1,319 @@
+Aug 31 15:32:29 <disjax>	[PT_] Step through code would be the last thing I will implement though, that seems quite hard to me
+Aug 31 15:33:11 <Runer112>	it's not too bad
+Aug 31 15:33:28 <Runer112>	here's the easy way:
+Aug 31 15:33:37 <Runer112>	well
+Aug 31 15:33:45 <Runer112>	that way is actually stupid, let's not do that
+Aug 31 15:33:55 <disjax>	[PT_] I guess you need to get the pointer to the start of the code, and after the end you write temporarily a 'ret'; after executing you restore that byte
+Aug 31 15:34:00 <Runer112>	here's the mostly correct way:
+Aug 31 15:34:09 <Runer112>	err
+Aug 31 15:34:15 <Runer112>	you can't write a ret
+Aug 31 15:34:20 <disjax>	[PT_] Why not?
+Aug 31 15:34:22 <Runer112>	you'll have to write a jp
+Aug 31 15:34:46 <Runer112>	because ret implies that injected something on the stack
+Aug 31 15:35:00 <disjax>	[PT_] That would be more correct, but IIRC ICE never pushes extra things
+Aug 31 15:35:14 <Runer112>	I guess that could work
+Aug 31 15:35:28 <disjax>	[PT_] Sure, JP is better, but then it's 4 bytes
+Aug 31 15:35:55 <disjax>	[PT_] And ICE does have some SMC
+Aug 31 15:35:55 <Runer112>	yeah, that complicates things a bit
+Aug 31 15:36:16 <Runer112>	I guess ret is probably fine then
+Aug 31 15:36:22 <disjax>	[PT_] My other idea would be copying the code to a memory filled with 'ret's ðŸ˜›
+Aug 31 15:36:37 <disjax>	[PT_] But let's not do that lol
+Aug 31 15:36:53 <Runer112>	anyway, you'd want a map of line numbers to compiled addresses
+Aug 31 15:36:59 <disjax>	[PT_] I do have
+Aug 31 15:37:09 <disjax>	[PT_] Well, rather the line lenghts in assembly
+Aug 31 15:37:38 <disjax>	[PT_] I'm only worried about flow control statements, like While, Repeat, If and For(, how would I handle that?
+Aug 31 15:37:51 <Runer112>	that's the other thing
+Aug 31 15:38:01 <disjax>	[PT_] The most reasonable thing is to write 2 ret's, both inside and outside the statement
+Aug 31 15:38:27 <Runer112>	yeah, that basically
+Aug 31 15:38:46 <disjax>	[PT_] Cool
+Aug 31 15:39:09 <disjax>	[PT_] I implemented slots the correct way; the debugger is calling the right functions which are always added to the program
+Aug 31 15:40:52 <Runer112>	oh right
+Aug 31 15:40:58 <Runer112>	you might want to go with the jp method anywya
+Aug 31 15:41:19 <Runer112>	because if you want to support breakpoints (which I hope you do), that's the only reasonable way to do so
+Aug 31 15:41:34 <Runer112>	well, I guess you could use call instead
+Aug 31 15:41:42 <disjax>	[PT_] I did plan that, but no idea how
+Aug 31 15:41:45 <Runer112>	since you can guarantee that sp will always be okay
+Aug 31 15:41:59 <Runer112>	pretty easy
+Aug 31 15:42:03 <disjax>	[PT_] Well, unless the user itself does something like Asm(C1)
+Aug 31 15:42:15 <Runer112>	make sure each line is padded to at least 4 bytes
+Aug 31 15:42:20 <Runer112>	when compiling
+Aug 31 15:43:19 <disjax>	[PT_] Hmm?
+Aug 31 15:43:24 <Runer112>	?
+Aug 31 15:43:32 <disjax>	[PT_] Padded to 4 bytes?
+Aug 31 15:43:36 <Runer112>	yes
+Aug 31 15:43:43 <disjax>	[PT_] Oh
+Aug 31 15:44:03 <Runer112>	make sure the compiled form of each source line is at least 4 bytes
+Aug 31 15:44:04 <disjax>	[PT_] What about something like jp (ix)?
+Aug 31 15:44:10 <Runer112>	add nops at the end if necessary
+Aug 31 15:44:10 <disjax>	[PT_] Yeah I understand it n ow
+Aug 31 15:44:17 <Runer112>	what about it
+Aug 31 15:44:26 <disjax>	[PT_] Oh nvm that wouldn't work
+Aug 31 15:44:41 <disjax>	[PT_] I thought about changing ix to the debugger address
+Aug 31 15:44:44 <Runer112>	yeah, that's probably not the best idea
+Aug 31 15:44:45 <saxjax>	[Cemetech] tr1p1ea entered the room
+Aug 31 15:44:47 <disjax>	[PT_] That is only 2 bytes
+Aug 31 15:45:04 <Runer112>	I imagine that almost every line will be 4 bytes or larger anyway
+Aug 31 15:45:12 <disjax>	[PT_] Pretty much, yeah
+Aug 31 15:45:39 <disjax>	[PT_] So basically I need this:
+Aug 31 15:45:46 <Runer112>	I guess the trick is properly running the code once the breakpoint is hit
+Aug 31 15:46:09 <disjax>	[PT_] When the user selects 'Add breakpoint', I need to display the entire program where the user can select a line, and then inject a jp X where X would be some debugger address
+Aug 31 15:46:55 <disjax>	[PT_] (which is always the same, and basically that is dbd(2 )
+Aug 31 15:47:01 <Runer112>	well, you can use call
+Aug 31 15:47:21 <Runer112>	since you should be guaranteed to have a usable stack
+Aug 31 15:47:31 <disjax>	[PT_] That would be the best option yeah
+Aug 31 15:47:39 <Runer112>	that way you only need one entry point, instead of one per breakpoint
+Aug 31 15:47:46 <Runer112>	makes life a bit easier
+Aug 31 15:47:56 <Runer112>	probably?
+Aug 31 15:48:33 <disjax>	[PT_] I need to keep track of all the breakpoint's addresses and the byte where the "ret" is written to
+Aug 31 15:51:49 <Runer112>	oh right
+Aug 31 15:52:09 <Runer112>	oh
+Aug 31 15:52:14 <Runer112>	there is a big issue with ret
+Aug 31 15:52:27 <disjax>	[PT_] Hmm?
+Aug 31 15:52:33 <Runer112>	in the case of stepping through a branch
+Aug 31 15:52:46 <Runer112>	you'll have no idea which branch was taken
+Aug 31 15:52:55 <disjax>	[PT_] As in, functions?
+Aug 31 15:52:57 <saxjax>	[Cemetech] ItsJustSomeDude entered the room
+Aug 31 15:53:04 <Runer112>	as in, stepping on an if statement
+Aug 31 15:53:29 <Runer112>	so you probably want to use call
+Aug 31 15:54:10 <disjax>	[PT_] hmm right
+Aug 31 15:54:35 <Runer112>	in which case, you need to pad your compiled lines to 4 bytes
+Aug 31 15:54:40 <disjax>	[PT_] Yeah
+Aug 31 15:55:06 <disjax>	[PT_] Except comments and newlines I guess
+Aug 31 15:55:23 <Runer112>	debuggers usually handle those by not even letting you place a breakpoint on those
+Aug 31 15:55:32 <Runer112>	basically, that line number doesn't map to any address
+Aug 31 15:55:33 <disjax>	[PT_] That was what I was thinking
+Aug 31 15:55:42 <Runer112>	or rather
+Aug 31 15:55:50 <Runer112>	that line number forwards to another line number
+Aug 31 15:56:08 <disjax>	[PT_] I see another issue
+Aug 31 15:56:10 <Runer112>	(the next line that isn't empty)
+Aug 31 15:56:21 <disjax>	[PT_] Should the breakpoint stay?
+Aug 31 15:56:27 <disjax>	[PT_] After triggering it
+Aug 31 15:56:30 <Runer112>	yes
+Aug 31 15:56:46 <disjax>	[PT_] How would I execute the line where the breakpoint is placed at?
+Aug 31 15:56:47 <Runer112>	to step through a line with a breakpoint on it, the simplest thing to do is probably to place temporary breakpoints on all the lines it could step to
+Aug 31 15:56:56 <Runer112>	and then put the original code back temporarily
+Aug 31 15:57:08 <Runer112>	after you hit one of the temporary breakpoints, put the breakpoint back and continue
+Aug 31 15:57:25 <Runer112>	(and restore the original code under the temporary breakpoints)
+Aug 31 15:57:37 <disjax>	[PT_] That was indeed my problem :p
+Aug 31 15:57:45 <Runer112>	so you could have two breakpoint handlers
+Aug 31 15:57:55 <Runer112>	hmm, does that make life easier
+Aug 31 15:57:57 <Runer112>	I dunno
+Aug 31 15:58:09 <Runer112>	maybe best to just store the temp/real breakpoint flag in the data itself
+Aug 31 15:58:45 <Runer112>	by the way, if you wanted not to have to enumerate all the possible lines each line could step to
+Aug 31 15:59:07 <Runer112>	a cheaty way would be to put breakpoints on every other line :p
+Aug 31 15:59:23 <disjax>	[PT_] That would be a huge slowdown heh
+Aug 31 15:59:30 <Runer112>	not really
+Aug 31 15:59:48 <Runer112>	let's say the breakpoint process takes umm, maybe 500 cycles
+Aug 31 16:00:03 <Runer112>	and your program had 5000 lines (which is a lot)
+Aug 31 16:00:04 <disjax>	[PT_] Well, finding the second breakpoint, after an If or While statement, would be kinda hard
+Aug 31 16:00:19 <Runer112>	that would still only take 2.5m cycles
+Aug 31 16:00:24 <Runer112>	about 1/20th of a second
+Aug 31 16:00:33 <disjax>	[PT_] Well, speed is not really a problem, since if you want to debug, you need to keep in mind it would be slower
+Aug 31 16:00:53 <Runer112>	well, keep in mind that this would only happen on individual stepping
+Aug 31 16:00:57 <saxjax>	[Cemetech] zed registered and activated a new account
+Aug 31 16:00:58 <Runer112>	running would be unaffected
+Aug 31 16:01:00 <disjax>	[PT_] Sure
+Aug 31 16:01:07 <Runer112>	it would just make an individual step take 1/20th of a second more in a huge program
+Aug 31 16:01:10 <disjax>	[PT_] An alternative idea:
+Aug 31 16:01:12 <saxjax>	[Nik] o/
+Aug 31 16:01:23 <Runer112>	which would basically be unnoticable
+Aug 31 16:01:32 <saxjax>	[Cemetech] zed entered the room
+Aug 31 16:01:32 <Cemetech>	zed, welcome to Cemetech! Please introduce yourself in this topic: http://ceme.tech/t4925
+Aug 31 16:01:35 <Runer112>	and that's assuming the process takes 500 cycles
+Aug 31 16:01:41 <Runer112>	I bet it could be done in like 100 somehting
+Aug 31 16:01:46 <disjax>	[PT_] When it's executing a line, put a 'ret' after the line; then check the address against the fixed breakpoints, and if not, execute the next line
+Aug 31 16:02:01 <Runer112>	huh
+Aug 31 16:02:05 <disjax>	[PT_] >.>
+Aug 31 16:02:17 <disjax>	[PT_] Nah
+Aug 31 16:02:27 <disjax>	[PT_] Ignore that :p
+Aug 31 16:02:33 <Runer112>	no, I'm pretty sure that injecting calls is the easiest way to go
+Aug 31 16:03:17 <disjax>	[PT_] Which would increase the output size with 4*(amount of lines) bytes?
+Aug 31 16:04:02 <disjax>	[PT_] Then I just call the debugger after every line (or before, whatever), check against the fixed breakpoints, and if not, just return
+Aug 31 16:04:08 <disjax>	[PT_] That would be the easiest solution
+Aug 31 16:04:21 <disjax>	[PT_] No need for check against branches
+
+
+
+
+
+
+
+SepSep 01 17:09:42 <P_T>	Runer112, does this look right: https://pastebin.com/EkuuKPpq ?
+Sep 01 17:10:26 <Runer112>	what is "(3 parts)"
+Sep 01 17:10:34 <P_T>	As in, max 3 temp call's
+Sep 01 17:10:46 <Runer112>	why max 3
+Sep 01 17:10:56 <P_T>	Return address, and 2 branches
+Sep 01 17:11:29 <Runer112>	a line can't both contain a branch and a return though, can it?
+Sep 01 17:11:53 <P_T>	true
+Sep 01 17:12:05 <P_T>	Then 2 is fine yeah
+Sep 01 17:12:36 <Runer112>	anyway, inject temp "call <debugger>"'s needs some clarification
+Sep 01 17:12:43 <KermPhD>	Good morning, ladies and gents!
+Sep 01 17:12:51 <KermPhD>	Hello there, ristein; welcome.
+Sep 01 17:12:59 <P_T>	Heya Kerm!
+Sep 01 17:13:13 <Runer112>	it should basically be the normal add breakpoint process
+Sep 01 17:13:23 <Runer112>	except somehow these should be marked as temp
+Sep 01 17:13:36 <Runer112>	so, removed upon next debugger activation
+Sep 01 17:14:10 <saxjax>	[Cemetech] ItsJustSomeDude entered the room
+Sep 01 17:14:55 <P_T>	Updated with some improvements
+Sep 01 17:16:51 <Runer112>	step through code needs logic for stepping through a line with a breakpoint on it
+Sep 01 17:17:11 <P_T>	that was one worry, yep
+Sep 01 17:17:24 <P_T>	I would say just ignore the breakpoint?
+Sep 01 17:17:28 <Runer112>	if the current line has a breakpoint, it needs to set a marker saying so
+Sep 01 17:17:38 <Runer112>	then temporarily remove the breakpoint
+Sep 01 17:18:01 <Runer112>	after resuming and hitting one of the temp stepping breakpoints, restore the original breakpoint
+Sep 01 17:18:28 <P_T>	Alright
+Sep 01 17:18:59 <Runer112>	also, what's the purpose of the stepping bit
+Sep 01 17:19:27 <P_T>	When the debugger is called from a temp breakpoint, restore the fixed breakpoint or not
+Sep 01 17:19:37 <P_T>	and continue stepping or not
+Sep 01 17:20:28 <Runer112>	I don't get why the stepping bit is necessary
+Sep 01 17:20:33 <Runer112>	or rather
+Sep 01 17:20:39 <Runer112>	hmm
+Sep 01 17:20:49 <P_T>	If the debugger is called from a temp breakpoint there are 2 cases:
+Sep 01 17:21:10 <P_T>	1) it was one of the fixed breakpoint -> restore breakpoint and continue executing code
+Sep 01 17:21:24 <Runer112>	shouldn't the only case be it just completed a step?
+Sep 01 17:21:28 <KermPhD>	Thanks for asking.
+Sep 01 17:21:54 <P_T>	Hmm
+Sep 01 17:22:29 <Runer112>	actually, I think you could keep the stepping bit, but remove the fixed/temp breakpoint indicator
+Sep 01 17:22:55 <Runer112>	if you hit a breakpoint and the stepping bit is set, you should be able to safely assume you hit a temp breakpoint
+Sep 01 17:22:57 <Runer112>	oh right
+Sep 01 17:23:07 <Runer112>	you still need to be able to clean up both temp breakpoints
+Sep 01 17:23:40 <Runer112>	I guess that's fine if you store temp breakpoint data in a special area
+Sep 01 17:23:42 <P_T>	oh duh, that is possible as well
+Sep 01 17:24:17 <P_T>	well, you can't add a breakpoint in between stepping, so when I keep track of the amount of temp breakpoints, I can restore them after one step
+Sep 01 17:24:40 <Runer112>	correct
+Sep 01 17:24:50 <Runer112>	so the debugger open handler should be like
+Sep 01 17:24:57 <Runer112>	if stepping bit:
+Sep 01 17:25:05 <Runer112>	it's a fixed breakpoint, open UI
+Sep 01 17:25:12 <Runer112>	else:
+Sep 01 17:25:19 <Runer112>	well really it's like
+Sep 01 17:25:34 <Runer112>	isn't it just
+Sep 01 17:25:36 <Runer112>	if stepping bit:
+Sep 01 17:25:41 <Runer112>	clean up step
+Sep 01 17:25:52 <Runer112>	then just open UI regardless
+Sep 01 17:28:04 <Runer112>	P_T: are you updating the pastebin?
+Sep 01 17:28:26 <P_T>	Not yet
+Sep 01 17:28:31 <P_T>	I'm not thinking that fast :P
+Sep 01 17:30:29 <P_T>	Let's see; if the breakpoint handler is called with the stepping bit set, we need to restore the temp breakpoints and continue stepping
+Sep 01 17:30:49 <Runer112>	what do you mean by "continue stepping"
+Sep 01 17:31:07 <Runer112>	you're done stepping
+Sep 01 17:31:07 <P_T>	Jump to the code menu for stepping through code
+Sep 01 17:31:23 <Runer112>	ah, I see
+Sep 01 17:31:36 <P_T>	And if it's called without that bit set, we need to restore them as well, and also restore the breakpoint call
+Sep 01 17:31:45 <P_T>	Right?
+Sep 01 17:31:51 <Runer112>	I guess this might get more complicated if you eventually implement stuff like step over/next/out
+Sep 01 17:31:56 <P_T>	Nah
+Sep 01 17:31:58 <Runer112>	well
+Sep 01 17:32:16 <Runer112>	yeah, they get a bit more complicated
+Sep 01 17:32:23 <P_T>	step out is just setting a breakpoint at the return address
+Sep 01 17:32:25 <Runer112>	but doable
+Sep 01 17:32:36 <Runer112>	not exactly
+Sep 01 17:32:42 <P_T>	step next is setting a breakpoint on 1 branch, not 2
+Sep 01 17:32:45 <Runer112>	if the line you're starting from has a breakpoint on it
+Sep 01 17:33:33 <Runer112>	in that case, you need to execute a normal single step first
+Sep 01 17:33:40 <P_T>	>.>
+Sep 01 17:33:46 <Runer112>	then you can reinstate the original breakpoint
+Sep 01 17:33:51 <Runer112>	and then continue
+Sep 01 17:33:51 <P_T>	stepping through code with a breakpoint in it seems fun
+Sep 01 17:34:02 <Runer112>	it's really not that bad
+Sep 01 17:34:28 <Runer112>	all the multi-steps require this check
+Sep 01 17:34:49 <Runer112>	so does continue, for that matter
+Sep 01 17:35:25 <P_T>	One second, let me update the pastebin with the breakpoint changes
+Sep 01 17:35:32 <Runer112>	ok
+Sep 01 17:37:28 <P_T>	Updated
+Sep 01 17:37:51 <P_T>	Not quite sure this is right though
+Sep 01 17:38:00 <P_T>	(and doesn't handle breakpoints while stepping)
+Sep 01 17:38:15 <P_T>	And I gotta dinner; you might fix it ;) Runer++
+Sep 01 18:11:41 <Runer112>	here's what I came up with P_T: https://pastebin.com/jfSBUR5r
+Sep 01 18:14:52 <saxjax>	[Cemetech] andressevilla entered the room
+Sep 01 18:25:06 <saxjax>	[PT_] Thanks!
+Sep 01 18:27:38 <P_T>	I'm only worried about line 26 and definitely line 27; how would I detect the BASIC function, and even worser, how do I get the jump address?
+Sep 01 18:27:57 <Runer112>	huh
+Sep 01 18:28:11 <Runer112>	this should be done by the compiler
+Sep 01 18:28:26 <P_T>	Hmm?
+Sep 01 18:29:28 <P_T>	I mean, how would the debugger know if a breakpoint is placed at an If/Repeat/While etc..?
+Sep 01 18:30:41 <Runer112>	in addition to emitting a pairing of each line number to an address, the compiler should emit a pairing of each line number to an optional branch line/address
+Sep 01 18:32:08 <P_T>	so for each BASIC line it should emit 6 bytes; first 3 = address in compiled program, last 3 = eventually jump address?
+Sep 01 18:32:47 <Runer112>	eventually? you mean optional?
+Sep 01 18:32:56 <P_T>	Yes
+Sep 01 18:33:05 <Runer112>	more or less, yes
+Sep 01 18:34:13 <Runer112>	use a special value like -1 or something to indicate that it's actually a return
+Sep 01 18:34:21 <Runer112>	and to get the address from the stack
+Sep 01 18:35:13 <P_T>	Oh, so if jump address != 0 I should add a breakpoint at the jump address?
+Sep 01 18:35:24 <Runer112>	yeah
+Sep 01 18:35:38 <Runer112>	the "inject temp breakpoints" logic is a little weird as written
+Sep 01 18:35:44 <P_T>	Haha
+Sep 01 18:35:55 <Runer112>	some of that logic is really offloaded to the compiler
+Sep 01 18:36:04 <P_T>	Yeah
+Sep 01 18:36:25 <P_T>	Okay, I get that
+Sep 01 18:36:39 <Runer112>	and there are cases where you shouldn't really be placing a temp breakpoint on the next line
+Sep 01 18:36:45 <Runer112>	but there's no harm either
+Sep 01 18:36:57 <P_T>	As long as you remove them, everything is fine
+Sep 01 18:37:21 <Runer112>	oh right
+Sep 01 18:37:36 <Runer112>	also, you need to make sure to include some special handling for exiting the program
+Sep 01 18:38:21 <P_T>	Yeah, you don't want to place a temp breakpoint at the end of the program :p
+Sep 01 18:38:47 <Runer112>	well, both that and placing a temp breakpoint on a return address that's outside of the program
+Sep 01 18:39:12 <P_T>	Right
+Sep 01 18:39:37 <P_T>	What about step next? Is that just placing a single breakpoint at the next line?
+Sep 01 18:39:42 <Runer112>	you could add a safety to the add breakpoint process that verifies that the address actually matches up with a line number
+Sep 01 18:39:47 <Runer112>	and if not, don't add the breakpoint
+Sep 01 18:40:20 <P_T>	Step next is just step except you place only 1 breakpoint instead of at most 2
+Sep 01 18:40:33 <Runer112>	well, as I said, step next/over/out and continue get more complicated
+Sep 01 18:40:53 <Runer112>	in the case where you have a manual breakpoint placed on the starting line, you need to first execute a single step
+Sep 01 18:41:09 <Runer112>	to get past and then replace the manual breakpoint
+Sep 01 18:41:21 <saxjax>	[Cemetech] 123outerme entered the room
+Sep 01 18:41:46 <P_T>	I better temporarily remove all breakpoint when stepping through the code, and when you exit, restore everything
+Sep 01 18:41:54 <P_T>	That makes things much easier
+Sep 01 18:42:15 <Runer112>	you shouldn't remove breakpoints when stepping
+Sep 01 18:42:25 <Runer112>	I mean, you can, but there's no need
+Sep 01 18:42:35 <P_T>	That only doesn't work if you want to step out, and the code hits a breakpoint again
+Sep 01 18:43:04 <Runer112>	if you hit a manual breakpoint while multi-stepping, usually it's expected that the multi-step just gets interrupted/aborted
+Sep 01 18:43:18 <P_T>	Okay
+Sep 01 18:43:32 <Runer112>	that's why remove temp breakpoints is unconditional in the breakpoint handler
+Sep 01 18:44:01 <Runer112>	regardless of if you hit a temp or manual breakpoint in multi-stepping, you want to cancel any stepping
+Sep 01 18:44:20 <P_T>	Wait, I see an issue with the breakpoint handler
+Sep 01 18:44:43 <P_T>	What happens if the handler is called from a temp breakpoint after quitting the debugger when hitting a breakpoint?
+Sep 01 18:44:45 *	P_T hides
+Sep 01 18:44:59 <Runer112>	huh
+Sep 01 18:45:28 <P_T>	When you trigger a breakpoint, the debugger places temp breakpoints, in order to restore the original breakpoint call
+Sep 01 18:45:42 <P_T>	Right?
+Sep 01 18:45:46 <Runer112>	yes
+Sep 01 18:45:49 <Runer112>	wait
+Sep 01 18:45:57 <Runer112>	trigger a breakpoint? what do you mean
+Sep 01 18:46:17 <Runer112>	triggering a breakpoint requires no creation of temp breakpoints
+Sep 01 18:46:23 <P_T>	Hit a breakpoint, whatever, or even dbd(1 when you 'manually' open the debugger
+Sep 01 18:46:52 <Runer112>	okay, so what seems to be the problem
+Sep 01 18:47:07 <Runer112>	if there are any temp breakpoints, they get cleared
+Sep 01 18:47:11 <Runer112>	if not, nothing special happens
+Sep 01 18:47:16 <P_T>	Oh nvm, it doesn't happen with dbd(1
+Sep 01 18:47:38 <Runer112>	also, I had a suggestion for dbd(1
+Sep 01 18:47:47 <P_T>	But when you set a breakpoint, the code behind needs to be restored at some point
+Sep 01 18:47:54 <P_T>	Uh
+Sep 01 18:47:58 <Runer112>	it would be neat if it essentially just added manual breakpoints on startup
+Sep 01 18:48:13 <Runer112>	rather than being a special thing that unconditionally opens the debugger
+Sep 01 18:48:24 <P_T>	So always open the debugger when you start the program?
+Sep 01 18:48:34 <Runer112>	well, not necessarily
+Sep 01 18:48:43 <Runer112>	but handle it specially in the compiler
+Sep 01 18:48:55 <P_T>	What?
+Sep 01 18:49:02 <Runer112>	dbd(1 adds that line number/address to a list of startup breakpoints
+Sep 01 18:49:08 <P_T>	Oh
+Sep 01 18:49:10 <P_T>	Right
+Sep 01 18:49:24 <P_T>	That seems fine to me
+Sep 01 18:49:30 <Runer112>	is there a way to install those all on startup?
+Sep 01 18:49:34 <Runer112>	before running the real program
+Sep 01 18:49:43 <P_T>	Yes
+Sep 01 18:49:45 <Runer112>	and dbd(1 itself would compile to nop
+Sep 01 18:49:52 <Runer112>	(which should then get padded to 4 nops)
+Sep 01 18:49:54 <P_T>	No, nop \ nop \ nop \ nop :P
+Sep 01 18:50:09 <Runer112>	just the 1, and let the padding do the rest :p
+Sep 01 18:50:14 <P_T>	Oh right hehe
+Sep 01 18:50:22 <Runer112>	(can't do 0 because then padding should ignore the line entirely)
+Sep 01 18:50:52 <Runer112>	this way, users can still toggle breakpoints on these lines
+Sep 01 18:50:58 <P_T>	Yeah
+Sep 01 18:52:11 <P_T>	I hope I can all do this, stepping and breakpoints are quite complicated >.>
+Sep 01 18:52:19 <Runer112>	not too much
+Sep 01 18:52:34 <Runer112>	I think I outlined it pretty exhaustively
+Sep 01 18:52:39 <P_T>	Heh
+Sep 01 18:52:40 <Runer112>	at least for single stepping
+Sep 01 18:52:59 <Runer112>	start with that functionality :p
+Sep 01 18:53:03 <P_T>	Yeah sure
+Sep 01 18:53:56 <P_T>	Luckily I have IRC logs :p

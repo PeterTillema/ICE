@@ -104,6 +104,14 @@ uint8_t parseProgram(void) {
 #ifdef CALCULATOR
     if (ice.debug) {
         w24(amountOfLinesOffset, ice.currentLine);
+        
+        // Write all the startup breakpoints to the debug appvar
+        ti_PutC(ice.currentBreakPointLine, ice.dbgPrgm);
+        for (currentLbl = 0; currentLbl < ice.currentBreakPointLine; currentLbl++) {
+            ti_Write(&ice.breakPointLines[currentLbl], 3, 1, ice.dbgPrgm);
+        }
+        
+        // Write all the labels to the debug appvar
         ti_PutC(ice.curLbl, ice.dbgPrgm);
         
         for (currentLbl = 0; currentLbl < ice.curLbl; currentLbl++) {
@@ -124,7 +132,14 @@ uint8_t parseProgram(void) {
             label_t *curLbl = &ice.LblStack[currentLbl];
 
             if (!strcmp(curLbl->name, curGoto->name)) {
-                w24(curGoto->addr + 1, (uint24_t)curLbl->addr - (uint24_t)ice.programData + PRGM_START);
+                uint24_t jumpAddress = (uint24_t)curLbl->addr - (uint24_t)ice.programData + PRGM_START;
+                
+                w24(curGoto->addr + 1, jumpAddress);
+                
+                if (ice.debug) {
+                    w24(curGoto->debugJumpDataPtr, jumpAddress);
+                }
+                
                 goto findNextLabel;
             }
         }
@@ -147,14 +162,21 @@ uint8_t parseProgramUntilEnd(void) {
     // Do things based on the token
     while ((token = _getc()) != EOF) {
         uint8_t ret;
+        uint8_t *tempProgramPtr = ice.programPtr;
+        uint16_t currentOffset = 0;
         
 #ifdef CALCULATOR
         if (ice.debug) {
-            uint16_t offset = ice.programPtr - tempProgramPtr;
+            uint8_t *offset = ice.programPtr - ice.programData + (uint8_t*)PRGM_START;
             
-            ti_PutC(offset >> 8, ice.dbgPrgm);
-            ti_PutC(offset, ice.dbgPrgm);
-            tempProgramPtr = ice.programPtr;
+            currentOffset = ti_Tell(ice.dbgPrgm);
+            ti_Write(&offset, 3, 1, ice.dbgPrgm);
+            
+            if ((uint8_t)token == tReturn) {
+                ti_PutC(-1, ice.dbgPrgm);
+                ti_PutC(-1, ice.dbgPrgm);
+                ti_PutC(-1, ice.dbgPrgm);
+            }
         }
 #endif
         
@@ -164,8 +186,20 @@ uint8_t parseProgramUntilEnd(void) {
         if ((ret = (*functions[token])(token)) != VALID) {
             return ret;
         }
-
+        
 #ifdef CALCULATOR
+        if (ice.debug) {
+            while ((ice.programPtr > tempProgramPtr) && (ice.programPtr - tempProgramPtr < 4)) {
+                OutputWriteByte(0);
+            }
+            
+            if (ti_Tell(ice.dbgPrgm) - currentOffset == 3) {
+                ti_PutC(0, ice.dbgPrgm);
+                ti_PutC(0, ice.dbgPrgm);
+                ti_PutC(0, ice.dbgPrgm);
+            }
+        }
+
         displayLoadingBar();
     }
     
@@ -1271,6 +1305,14 @@ uint8_t functionRepeat(int token) {
 
 static uint8_t functionReturn(int token) {
     uint8_t res;
+    
+#ifdef CALCULATOR
+    if (ice.debug) {
+        ti_PutC(-1, ice.dbgPrgm);
+        ti_PutC(-1, ice.dbgPrgm);
+        ti_PutC(-1, ice.dbgPrgm);
+    }
+#endif
 
     if ((token = _getc()) == EOF || (uint8_t)token == tEnter || (uint8_t)token == tColon) {
         RET();
@@ -1292,6 +1334,7 @@ static uint8_t functionReturn(int token) {
     } else {
         return E_SYNTAX;
     }
+    
     return VALID;
 }
 
@@ -1689,6 +1732,10 @@ void insertGotoLabel(void) {
     gotoCurr->addr = ice.programPtr;
     gotoCurr->offset = _tell(ice.inPrgm);
     ResetAllRegs();
+    
+    if (ice.debug) {
+        gotoCurr->debugJumpDataPtr = ti_GetDataPtr(ice.dbgPrgm);
+    }
 }
 
 static uint8_t functionPause(int token) {

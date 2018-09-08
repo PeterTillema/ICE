@@ -1,0 +1,29 @@
+Add breakpoint:
+	- addBreakpoint(address, MANUAL)
+	
+Remove breakpoint:
+	- restore 4 bytes
+	- remove breakpoint + 4 bytes from the breakpoint list
+	
+Step:
+	- inject temp breakpoints
+	- clear post-step breakpoint restore
+	- if manual breakpoint on current line:
+		- set post-step breakpoint restore to current line
+		- removeBreakpoint(post-step breakpoint restore)
+	- set stepping bit
+	- return to code
+	
+Breakpoint handler:
+	- remove temp breakpoints
+	- if post-step breakpoint restore:
+		- addBreakpoint(post-step breakpoint restore, MANUAL)
+		- clear post-step breakpoint restore
+	- open UI (possibly to different states according to stepping bit) and clear stepping bit
+			
+Inject temp breakpoints:
+	- addBreakpoint(next line address, TEMP)
+	- if it's an If, Else, While, Repeat, For, loop End, Goto, or Call: (jump address != 0 && jump address != -1)
+		- addBreakpoint(jump address, TEMP)
+	- else if it's a Return or ReturnIf (jump address == -1)
+		- addBreakpoint(return address, TEMP)
