@@ -66,6 +66,27 @@ uint8_t parseProgram(void) {
     
     if (ice.debug) {
         uint8_t curVar;
+        const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, 0xED, 0x17, OP_EX_DE_HL, OP_LD_BC, 0x83, OP_CP_A_A, OP_RET,
+                                           OP_OR_A_A, 0xED, 0x42, OP_RET_NZ, OP_EX_DE_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
+        char buf[10];
+        
+        OutputWriteMem(mem);
+        *--ice.programDataPtr = 0;
+        sprintf(buf, "%c%.5sDBG", TI_APPVAR_TYPE, ice.outName);
+        ice.programDataPtr -= strlen(buf);
+        strcpy((char*)ice.programDataPtr, buf);
+        ProgramPtrToOffsetStack();
+        LD_DE_IMM((uint24_t)ice.programDataPtr);
+        
+        *--ice.programDataPtr = OP_JP_HL;
+        ProgramPtrToOffsetStack();
+        CALL((uint24_t)ice.programDataPtr);
+        
+        LD_IY_IMM(flags);
+        OutputWriteByte(OP_RET_C);
+        ice.modifiedIY = false;
+        
+        ResetAllRegs();
         
         if (!ice.dbgPrgm) {
             return E_NO_DBG_FILE;
@@ -85,9 +106,7 @@ uint8_t parseProgram(void) {
         }
         
         amountOfLinesOffset = ti_GetDataPtr(ice.dbgPrgm);
-        ti_PutC(0, ice.dbgPrgm);
-        ti_PutC(0, ice.dbgPrgm);
-        ti_PutC(0, ice.dbgPrgm);
+        WriteIntToDebugProg(0);
     } else if (ice.dbgPrgm) {
         ti_Delete(buf);
     }
@@ -108,7 +127,7 @@ uint8_t parseProgram(void) {
         // Write all the startup breakpoints to the debug appvar
         ti_PutC(ice.currentBreakPointLine, ice.dbgPrgm);
         for (currentLbl = 0; currentLbl < ice.currentBreakPointLine; currentLbl++) {
-            ti_Write(&ice.breakPointLines[currentLbl], 3, 1, ice.dbgPrgm);
+            WriteIntToDebugProg(ice.breakPointLines[currentLbl]);
         }
         
         // Write all the labels to the debug appvar
@@ -119,7 +138,7 @@ uint8_t parseProgram(void) {
             uint24_t addr = curLbl->addr - ice.programData + PRGM_START;
             
             ti_Write(curLbl->name, strlen(curLbl->name) + 1, 1, ice.dbgPrgm);
-            ti_Write(&addr, 3, 1, ice.dbgPrgm);
+            WriteIntToDebugProg(addr);
         }
     }
 #endif
@@ -167,15 +186,11 @@ uint8_t parseProgramUntilEnd(void) {
         
 #ifdef CALCULATOR
         if (ice.debug) {
-            uint8_t *offset = ice.programPtr - ice.programData + (uint8_t*)PRGM_START;
-            
             currentOffset = ti_Tell(ice.dbgPrgm);
-            ti_Write(&offset, 3, 1, ice.dbgPrgm);
+            WriteIntToDebugProg((uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
             
             if ((uint8_t)token == tReturn) {
-                ti_PutC(-1, ice.dbgPrgm);
-                ti_PutC(-1, ice.dbgPrgm);
-                ti_PutC(-1, ice.dbgPrgm);
+                WriteIntToDebugProg(-1);
             }
         }
 #endif
@@ -194,9 +209,7 @@ uint8_t parseProgramUntilEnd(void) {
             }
             
             if (ti_Tell(ice.dbgPrgm) - currentOffset == 3) {
-                ti_PutC(0, ice.dbgPrgm);
-                ti_PutC(0, ice.dbgPrgm);
-                ti_PutC(0, ice.dbgPrgm);
+                WriteIntToDebugProg(0);
             }
         }
 
@@ -1137,7 +1150,7 @@ static uint8_t dummyReturn(int token) {
 }
 
 bool JumpForward(uint8_t *startAddr, uint8_t *endAddr, uint24_t tempDataOffsetElements, uint8_t tempGotoElements, uint8_t tempLblElements) {
-    if (endAddr - startAddr <= 0x80) {
+    if (!ice.debug && endAddr - startAddr <= 0x80) {
         uint8_t *tempPtr = startAddr;
         uint8_t opcode = *startAddr;
         uint24_t tempForLoopSMCElements = ice.ForLoopSMCElements;
@@ -1216,13 +1229,30 @@ static uint8_t functionWhile(int token) {
     uint8_t *WhileStartAddr = ice.programPtr, res;
     uint8_t *WhileRepeatCondStartTemp = WhileRepeatCondStart;
     bool WhileJumpForwardSmall;
+    uint8_t *debugProgDataPtr = NULL;
 
     // Basically the same as "Repeat", but jump to condition checking first
     JP(0);
+    
+#ifdef CALCULATOR
+    if (ice.debug) {
+        debugProgDataPtr = ti_GetDataPtr(ice.dbgPrgm);
+        WriteIntToDebugProg(0);
+    }
+#endif
+    
     if ((res = functionRepeat(token)) != VALID) {
         return res;
     }
+    
     WhileJumpForwardSmall = JumpForward(WhileStartAddr, WhileRepeatCondStart, tempDataOffsetElements, tempGotoElements, tempLblElements);
+    
+#ifdef CALCULATOR
+    if (ice.debug) {
+        w24(debugProgDataPtr, (uint24_t)WhileRepeatCondStart - (uint24_t)ice.programData + PRGM_START);
+    }
+#endif
+    
     WhileRepeatCondStart = WhileRepeatCondStartTemp;
 
     if (WhileJumpForwardSmall && WhileJumpBackwardsLarge) {
@@ -1245,6 +1275,12 @@ uint8_t functionRepeat(int token) {
     // Skip the condition for now
     skipLine();
     ResetAllRegs();
+    
+#ifdef CALCULATOR
+    if (ice.debug && ((uint8_t)token == tRepeat)) {
+        WriteIntToDebugProg(0);
+    }
+#endif
 
     // Parse the code inside the loop
     if ((res = parseProgramUntilEnd()) != E_END && res != VALID) {
@@ -1255,7 +1291,7 @@ uint8_t functionRepeat(int token) {
 
     // Remind where the "End" is
     RepeatProgEnd = _tell(ice.inPrgm);
-    if (token == tWhile) {
+    if ((uint8_t)token == tWhile) {
         WhileRepeatCondStart = ice.programPtr;
     }
 
@@ -1300,6 +1336,13 @@ uint8_t functionRepeat(int token) {
     WhileJumpBackwardsLarge = !JumpBackwards(RepeatCodeStart, expr.AnsSetCarryFlag || expr.AnsSetCarryFlagReversed ?
         (expr.AnsSetCarryFlagReversed ? OP_JR_NC : OP_JR_C) :
         (expr.AnsSetZeroFlagReversed  ? OP_JR_NZ : OP_JR_Z));
+        
+#ifdef CALCULATOR
+    if (ice.debug) {
+        WriteIntToDebugProg((uint24_t)RepeatCodeStart - (uint24_t)ice.programData + PRGM_START);
+    }
+#endif
+    
     return VALID;
 }
 

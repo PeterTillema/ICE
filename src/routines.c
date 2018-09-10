@@ -470,6 +470,10 @@ uint8_t GetVariableOffset(uint8_t tok) {
 
 #ifdef CALCULATOR
 
+void WriteIntToDebugProg(uint24_t num) {
+    ti_Write(&num, 3, 1, ice.dbgPrgm);
+}
+
 void displayLoadingBarFrame(void) {
     // Display a fancy loading bar during compiling ;)
     gfx_SetColor(0);

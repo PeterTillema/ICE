@@ -12,6 +12,7 @@ void displayLoadingBarFrame(void);
 prog_t *GetProgramName(void);
 void SeekMinus1(void);
 void displayLoadingBar(void);
+void WriteIntToDebugProg(uint24_t);
 void ClearAnsFlags(void);
 void LoadRegValue(uint8_t, uint24_t);
 void LoadRegVariable(uint8_t, uint8_t);

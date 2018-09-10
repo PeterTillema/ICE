@@ -622,50 +622,11 @@ uint8_t parseFunction(uint24_t index) {
             // dbd( - debug things
             else if (function2 == tFinDBD) {
 #ifdef CALCULATOR
-                if (outputPrevType != TYPE_NUMBER || outputPrevOperand > 1) {
-                    return E_SYNTAX;
-                }
                 if (!outputPrevOperand) {
-                    /*
-                        ld  hl, (windowHookPtr)
-                        ld  de, (hl)
-                        ex  de, hl
-                        ld  bc, FIRST_3_BYTES_OF_APPVAR
-                        or  a, a
-                        sbc hl, bc
-                        ret nz
-                        ex  de, hl
-                        ld  de, VAR_NAME
-                        call    (hl)
-                        add hl, de
-                        or  a, a
-                        sbc hl, de
-                        ret z
-                    */
-                    const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, 0xED, 0x17, OP_EX_DE_HL, OP_LD_BC, 0x83, OP_CP_A_A, OP_RET,
-                                           OP_OR_A_A, 0xED, 0x42, OP_RET_NZ, OP_EX_DE_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
-                    char buf[10];
-                    
-                    OutputWriteMem(mem);
-                    *--ice.programDataPtr = 0;
-                    sprintf(buf, "%c%.5sDBG", TI_APPVAR_TYPE, ice.outName);
-                    ice.programDataPtr -= strlen(buf);
-                    strcpy((char*)ice.programDataPtr, buf);
-                    ProgramPtrToOffsetStack();
-                    LD_DE_IMM((uint24_t)ice.programDataPtr);
-                    
-                    *--ice.programDataPtr = OP_JP_HL;
-                    ProgramPtrToOffsetStack();
-                    CALL((uint24_t)ice.programDataPtr);
-                    
-                    LD_IY_IMM(flags);
-                    OutputWriteByte(OP_RET_C);
-                    ice.modifiedIY = false;
-                    
-                    ResetAllRegs();
-                } else {
                     // Add ice.currentLine to the stack of startup breakpoints
                     ice.breakPointLines[ice.currentBreakPointLine++] = ice.currentLine - 1;
+                } else {
+                    return E_SYNTAX;
                 }
 #else
                 fprintf(stdout, "Debugging not allowed - use the calculator version!");
