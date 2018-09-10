@@ -1061,9 +1061,16 @@ static uint8_t functionIf(int token) {
     uint8_t tempLblElements = ice.curLbl;
     
     if ((token = _getc()) != EOF && token != tEnter && token != tColon) {
-        uint8_t *IfStartAddr, res;
+        uint8_t *IfStartAddr, res, *IfJumpAddr = NULL;
         uint24_t tempDataOffsetElements;
-
+        
+#ifdef CALCULATOR
+        if (ice.debug) {
+            IfJumpAddr = ti_GetDataPtr(ice.dbgPrgm);
+            WriteIntToDebugProg(0);
+        }
+#endif
+        
         // Parse the argument
         if ((res = parseExpression(token)) != VALID) {
             return res;
@@ -1098,6 +1105,7 @@ static uint8_t functionIf(int token) {
         // Check if we quit the program with an 'Else'
         if (res == E_ELSE) {
             bool shortElseCode;
+            uint8_t *ElseJumpAddr = NULL;
             uint8_t tempGotoElements2 = ice.curGoto;
             uint8_t tempLblElements2 = ice.curLbl;
             uint24_t tempDataOffsetElements2;
@@ -1108,17 +1116,40 @@ static uint8_t functionIf(int token) {
             tempDataOffsetElements2 = ice.dataOffsetElements;
 
             JP(0);
+            
+#ifdef CALCULATOR
+            if (ice.debug) {
+                ElseJumpAddr = ti_GetDataPtr(ice.dbgPrgm);
+                WriteIntToDebugProg(0);
+                w24(IfJumpAddr, (uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
+            }
+#endif
+            
             if ((res = parseProgramUntilEnd()) != E_END && res != VALID) {
                 return res;
             }
 
             shortElseCode = JumpForward(IfElseAddr, ice.programPtr, tempDataOffsetElements2, tempGotoElements2, tempLblElements2);
             JumpForward(IfStartAddr, IfElseAddr + (shortElseCode ? 2 : 4), tempDataOffsetElements, tempGotoElements, tempLblElements);
+            
+#ifdef CALCULATOR
+            if (ice.debug) {
+                WriteIntToDebugProg(0);
+                w24(ElseJumpAddr, (uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
+            }
+#endif
         }
 
         // Check if we quit the program with an 'End' or at the end of the input program
         else if (res == E_END || res == VALID) {
             JumpForward(IfStartAddr, ice.programPtr, tempDataOffsetElements, tempGotoElements, tempLblElements);
+            
+#ifdef CALCULATOR
+            if (ice.debug) {
+                w24(IfJumpAddr, (uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
+                WriteIntToDebugProg(0);
+            }
+#endif
         } else {
             return res;
         }
