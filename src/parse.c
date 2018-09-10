@@ -1828,9 +1828,11 @@ void insertGotoLabel(void) {
     gotoCurr->offset = _tell(ice.inPrgm);
     ResetAllRegs();
     
+#ifdef CALCULATOR
     if (ice.debug) {
         gotoCurr->debugJumpDataPtr = ti_GetDataPtr(ice.dbgPrgm);
     }
+#endif
 }
 
 static uint8_t functionPause(int token) {

@@ -1,29 +1,40 @@
-TARGET := ice
-CC := gcc
-CFLAGS := -Wall -Wextra -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-parameter -O3 -std=c99 -I. -Iinclude -DCOMPUTER_ICE
-LDFLAGS := -flto
-SOURCES := $(wildcard src/*.c)
+SRCDIR := src
+OBJDIR := obj/computer
+BINDIR := bin/computer
+TARGET := $(BINDIR)/ice
+
+SOURCES := $(wildcard $(SRCDIR)/*.c)
+OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
 ifeq ($(OS),Windows_NT)
 NATIVEPATH = $(subst /,\,$(1))
-RM = del /f
-SOURCES := $(call NATIVEPATH,$(SOURCES))
+RMDIR      = call && (if exist $(call NATIVEPATH,$1) rmdir /s /q $(call NATIVEPATH,$1))
+MKDIR      = call && (if not exist $(call NATIVEPATH,$1) mkdir $(call NATIVEPATH,$1))
+TARGET    := $(TARGET).exe
 else
 NATIVEPATH = $(subst \,/,$(1))
-RM = rm -f
+RMDIR      = rm -rf $(call NATIVEPATH,$1)
+MKDIR      = mkdir -p $(call NATIVEPATH,$1)
 endif
 
-OBJECTS := $(SOURCES:.c=.o)
+CC := gcc
+CFLAGS := -Wall -Wextra -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-parameter -O3 -std=c99 -I. -Iinclude -DCOMPUTER_ICE
+LDFLAGS := -flto
 
-all: $(TARGET)
+all: dirs $(TARGET)
+
+dirs:
+	@$(call MKDIR,$(BINDIR))
+	@$(call MKDIR,$(OBJDIR))
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -lm
 
-.cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(call NATIVEPATH,$(TARGET).exe $(OBJECTS))
+	@$(call RMDIR,$(BINDIR))
+	@$(call RMDIR,$(OBJDIR))
 
-.PHONY: clean all
+.PHONY: clean all dirs

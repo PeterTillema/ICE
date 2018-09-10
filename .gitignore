@@ -1,12 +1,2 @@
 bin
 obj
-ice
-*.a1
-*.o
-*.bin
-*.exe
-*.lib
-*.8xv
-CMakeLists.txt
-.idea/
-cmake-build-debug/
