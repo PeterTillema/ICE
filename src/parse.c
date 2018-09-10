@@ -1569,6 +1569,15 @@ static uint8_t functionFor(int token) {
     uint8_t tempLblElements = ice.curLbl;
     uint8_t *endPointExpressionValue = 0, *stepExpression = 0, *jumpToCond, *loopStart;
     uint8_t tok, variable, res;
+    
+#ifdef CALCULATOR
+    uint8_t *ForJumpAddr = NULL;
+    
+    if (ice.debug) {
+        ForJumpAddr = ti_GetDataPtr(ice.dbgPrgm);
+        WriteIntToDebugProg(0);
+    }
+#endif
 
     if ((tok = _getc()) < tA || tok > tTheta) {
         return E_SYNTAX;
@@ -1682,6 +1691,12 @@ static uint8_t functionFor(int token) {
 
     smallCode = JumpForward(jumpToCond, ice.programPtr, tempDataOffsetElements, tempGotoElements, tempLblElements);
     ResetAllRegs();
+    
+#ifdef CALCULATOR
+    if (ice.debug) {
+        w24(ForJumpAddr, (uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
+    }
+#endif
 
     // If both the step and the end point are a number, the variable is already in HL
     if (!(endPointIsNumber && stepIsNumber)) {
@@ -1712,6 +1727,12 @@ static uint8_t functionFor(int token) {
 
     // Jump back to the loop
     JumpBackwards(loopStart - (smallCode ? 2 : 0), OP_JR_C - (reversedCond ? 8 : 0));
+    
+#ifdef CALCULATOR
+    if (ice.debug) {
+        WriteIntToDebugProg((uint24_t)loopStart - (uint24_t)ice.programData + PRGM_START);
+    }
+#endif
 
     return VALID;
 }
