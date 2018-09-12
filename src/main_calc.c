@@ -20,7 +20,7 @@ ice_t ice;
 expr_t expr;
 reg_t reg;
 
-const char *infoStr = "ICE Compiler v2.2.1.0 - By Peter \"PT_\" Tillema";
+const char *infoStr = "ICE Compiler v2.3.0.0 - By Peter \"PT_\" Tillema";
 static char *inputPrograms[NUMBEROFPROGRAM];
 
 static int myCompare(const void * a, const void * b) {
