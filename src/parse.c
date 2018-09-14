@@ -1376,14 +1376,6 @@ uint8_t functionRepeat(int token) {
 
 static uint8_t functionReturn(int token) {
     uint8_t res;
-    
-#ifdef CALCULATOR
-    if (ice.debug) {
-        ti_PutC(-1, ice.dbgPrgm);
-        ti_PutC(-1, ice.dbgPrgm);
-        ti_PutC(-1, ice.dbgPrgm);
-    }
-#endif
 
     if ((token = _getc()) == EOF || (uint8_t)token == tEnter || (uint8_t)token == tColon) {
         RET();
@@ -1540,7 +1532,7 @@ static uint8_t functionOutput(int token) {
         ResetAllRegs();
     }
     
-    if (ice.tempToken != tRParen && ice.tempToken != tEnter) {
+    if (ice.tempToken != tEnter && (ice.tempToken == tRParen && !CheckEOL())) {
         return E_SYNTAX;
     }
 
