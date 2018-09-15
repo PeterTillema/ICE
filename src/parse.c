@@ -1750,7 +1750,7 @@ static uint8_t functionPrgm(int token) {
     
     if (!tempAlreadyUsedPrgm) {
         ice.dataOffsetStack[ice.dataOffsetElements++] = (uint24_t*)(ice.PrgmAddr + 11);
-        w24(ice.PrgmAddr + 11, (uint24_t)ice.PrgmAddr + 30);
+        w24((uint8_t*)ice.PrgmAddr + 11, (uint24_t)ice.PrgmAddr + 30);
     }
     
     ResetAllRegs();

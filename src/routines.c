@@ -71,18 +71,25 @@ bool IsA2ByteTok(uint8_t tok) {
 
 prog_t *GetProgramName(void) {
     prog_t *ret;
-    uint8_t a = 0;
+    uint8_t a = 0, tok;
     int token;
     
     ret = (prog_t*)malloc(sizeof(prog_t));
     ret->errorCode = VALID;
+    
+    if ((uint8_t)(token = _getc()) < tA || (uint8_t)token > tTheta) {
+        ret->errorCode = E_INVALID_PROG;
+        return ret;
+    } else {
+        ret->prog[a++] = (uint8_t)token;
+    }
 
-    while ((token = _getc()) != EOF && (uint8_t)token != tEnter && (uint8_t)token != tRParen) {
-        if (a == 8) {
+    while ((token = _getc()) != EOF && (tok = token) != tEnter && tok != tRParen) {
+        if (a == 8 || tok < t0 || tok > tTheta || (tok > t9 && tok < tA)) {
             ret->errorCode = E_INVALID_PROG;
             return ret;
         }
-        ret->prog[a++] = (uint8_t)token;
+        ret->prog[a++] = tok;
     }
     if (!a) {
         ret->errorCode = E_INVALID_PROG;
