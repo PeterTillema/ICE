@@ -766,7 +766,7 @@ uint8_t functionGetKey(NODE *top) {
 
 uint8_t functionDbd(NODE *top) {
 #ifdef CALCULATOR
-    if (!outputPrevOperand) {
+    if (!childOperand) {
         // Add ice.currentLine to the stack of startup breakpoints
         ice.breakPointLines[ice.currentBreakPointLine++] = ice.currentLine - 1;
         OutputWriteByte(0);

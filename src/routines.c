@@ -228,7 +228,6 @@ void LoadRegValue(uint8_t reg2, uint24_t val, uint8_t type) {
     expr.SizeOfOutputNumber = 4;
     
     if (reg2 == REGISTER_HL) {
-<<<<<<< HEAD
         if (type == TYPE_STRING) {
             OutputWriteByte(OP_LD_HL);
             OutputWriteLong(val);
@@ -259,7 +258,6 @@ void LoadRegValue(uint8_t reg2, uint24_t val, uint8_t type) {
             }
         }
     } else if (reg2 == REGISTER_DE) {
-<<<<<<< HEAD
         if (type == TYPE_STRING) {
             OutputWriteByte(OP_LD_DE);
             OutputWriteLong(val);

@@ -599,9 +599,9 @@ void GEChainAnsNumber(void) {
     } else {
         MaybeAToHL();
         if (expr.outputRegister == REGISTER_HL) {
-            LD_DE_IMM(-entry2_operand - (oper == tLE || oper == tGT));
+            LD_DE_IMM(-operand2 - (oper == tLE || oper == tGT), TYPE_NUMBER);
         } else {
-            LD_HL_IMM(-entry2_operand - (oper == tLE || oper == tGT));
+            LD_HL_IMM(-operand2 - (oper == tLE || oper == tGT), TYPE_NUMBER);
         }
         ADD_HL_DE();
         if (oper == tGE || oper == tGT) {
@@ -630,9 +630,9 @@ void GENumberChainAns(void) {
     } else {
         MaybeAToHL();
         if (expr.outputRegister == REGISTER_HL) {
-            LD_DE_IMM(-entry1_operand - (oper == tGE || oper == tLT));
+            LD_DE_IMM(-operand1 - (oper == tGE || oper == tLT), TYPE_NUMBER);
         } else {
-            LD_HL_IMM(-entry1_operand - (oper == tGE || oper == tLT));
+            LD_HL_IMM(-operand1 - (oper == tGE || oper == tLT), TYPE_NUMBER);
         }
         ADD_HL_DE();
         if (oper == tLE || oper == tLT) {
@@ -647,7 +647,7 @@ void GENumberChainAns(void) {
     }
 }
 void GENumberVariable(void) {
-    LD_HL_IND_IX_OFF(entry2_operand);
+    LD_HL_IND_IX_OFF(operand2);
     GENumberChainAns();
 }
 void GEVariableNumber(void) {

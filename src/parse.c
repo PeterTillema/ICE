@@ -72,8 +72,7 @@ uint8_t parseProgram(void) {
         sprintf(buf, "%c%.5sDBG", TI_APPVAR_TYPE, ice.outName);
         ice.programDataPtr -= strlen(buf);
         strcpy((char*)ice.programDataPtr, buf);
-        ProgramPtrToOffsetStack();
-        LD_DE_IMM((uint24_t)ice.programDataPtr);
+        LD_DE_IMM((uint24_t)ice.programDataPtr, TYPE_STRING);
         
         *--ice.programDataPtr = OP_JP_HL;
         ProgramPtrToOffsetStack();
@@ -1202,8 +1201,7 @@ static uint8_t functionPrgm(int token) {
     *ice.programDataPtr = TI_PRGM_TYPE;
     memcpy(ice.programDataPtr + 1, outputPrgm->prog, length + 1);
     
-    ProgramPtrToOffsetStack();
-    LD_HL_IMM((uint24_t)ice.programDataPtr);
+    LD_HL_IMM((uint24_t)ice.programDataPtr, TYPE_STRING);
     CALL(_Mov9ToOP1);
     CallRoutine(&ice.usedAlreadyPrgm, &ice.PrgmAddr, (uint8_t*)PrgmData, SIZEOF_PRGM_DATA);
     
