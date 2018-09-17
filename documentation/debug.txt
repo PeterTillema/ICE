@@ -1,7 +1,6 @@
 Debug appvar
 ===============================================
 - source program name (max 10 bytes)
-- pointer to slot functions (3 bytes)
 - amount of variables (1 byte)
 - variables (max 85*21 bytes)
 - amount of lines (3 bytes)

@@ -96,9 +96,6 @@ uint8_t parseProgram(void) {
         sprintf(buf, "%s\x00", ice.currProgName[ice.inPrgm]);
         ti_Write(buf, strlen(buf) + 1, 1, ice.dbgPrgm);
         
-        // Write FILEIOC functions pointer to debug appvar
-        ti_Write(&ice.FileiocFunctionsPointer, 3, 1, ice.dbgPrgm);
-        
         ti_PutC(prescan.amountOfVariablesUsed, ice.dbgPrgm);
         for (curVar = 0; curVar < prescan.amountOfVariablesUsed; curVar++) {
             sprintf(buf, "%s\x00", prescan.variables[curVar].name);
