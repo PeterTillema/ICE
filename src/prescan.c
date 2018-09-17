@@ -2,7 +2,6 @@
 #include "prescan.h"
 
 #include "ast.h"
-#include "stack.h"
 #include "parse.h"
 #include "main.h"
 #include "output.h"

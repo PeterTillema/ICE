@@ -7,20 +7,20 @@
 #define RET_NONE      (0)
 #define RET_HL        (0)
 #define ARG_NORM      (0)
-#define SMALL_1       (1<<7)
-#define SMALL_2       (1<<6)
-#define SMALL_3       (1<<5)
-#define SMALL_4       (1<<4)
-#define SMALL_5       (1<<3)
-#define SMALL_12      (SMALL_1 | SMALL_2)
-#define SMALL_123     (SMALL_1 | SMALL_2 | SMALL_3)
-#define SMALL_13      (SMALL_1 | SMALL_3)
-#define SMALL_23      (SMALL_2 | SMALL_3)
-#define SMALL_14      (SMALL_1 | SMALL_4)
-#define SMALL_24      (SMALL_2 | SMALL_4)
-#define SMALL_45      (SMALL_4 | SMALL_5)
-#define SMALL_34      (SMALL_3 | SMALL_4)
-#define SMALL_345     (SMALL_3 | SMALL_45)
+#define ARG_1         (1<<7)
+#define ARG_2         (1<<6)
+#define ARG_3         (1<<5)
+#define ARG_4         (1<<4)
+#define ARG_5         (1<<3)
+#define ARG_12        (ARG_1 | ARG_2)
+#define ARG_123       (ARG_1 | ARG_2 | ARG_3)
+#define ARG_13        (ARG_1 | ARG_3)
+#define ARG_23        (ARG_2 | ARG_3)
+#define ARG_14        (ARG_1 | ARG_4)
+#define ARG_24        (ARG_2 | ARG_4)
+#define ARG_45        (ARG_4 | ARG_5)
+#define ARG_34        (ARG_3 | ARG_4)
+#define ARG_345       (ARG_3 | ARG_45)
 
 #define TI_ISARCHIVED_INDEX 12
 #define TI_TELL_INDEX       14
@@ -29,22 +29,53 @@
 #define TI_GETVATPTR_INDEX  30
 #define TI_GETNAME_INDEX    31
 
-uint8_t parseFunction(uint24_t);
-uint8_t parseFunction1Arg(uint24_t, uint8_t);
-uint8_t parseFunction2Args(uint24_t, uint8_t, bool);
+uint24_t executeFunction(NODE*);
+uint8_t parseFunction(NODE*);
+uint8_t parseFunction2Args(NODE*, NODE*, uint8_t, bool);
 void LoadVariableInReg(uint8_t, uint8_t);
-void LoadValueInReg(uint8_t, uint24_t);
-uint8_t InsertDataElements(uint8_t, uint24_t, uint8_t, uint8_t);
+void LoadValueInReg(uint8_t, uint24_t, uint8_t);
+uint8_t InsertDataElements(NODE*);
 void loadGetKeyFastData1(void);
 void loadGetKeyFastData2(void);
 void InsertMallocRoutine(void);
 
+uint8_t functionLParen(NODE*);
+uint8_t functionMinMax(NODE*);
+uint8_t functionNot(NODE*);
+uint8_t functionSinCos(NODE*);
+uint8_t functionRand(NODE*);
+uint8_t functionSqrt(NODE*);
+uint8_t functionMean(NODE*);
+uint8_t functionAns(NODE*);
+uint8_t functionBrace(NODE*);
+uint8_t functionRandInt(NODE*);
+uint8_t functionSub(NODE*);
+uint8_t functionC(NODE*);
+uint8_t functionToString(NODE*);
+uint8_t functionLength(NODE*);
+uint8_t functionLEFTRIGHT(NODE*);
+uint8_t functionStartTmr(NODE*);
+uint8_t functionRemainder(NODE*);
+uint8_t functionCheckTmr(NODE*);
+uint8_t functionGetKey(NODE*);
+uint8_t functionDbd(NODE*);
+uint8_t functionAlloc(NODE*);
+uint8_t functionDefineSprite(NODE*);
+uint8_t functionData(NODE*);
+uint8_t functionCopy(NODE*);
+uint8_t functionCopyData(NODE*);
+uint8_t functionDefineTilemap(NODE*);
+uint8_t functionLoadData(NODE*);
+uint8_t functionSetBrightness(NODE*);
+
 typedef struct {
-    uint8_t  function;
-    uint8_t  function2;
-    uint8_t  amountOfArgs;
-    uint8_t  numbersArgs;
-    uint8_t  pushBackwards;
+    uint8_t function;
+    uint8_t function2;
+    uint8_t amountOfArgs;
+    uint8_t numbersArgs;
+    uint8_t pushBackwards;
+    uint8_t parseStandardArgs;
+    uint8_t (*exprFunction)(NODE*);
 } function_t;
 
 typedef struct {

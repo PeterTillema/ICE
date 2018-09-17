@@ -5,7 +5,6 @@
 #include "ast.h"
 #include "functions.h"
 #include "errors.h"
-#include "stack.h"
 #include "parse.h"
 #include "output.h"
 #include "operator.h"
@@ -117,7 +116,7 @@ void AnsToDE(void) {
     if (expr.outputRegister == REGISTER_HL) {
         EX_DE_HL();
     } else if (expr.outputRegister == REGISTER_A) {
-        LD_DE_IMM(0);
+        LD_DE_IMM(0, TYPE_NUMBER);
         LD_E_A();
         reg.DEIsNumber = reg.AIsNumber;
         reg.DEIsVariable = false;
@@ -128,7 +127,7 @@ void AnsToDE(void) {
 
 void AnsToBC(void) {
     if (expr.outputRegister == REGISTER_A) {
-        LD_BC_IMM(0);
+        LD_BC_IMM(0, TYPE_NUMBER);
         LD_C_A();
         reg.BCIsNumber = reg.AIsNumber;
         reg.BCIsVariable = reg.AIsVariable;
@@ -221,60 +220,73 @@ void ChangeRegValue(uint24_t inValue, uint24_t outValue, uint8_t opcodes[7]) {
     reg.allowedToOptimize = true;
 }
 
-void LoadRegValue(uint8_t reg2, uint24_t val) {
+void LoadRegValue(uint8_t reg2, uint24_t val, uint8_t type) {
+    if (type == TYPE_STRING && !comparePtrToTempStrings(val)) {
+        ProgramPtrToOffsetStack();
+    }
+    
+    expr.SizeOfOutputNumber = 4;
+    
     if (reg2 == REGISTER_HL) {
-        if (reg.HLIsNumber) {
-            uint8_t opcodes[7] = {OP_INC_HL, OP_DEC_HL, OP_INC_H, OP_DEC_H, OP_LD_L, OP_LD_H, OP_LD_HL};
+        if (type == TYPE_STRING) {
+            OutputWriteByte(OP_LD_HL);
+            OutputWriteLong(val);
+            ResetHL();
+        } else {
+            if (reg.HLIsNumber) {
+                uint8_t opcodes[7] = {OP_INC_HL, OP_DEC_HL, OP_INC_H, OP_DEC_H, OP_LD_L, OP_LD_H, OP_LD_HL};
 
-            ChangeRegValue(reg.HLValue, val, opcodes);
-            if (expr.SizeOfOutputNumber > 2 && !val) {
-                ice.programPtr -= expr.SizeOfOutputNumber;
+                ChangeRegValue(reg.HLValue, val, opcodes);
+                if (expr.SizeOfOutputNumber > 2 && !val) {
+                    ice.programPtr -= expr.SizeOfOutputNumber;
+                    OutputWrite3Bytes(OP_OR_A_A, 0xED, 0x62);
+                    expr.SizeOfOutputNumber = 3;
+                }
+            } else if (val) {
+                if (val >= IX_VARIABLES - 0x80 && val <= IX_VARIABLES + 0x7F) {
+                    OutputWrite2Bytes(0xED, 0x22);
+                    OutputWriteByte(val - IX_VARIABLES);
+                    expr.SizeOfOutputNumber = 3;
+                } else {
+                    OutputWriteByte(OP_LD_HL);
+                    OutputWriteLong(val);
+                    expr.SizeOfOutputNumber = 4;
+                }
+            } else {
                 OutputWrite3Bytes(OP_OR_A_A, 0xED, 0x62);
                 expr.SizeOfOutputNumber = 3;
             }
-        } else if (val) {
-            if (val >= IX_VARIABLES - 0x80 && val <= IX_VARIABLES + 0x7F) {
-                OutputWrite2Bytes(0xED, 0x22);
-                OutputWriteByte(val - IX_VARIABLES);
-                expr.SizeOfOutputNumber = 3;
-            } else {
-                OutputWriteByte(OP_LD_HL);
-                OutputWriteLong(val);
-                expr.SizeOfOutputNumber = 4;
-            }
-        } else {
-            OutputWrite3Bytes(OP_OR_A_A, 0xED, 0x62);
-            expr.SizeOfOutputNumber = 3;
         }
-        reg.HLIsNumber = true;
-        reg.HLIsVariable = false;
-        reg.HLValue = val;
     } else if (reg2 == REGISTER_DE) {
-        if (reg.DEIsNumber) {
-            uint8_t opcodes[7] = {OP_INC_DE, OP_DEC_DE, OP_INC_D, OP_DEC_D, OP_LD_E, OP_LD_D, OP_LD_DE};
-
-            ChangeRegValue(reg.DEValue, val, opcodes);
+        if (type == TYPE_STRING) {
+            OutputWriteByte(OP_LD_DE);
+            OutputWriteLong(val);
+            ResetDE();
         } else {
-            if (val >= IX_VARIABLES - 0x80 && val <= IX_VARIABLES + 0x7F) {
-                OutputWrite2Bytes(0xED, 0x12);
-                OutputWriteByte(val - IX_VARIABLES);
-                expr.SizeOfOutputNumber = 3;
+            if (reg.DEIsNumber) {
+                uint8_t opcodes[7] = {OP_INC_DE, OP_DEC_DE, OP_INC_D, OP_DEC_D, OP_LD_E, OP_LD_D, OP_LD_DE};
+
+                ChangeRegValue(reg.DEValue, val, opcodes);
             } else {
-                OutputWriteByte(OP_LD_DE);
-                OutputWriteLong(val);
-                expr.SizeOfOutputNumber = 4;
+                if (val >= IX_VARIABLES - 0x80 && val <= IX_VARIABLES + 0x7F) {
+                    OutputWrite2Bytes(0xED, 0x12);
+                    OutputWriteByte(val - IX_VARIABLES);
+                    expr.SizeOfOutputNumber = 3;
+                } else {
+                    OutputWriteByte(OP_LD_DE);
+                    OutputWriteLong(val);
+                    expr.SizeOfOutputNumber = 4;
+                }
             }
         }
-        reg.DEIsNumber = true;
-        reg.DEIsVariable = false;
-        reg.DEValue = val;
     } else {
-        reg.BCIsNumber = true;
-        reg.BCIsVariable = false;
-        reg.BCValue = val;
+        if (type != TYPE_STRING) {
+            reg.BCIsNumber = true;
+            reg.BCIsVariable = false;
+            reg.BCValue = val;
+        }
         OutputWriteByte(OP_LD_BC);
         OutputWriteLong(val);
-        expr.SizeOfOutputNumber = 4;
     }
 }
 
@@ -463,7 +475,7 @@ uint8_t GetVariableOffset(uint8_t tok) {
 
     // This variable already exists
     for (b = 0; b < prescan.amountOfVariablesUsed; b++) {
-        if (!strcmp(variableName, (&prescan.variables[b])->name)) {
+        if (!strcmp(variableName, prescan.variables[b].name)) {
             return b * 3 - 128;
         }
     }

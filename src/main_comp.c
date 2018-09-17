@@ -6,7 +6,6 @@
 #include "ast.h"
 #include "functions.h"
 #include "errors.h"
-#include "stack.h"
 #include "parse.h"
 #include "output.h"
 #include "operator.h"

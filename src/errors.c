@@ -2,7 +2,6 @@
 #include "errors.h"
 
 #include "ast.h"
-#include "stack.h"
 #include "parse.h"
 #include "main.h"
 #include "output.h"
@@ -20,7 +19,7 @@ static const char *errors[] = {
     "This token doesn't have a condition",
     "You used 'Else' outside an If-statement",
     "You used 'End' outside a condition block",
-    "You have an invalid \")\", \",\", \"(\", \")\", \"}\" or \"]\"",
+    "You have an invalid ')' ',' or '}'",
     "You have an invalid expression",
     "Your icon should start with a quote",
     "Invalid hexadecimal",

@@ -6,7 +6,6 @@
 #include "main.h"
 #include "functions.h"
 #include "errors.h"
-#include "stack.h"
 #include "output.h"
 #include "routines.h"
 #include "prescan.h"
@@ -23,8 +22,6 @@ extern char *str_dupcat(const char *s, const char *c);
 
 static uint8_t (*functions[256])(int token);
 extern const function_t implementedFunctions[AMOUNT_OF_FUNCTIONS];
-element_t outputStack[400];
-element_t stack[50];
 
 uint8_t parseProgram(void) {
     char buf[21];
@@ -75,8 +72,7 @@ uint8_t parseProgram(void) {
         sprintf(buf, "%c%.5sDBG", TI_APPVAR_TYPE, ice.outName);
         ice.programDataPtr -= strlen(buf);
         strcpy((char*)ice.programDataPtr, buf);
-        ProgramPtrToOffsetStack();
-        LD_DE_IMM((uint24_t)ice.programDataPtr);
+        LD_DE_IMM((uint24_t)ice.programDataPtr, TYPE_STRING);
         
         *--ice.programDataPtr = OP_JP_HL;
         ProgramPtrToOffsetStack();
@@ -224,41 +220,11 @@ uint8_t parseProgramUntilEnd(void) {
 uint8_t parseExpression(int token) {
     NODE *outputNode = NULL;
     NODE *stackNode = NULL;
-    uint24_t stackElements = 0, outputElements = 0;
+    uint8_t index = 0, a, stackToOutputReturn, tok, canUseMask = 2, res;
     uint24_t loopIndex, temp;
-    uint8_t amountOfArgumentsStack[20];
-    uint8_t index = 0, a, stackToOutputReturn, mask = TYPE_MASK_U24, tok, storeDepth = 0;
-    uint8_t *amountOfArgumentsStackPtr = amountOfArgumentsStack, canUseMask = 2, prevTokenWasCFunction = 0;
-
-    // Setup pointers
-    element_t *outputPtr = outputStack;
-    element_t *stackPtr  = stack;
-    element_t *outputCurr, *outputPrev, *outputPrevPrev;
-    element_t *stackCurr, *stackPrev = NULL;
+    element_t tempElement = {0};
     
-    memset(&outputStack, 0, sizeof(outputStack));
-    memset(&stack, 0, sizeof(stack));
-
     while (token != EOF && (tok = (uint8_t)token) != tEnter && tok != tColon) {
-fetchNoNewToken:
-        outputCurr = &outputPtr[outputElements];
-        stackCurr  = &stackPtr[stackElements];
-
-        // We can use the unsigned mask * only at the start of the line, or directly after an operator
-        if (canUseMask) {
-            canUseMask--;
-        }
-
-        // If there's a pointer directly after an -> operator, we have to ignore it
-        if (storeDepth) {
-            storeDepth--;
-        }
-
-        // If the previous token was a det( or a sum(, we need to store the next number in the stack entry too, to catch 'small arguments'
-        if (prevTokenWasCFunction) {
-            prevTokenWasCFunction--;
-        }
-        
         // Process a number
         if (tok >= t0 && tok <= t9) {
             uint24_t output = token - t0;
@@ -266,19 +232,14 @@ fetchNoNewToken:
             while ((uint8_t)(token = _getc()) >= t0 && (uint8_t)token <= t9) {
                 output = output * 10 + token - t0;
             }
-            outputCurr->type = TYPE_NUMBER;
-            outputCurr->operand.num = output;
-            outputElements++;
-            mask = TYPE_MASK_U24;
-
-            if (prevTokenWasCFunction) {
-                stackPtr[stackElements - 1].operand.func.function2 = output;
-            }
+            tempElement.type = TYPE_NUMBER;
+            tempElement.operand.num = output;
+            outputNode = push(outputNode, tempElement);
 
             // Don't grab a new token
             continue;
         }
-
+        
         // Process a hexadecimal number
         else if (tok == tee) {
             uint24_t output = 0;
@@ -286,15 +247,14 @@ fetchNoNewToken:
             while ((tok = IsHexadecimal(token = _getc())) != 16) {
                 output = (output << 4) + tok;
             }
-            outputCurr->type = TYPE_NUMBER;
-            outputCurr->operand.num = output;
-            outputElements++;
-            mask = TYPE_MASK_U24;
+            tempElement.type = TYPE_NUMBER;
+            tempElement.operand.num = output;
+            outputNode = push(outputNode, tempElement);
 
             // Don't grab a new token
             continue;
         }
-
+        
         // Process a binary number
         else if (tok == tPi) {
             uint24_t output = 0;
@@ -302,15 +262,14 @@ fetchNoNewToken:
             while ((tok = (token = _getc())) >= t0 && tok <= t1) {
                 output = (output << 1) + tok - t0;
             }
-            outputCurr->type = TYPE_NUMBER;
-            outputCurr->operand.num = output;
-            outputElements++;
-            mask = TYPE_MASK_U24;
+            tempElement.type = TYPE_NUMBER;
+            tempElement.operand.num = output;
+            outputNode = push(outputNode, tempElement);
 
             // Don't grab a new token
             continue;
         }
-
+        
         // Process a 'negative' number or expression
         else if (tok == tChs) {
             if ((token = _getc()) >= t0 && token <= t9) {
@@ -319,316 +278,158 @@ fetchNoNewToken:
                 while ((uint8_t)(token = _getc()) >= t0 && (uint8_t)token <= t9) {
                     output = output * 10 + token - t0;
                 }
-                outputCurr->type = TYPE_NUMBER;
-                outputCurr->operand.num = 0-output;
-                outputElements++;
-                mask = TYPE_MASK_U24;
+                tempElement.type = TYPE_NUMBER;
+                tempElement.operand.num = 0 - output;
+                outputNode = push(outputNode, tempElement);
 
                 // Don't grab a new token
                 continue;
             } else {
-                // Pretend as if it's a -1*
-                outputCurr->type = TYPE_NUMBER;
-                outputCurr->operand.num = -1;
-                outputElements++;
+                // Pretend as if it's a -1 * 
+                tempElement.type = TYPE_NUMBER;
+                tempElement.operand.num = -1;
+                outputNode = push(outputNode, tempElement);
+                
                 SeekMinus1();
-                tok = tMul;
-                goto tokenIsOperator;
+                token = tMul;
+                
+                // Don't grab a new token
+                continue;
             }
         }
-
+        
         // Process an OS list (number or list element)
         else if (tok == tVarLst) {
-            outputCurr->type = TYPE_NUMBER;
-            outputCurr->operand.num = prescan.OSLists[_getc()];
-            outputElements++;
-            mask = TYPE_MASK_U24;
-
+            tempElement.type = TYPE_NUMBER;
+            tempElement.operand.num = prescan.OSLists[_getc()];
+            outputNode = push(outputNode, tempElement);
+            
             // Check if it's a list element
             if ((uint8_t)(token = _getc()) == tLParen) {
-                // Trick ICE to think it's a {L1+...}
-                *++amountOfArgumentsStackPtr = 1;
-                stackCurr->type = TYPE_FUNCTION;
-                stackCurr->mask = mask;
-
-                // I have to create a non-existent token, because L1(...) the right parenthesis should pretend it's a },
-                // but that is impossible if I just push { or (. Then when a ) appears and it hits the 0x0F, just replace it with a }
-                stackCurr->operand.func.function = 0x0F;
-                stackCurr->operand.func.function2 = storeDepth && 1;
-                stackElements++;
-                mask = TYPE_MASK_U24;
-                canUseMask = 2;
-
-                // :D
+                tempElement.type = TYPE_FUNCTION;
+                tempElement.operand.func.function = 0x0F;
+                tempElement.operand.func.amountOfArgs = 1;
+                tempElement.operand.func.index = -1;
+                stackNode = push(stackNode, tempElement);
+                
                 token = tAdd;
             }
-
-            // Don't grab next token
+            
+            // Dont grab a new token
             continue;
         }
-
+        
         // Process a variable
         else if (tok >= tA && tok <= tTheta) {
-            outputCurr->type = TYPE_VARIABLE;
-            outputCurr->operand.var = GetVariableOffset(tok);
-            outputElements++;
-            mask = TYPE_MASK_U24;
-        }
-
-        // Process a mask
-        else if (tok == tMul && canUseMask) {
-            uint8_t a = 0;
-
-            while ((uint8_t)(token = _getc()) == tMul) {
-                a++;
-            }
-            if (a > 2 || (uint8_t)token != tLBrace) {
-                return E_SYNTAX;
-            }
-            mask = TYPE_MASK_U8 + a;
-
-            // If the previous token was a ->, remind it, if not, this won't hurt
-            storeDepth++;
-
-            // Don't grab the { token
-            continue;
+            tempElement.type = TYPE_VARIABLE;
+            tempElement.operand.var = GetVariableOffset(tok);
+            outputNode = push(outputNode, tempElement);
         }
 
         // Parse an operator
         else if ((index = getIndexOfOperator(tok))) {
-            // If the token is ->, move the entire stack to the output, instead of checking the precedence
+            uint8_t precedence = operatorPrecedence[index - 1];
+            
             if (tok == tStore) {
-                storeDepth = 2;
-                // Move entire stack to output
-                stackToOutputReturn = 1;
-                goto stackToOutput;
-            }
-tokenIsOperator:
-
-            // Move the stack to the output as long as it's not empty
-            while (stackElements) {
-                stackPrev = &stackPtr[stackElements-1];
-
-                // Move the last entry of the stack to the ouput if it's precedence is greater than the precedence of the current token
-                if (stackPrev->type == TYPE_OPERATOR && operatorPrecedence[index - 1] <= operatorPrecedence2[getIndexOfOperator(stackPrev->operand.op) - 1]) {
-                    memcpy(&outputPtr[outputElements], &stackPtr[stackElements-1], sizeof(element_t));
-                    stackElements--;
-                    outputElements++;
-                } else {
-                    break;
+                if ((outputNode = stackToOutput(outputNode, &stackNode)) == NULL) {
+                    res = E_ARGUMENTS;
+                    goto parseError;
                 }
             }
-
-stackToOutputReturn1:
-            // Push the operator to the stack
-            stackCurr = &stackPtr[stackElements++];
-            stackCurr->type = TYPE_OPERATOR;
-            stackCurr->operand.op = token;
-            mask = TYPE_MASK_U24;
-            canUseMask = 2;
+            
+            while (stackNode != NULL && stackNode->data.type == TYPE_OPERATOR && precedence <= stackNode->data.operand.op.precedence) {
+                stackNode = pop(stackNode, &tempElement);
+                if ((outputNode = insertData(outputNode, tempElement, 2)) == NULL) {
+                    res = E_SYNTAX;
+                    goto parseError;
+                }
+            }
+            tempElement.type = TYPE_OPERATOR;
+            tempElement.operand.op.op = tok;
+            tempElement.operand.op.index = index;
+            tempElement.operand.op.precedence = operatorPrecedence2[index - 1];
+            stackNode = push(stackNode, tempElement);
         }
-
+        
         // Gets the address of a variable
         else if (tok == tFromDeg) {
-            outputCurr->type = TYPE_NUMBER;
-            outputElements++;
-            mask = TYPE_MASK_U24;
+            tempElement.type = TYPE_NUMBER;
             tok = _getc();
 
             // Get the address of the variable
             if (tok >= tA && tok <= tTheta) {
-                outputCurr->operand.num = IX_VARIABLES + (char)GetVariableOffset(tok);
+                tempElement.operand.num = IX_VARIABLES + (char)GetVariableOffset(tok);
             } else if (tok == tVarLst) {
-                outputCurr->operand.num = prescan.OSLists[_getc()];
+                tempElement.operand.num = prescan.OSLists[_getc()];
             } else if (tok == tVarStrng) {
-                outputCurr->operand.num = prescan.OSStrings[_getc()];
+                tempElement.operand.num = prescan.OSStrings[_getc()];
             } else {
-                return E_SYNTAX;
+                res = E_SYNTAX;
+                goto parseError;
             }
+            outputNode = push(outputNode, tempElement);
         }
-
-        // Pop a ) } ,
-        else if (tok == tRParen || tok == tComma || tok == tRBrace) {
-            uint8_t tempTok, index;
-
-            // Move until stack is empty or a function is encountered
-            while (stackElements) {
-                stackPrev = &stackPtr[stackElements - 1];
-                outputCurr = &outputPtr[outputElements];
-                if (stackPrev->type != TYPE_FUNCTION) {
-                    memcpy(outputCurr, stackPrev, sizeof(element_t));
-                    stackElements--;
-                    outputElements++;
-                } else {
-                    break;
+        
+        // ) } ,
+        else if (tok == tRParen || tok == tRBrace || tok == tComma) {
+            uint8_t index, function;
+            
+            while (stackNode != NULL && stackNode->data.type != TYPE_FUNCTION) {
+                stackNode = pop(stackNode, &tempElement);
+                if ((outputNode = insertData(outputNode, tempElement, 2)) == NULL) {
+                    res = E_SYNTAX;
+                    goto parseError;
                 }
             }
-
+            
             // No matching left parenthesis
-            if (!stackElements) {
+            if (stackNode == NULL) {
                 if (expr.inFunction) {
                     ice.tempToken = tok;
                     
                     goto stopParsing;
                 }
                 
-                return E_EXTRA_RPAREN;
+                res = E_EXTRA_RPAREN;
+                goto parseError;
             }
             
-            stackPrev = &stackPtr[stackElements - 1];
-            tempTok = stackPrev->operand.num;
-
-            // Closing tag should match it's open tag
-            if ((tok == tRBrace && (tempTok != token - 1)) || (tok == tRParen && tempTok != 0x0F && tempTok == tLBrace)) {
-                return E_SYNTAX;
-            }
-
-            index = GetIndexOfFunction(tempTok, stackPrev->operand.func.function2);
-
-            // If it's a det, add an argument delimiter as well
-            if (tok == tComma && index != 255 && implementedFunctions[index].pushBackwards) {
-                outputCurr->type = TYPE_ARG_DELIMITER;
-                outputElements++;
-            }
-
-            // If the right parenthesis belongs to a function, move the function as well
-            if (tok != tComma) {
-                memcpy(outputCurr, stackPrev, sizeof(element_t));
-                outputCurr->operand.func.amountOfArgs = *amountOfArgumentsStackPtr--;
-                if (stackPrev->operand.func.function == 0x0F) {
-                    outputCurr->operand.func.function = tLBrace;
-                }
-                outputElements++;
-
-                // If you moved the function or not, it should always pop the last stack element
-                stackElements--;
-            }
-
-            // Increment the amount of arguments for that function
-            else {
-                (*amountOfArgumentsStackPtr)++;
-                canUseMask = 2;
-            }
-
-            mask = TYPE_MASK_U24;
-        }
-
-        // getKey / getKey(
-        else if (tok == tGetKey) {
-            mask = TYPE_MASK_U24;
-            if ((uint8_t)(token = _getc()) == tLParen) {
-                *++amountOfArgumentsStackPtr = 1;
-                stackCurr->type = TYPE_FUNCTION;
-                stackCurr->operand.func.function = tGetKey;
-                stackElements++;
-                canUseMask = 2;
+            stackNode = pop(stackNode, &tempElement);
+            function = tempElement.operand.func.function;
+            index = tempElement.operand.func.index;
+            
+            if (tok == tComma) {
+                tempElement.operand.func.amountOfArgs++;
+                stackNode = push(stackNode, tempElement);
             } else {
-                outputCurr->type = TYPE_FUNCTION;
-                outputCurr->operand.func.function = tGetKey;
-                outputElements++;
+                if ((tok == tRBrace && function != tLBrace) || (tok == tRParen && function == tLBrace)) {
+                    res = E_SYNTAX;
+                    goto parseError;
+                }
                 
-                continue;
+                // L1(..) hack
+                if (function == 0x0F) {
+                    tempElement.operand.func.function = tLBrace;
+                }
+                
+                if (function != tLParen) {
+                    if ((outputNode = insertData(outputNode, tempElement, tempElement.operand.func.amountOfArgs)) == NULL) {
+                        res = E_ARGUMENTS;
+                        goto parseError;
+                    }
+                }
             }
         }
-
-        // Parse a string of tokens
-        else if (tok == tAPost) {
-            uint8_t *tempProgramPtr = ice.programPtr;
-            uint24_t length;
-
-            outputCurr->isString = true;
-            outputCurr->type = TYPE_STRING;
-            outputElements++;
-            mask = TYPE_MASK_U24;
-
-            while ((token = _getc()) != EOF && (uint8_t)token != tEnter && (uint8_t)token != tColon && (uint8_t)token != tStore && (uint8_t)token != tAPost) {
-                OutputWriteByte(token);
-
-                if (IsA2ByteTok(token)) {
-                    OutputWriteByte(_getc());
-                }
-            }
-
-            OutputWriteByte(0);
-
-            length = ice.programPtr - tempProgramPtr;
-            ice.programDataPtr -= length;
-            memcpy(ice.programDataPtr, tempProgramPtr, length);
-            ice.programPtr = tempProgramPtr;
-
-            outputCurr->operand.num = (uint24_t)ice.programDataPtr;
-
-            if ((uint8_t)token == tStore || (uint8_t)token == tEnter || (uint8_t)token == tColon) {
-                continue;
-            }
-        }
-
-        // Parse a string of characters
-        else if (tok == tString) {
-            uint24_t length;
-            uint8_t *tempDataPtr = ice.programPtr, *a;
-            uint8_t amountOfHexadecimals = 0;
-            bool needWarning = true;
-
-            outputCurr->isString = true;
-            outputCurr->type = TYPE_STRING;
-            outputElements++;
-            mask = TYPE_MASK_U24;
-            stackPrev = &stackPtr[stackElements - 1];
-
-            token = grabString(&ice.programPtr, true);
-            if (stackElements && (uint8_t)stackPrev->operand.num == tVarOut && stackPrev->operand.func.function2 == tDefineSprite) {
-                needWarning = false;
-            }
-            
-            for (a = tempDataPtr; a < ice.programPtr; a++) {
-                if (IsHexadecimal(*a) == 16) {
-                    goto noSquishing;
-                }
-                amountOfHexadecimals++;
-            }
-            if (!(amountOfHexadecimals & 1)) {
-                uint8_t *prevDataPtr = tempDataPtr;
-                uint8_t *prevDataPtr2 = tempDataPtr;
-
-                while (prevDataPtr != ice.programPtr) {
-                    uint8_t tok1 = IsHexadecimal(*prevDataPtr++);
-                    uint8_t tok2 = IsHexadecimal(*prevDataPtr++);
-
-                    *prevDataPtr2++ = (tok1 << 4) + tok2;
-                }
-
-                ice.programPtr = prevDataPtr2;
-
-                if (needWarning) {
-                    displayError(W_SQUISHED);
-                }
-            }
-
-noSquishing:
-            OutputWriteByte(0);
-            
-            length = ice.programPtr - tempDataPtr;
-            ice.programDataPtr -= length;
-            memcpy(ice.programDataPtr, tempDataPtr, length);
-            ice.programPtr = tempDataPtr;
-            
-            outputCurr->operand.num = (uint24_t)ice.programDataPtr;
-
-            if ((uint8_t)token == tStore || (uint8_t)token == tEnter || (uint8_t)token == tColon) {
-                continue;
-            }
-        }
-
+        
         // Parse an OS string
         else if (tok == tVarStrng) {
-            outputCurr->isString = true;
-            outputCurr->type = TYPE_NUMBER;
-            outputCurr->operand.num = prescan.OSStrings[_getc()];
-            outputElements++;
-            mask = TYPE_MASK_U24;
+            tempElement.isString = true;
+            tempElement.type = TYPE_NUMBER;
+            tempElement.operand.num = prescan.OSStrings[_getc()];
+            outputNode = push(outputNode, tempElement);
+            tempElement.isString = false;
         }
-
+        
         // Parse a function
         else {
             uint8_t index, tok2 = 0;
@@ -638,412 +439,69 @@ noSquishing:
             }
             
             if ((index = GetIndexOfFunction(tok, tok2)) != 255) {
-                // LEFT and RIGHT should have a left paren associated with it
-                if (tok == tExtTok && (tok2 == tLEFT || tok2 == tRIGHT)) {
-                    if ((uint8_t)_getc() != tLParen) {
-                        return E_SYNTAX;
-                    }
-                }
+                tempElement.type = TYPE_FUNCTION;
+                tempElement.operand.func.function = tok;
+                tempElement.operand.func.function2 = tok2;
+                tempElement.operand.func.index = index;
                 
-                if (implementedFunctions[index].amountOfArgs) {
-                    // We always have at least 1 argument
-                    *++amountOfArgumentsStackPtr = 1;
-                    stackCurr->type = TYPE_FUNCTION;
-                    stackCurr->mask = mask;
-                    stackCurr->operand.num = tok + (((tok == tLBrace && storeDepth) + tok2) << 16);
-                    stackElements++;
-                    mask = TYPE_MASK_U24;
-                    canUseMask = 2;
-
-                    // Check if it's a function with pushed arguments
-                    if (implementedFunctions[index].pushBackwards) {
-                        outputCurr->type = TYPE_C_START;
-                        outputElements++;
-                        
-                        tok2 = token = _getc();
-
-                        if ((tok == tDet || tok == tSum) && (tok2 < t0 || tok2 > t9)) {
-                            return E_SYNTAX;
-                        }
-                        prevTokenWasCFunction = 2;
-                        tok = tok2;
-
-                        goto fetchNoNewToken;
-                    }
+                if (implementedFunctions[index].amountOfArgs && !(tok == tGetKey && (uint8_t)(token = _getc()) != tLParen)) {
+                    tempElement.operand.func.amountOfArgs = 1;
+                    stackNode = push(stackNode, tempElement);
                 } else {
-                    outputCurr->type = TYPE_FUNCTION;
-                    outputCurr->operand.num = (tok2 << 16) + tok;
-                    outputElements++;
-                    mask = TYPE_MASK_U24;
+                    tempElement.operand.func.amountOfArgs = 0;
+                    outputNode = push(outputNode, tempElement);
+                    if (tok == tGetKey) {
+                        continue;
+                    }
                 }
-                
-                goto fetchNewToken;
+            } else {
+                res = E_UNIMPLEMENTED;
+                goto parseError;
             }
-
-            // Oops, unknown token...
-            return E_UNIMPLEMENTED;
         }
 
         // Yay, fetch the next token, it's great, it's true, I like it
-fetchNewToken:
         token = _getc();
     }
 
     // If the expression quits normally, rather than an argument seperator
     ice.tempToken = tEnter;
-
 stopParsing:
-    // Move entire stack to output
-    stackToOutputReturn = 2;
-    goto stackToOutput;
-stackToOutputReturn2:
 
-    // Remove stupid things like 2+5, and not(1, max(2,3
-    for (loopIndex = 1; loopIndex < outputElements; loopIndex++) {
-        outputPrevPrev = &outputPtr[loopIndex - 2];
-        outputPrev = &outputPtr[loopIndex - 1];
-        outputCurr = &outputPtr[loopIndex];
-        index = outputCurr->operand.func.amountOfArgs;
-
-        // Check if the types are number | number | operator (not both OS strings though)
-        if (loopIndex > 1 && outputPrevPrev->type == TYPE_NUMBER && outputPrev->type == TYPE_NUMBER &&
-               !(outputPrevPrev->isString && outputPrev->isString) && 
-               outputCurr->type == TYPE_OPERATOR && outputCurr->operand.op != tStore) {
-            // If yes, execute the operator, and store it in the first entry, and remove the other 2
-            outputPrevPrev->operand.num = executeOperator(outputPrevPrev->operand.num, outputPrev->operand.num, outputCurr->operand.op);
-            memcpy(outputPrev, &outputPtr[loopIndex + 1], (outputElements - 1) * sizeof(element_t));
-            outputElements -= 2;
-            loopIndex -= 2;
-            continue;
-        }
-
-        // Check if the types are number | number | ... | function (specific function or pointer)
-        if (loopIndex >= index && outputCurr->type == TYPE_FUNCTION) {
-            uint8_t a, index2, function = outputCurr->operand.func.function, function2 = outputCurr->operand.func.function2;
-            
-            if ((index2 = GetIndexOfFunction(function, function2)) != 255 && implementedFunctions[index2].numbersArgs) {
-                uint24_t outputPrevOperand = outputPrev->operand.num, outputPrevPrevOperand = outputPrevPrev->operand.num;
-
-                for (a = 1; a <= index; a++) {
-                    if (outputPtr[loopIndex-a].type != TYPE_NUMBER) {
-                        goto DontDeleteFunction;
-                    }
-                }
-
-                switch (function) {
-                    case tNot:
-                        temp = !outputPrevOperand;
-                        break;
-                    case tMin:
-                        temp = (outputPrevOperand < outputPrevPrevOperand) ? outputPrevOperand : outputPrevPrevOperand;
-                        break;
-                    case tMax:
-                        temp = (outputPrevOperand > outputPrevPrevOperand) ? outputPrevOperand : outputPrevPrevOperand;
-                        break;
-                    case tMean:
-                        // I can't simply add, and divide by 2, because then it *might* overflow in case that A + B > 0xFFFFFF
-                        temp = ((long)outputPrevOperand + (long)outputPrevPrevOperand) / 2;
-                        break;
-                    case tSqrt:
-                        temp = sqrt(outputPrevOperand);
-                        break;
-                    case tExtTok:
-                        if (function2 == tRemainder) {
-                            temp = outputPrevOperand % outputPrevPrevOperand;
-                        } else if (function2 == tLEFT) {
-                            temp = outputPrevPrevOperand << outputPrevOperand;
-                        } else if (function2 == tRIGHT) {
-                            temp = outputPrevPrevOperand >> outputPrevOperand;
-                        } else {
-                            return E_ICE_ERROR;
-                        }
-                        break;
-                    case tSin:
-                        temp = 255*sin((double)outputPrevOperand * (2 * M_PI / 256));
-                        break;
-                    case tCos:
-                        temp = 255*cos((double)outputPrevOperand * (2 * M_PI / 256));
-                        break;
-                    default:
-                        return E_ICE_ERROR;
-                }
-
-                // And remove everything
-                outputPtr[loopIndex - index].operand.num = temp;
-                memmove(&outputPtr[loopIndex - index + 1], &outputPtr[loopIndex + 1], (outputElements - 1) * sizeof(element_t));
-                outputElements -= index;
-                loopIndex -= index - 1;
-            }
-        }
-DontDeleteFunction:;
+    // Move stack to output
+    if ((outputNode = stackToOutput(outputNode, &stackNode)) == NULL) {
+        res = E_ARGUMENTS;
+        goto parseError;
     }
-
-    // Check if the expression is valid
-    if (!outputElements) {
-        return E_SYNTAX;
-    }
-
-    return parsePostFixFromIndexToIndex(0, outputElements - 1);
-
-    // Duplicated function opt
-stackToOutput:
-    // Move entire stack to output
-    while (stackElements) {
-        outputCurr = &outputPtr[outputElements++];
-        stackPrev = &stackPtr[--stackElements];
-
-        temp = stackPrev->operand.num;
-        if ((uint8_t)temp == 0x0F) {
-            // :D
-            temp = (temp & 0xFF0000) + tLBrace;
-        }
-
-        // If it's a function, add the amount of arguments as well
-        if (stackPrev->type == TYPE_FUNCTION) {
-            temp += (*amountOfArgumentsStackPtr--) << 8;
-        }
-
-        outputCurr->isString = stackPrev->isString;
-        outputCurr->type = stackPrev->type;
-        outputCurr->mask = stackPrev->mask;
-        outputCurr->operand.num = temp;
-    }
-
-    // Select correct return location
-    if (stackToOutputReturn == 2) {
-        goto stackToOutputReturn2;
-    }
-
-    goto stackToOutputReturn1;
-}
-
-uint8_t parsePostFixFromIndexToIndex(uint24_t startIndex, uint24_t endIndex) {
-    element_t *outputCurr;
-    element_t *outputPtr = (element_t*)outputStack;
-    uint8_t outputType, temp, AnsDepth = 0;
-    uint24_t outputOperand, loopIndex, tempIndex = 0, amountOfStackElements;
-
-    // Set some variables
-    outputCurr = &outputPtr[startIndex];
-    outputType = outputCurr->type;
-    outputOperand = outputCurr->operand.num;
-    ice.stackStart = (uint24_t*)(ice.stackDepth * STACK_SIZE + ice.stack);
-    setStackValues(ice.stackStart, ice.stackStart);
-    reg.allowedToOptimize = true;
-
-    // Clean the expr struct
-    memset(&expr, 0, sizeof expr);
-
-    // Get all the indexes of the expression
-    temp = 0;
-    amountOfStackElements = 0;
     
-    for (loopIndex = startIndex; loopIndex <= endIndex; loopIndex++) {
-        uint8_t index;
-        
-        outputCurr = &outputPtr[loopIndex];
-        index = GetIndexOfFunction(outputCurr->operand.num, outputCurr->operand.func.function2);
-
-        // If it's the start of a det( or sum(, increment the amount of nested det(/sum(
-        if (outputCurr->type == TYPE_C_START) {
-            temp++;
-        }
-        // If it's a det( or sum(, decrement the amount of nested dets
-        if (outputCurr->type == TYPE_FUNCTION && index != 255 && implementedFunctions[index].pushBackwards) {
-            temp--;
-            amountOfStackElements++;
-        }
-
-        // If not in a nested det( or sum(, push the index
-        if (!temp) {
-            push(loopIndex);
-            amountOfStackElements++;
-        }
+    // Invalid things, like "1 1"
+    if (outputNode->prev != NULL) {
+        res = E_SYNTAX;
+        goto parseError;
     }
-
-    // Empty argument
-    if (!amountOfStackElements) {
-        return E_SYNTAX;
+    
+    outputNode = optimizeNode(outputNode);
+#ifndef NDEBUG
+    printNodeRecursively(outputNode, 0);
+#endif
+    expr.outputRegister = REGISTER_HL;
+    res = parseNode(outputNode);
+    
+parseError:
+    if (outputNode != NULL) {
+        while (outputNode->prev != NULL) {
+            outputNode = outputNode->prev;
+        }
+        freeNode(outputNode);
     }
-
-    // It's a single entry
-    if (amountOfStackElements == 1) {
-        // Expression is a string
-        if (outputCurr->isString) {
-            expr.outputIsString = true;
-            LD_HL_STRING(outputOperand, outputType);
+    if (stackNode != NULL) {
+        while (stackNode->prev != NULL) {
+            stackNode = stackNode->prev;
         }
-        
-        // Expression is only a single number
-         else if (outputType == TYPE_NUMBER) {
-            // This boolean is set, because loops may be optimized when the condition is a number
-            expr.outputIsNumber = true;
-            expr.outputNumber = outputOperand;
-            LD_HL_IMM(outputOperand);
-        }
-
-        // Expression is only a variable
-        else if (outputType == TYPE_VARIABLE) {
-            expr.outputIsVariable = true;
-            OutputWriteWord(0x27DD);
-            OutputWriteByte(outputOperand);
-            reg.HLIsNumber = false;
-            reg.HLIsVariable = true;
-            reg.HLVariable = outputOperand;
-        }
-
-        // Expression is an empty function or operator, i.e. not(, +
-        else {
-            return E_SYNTAX;
-        }
-
-        return VALID;
+        freeNode(stackNode);
     }
-
-    // 3 or more entries, full expression
-    do {
-        element_t *outputPrevPrevPrev;
-
-        outputCurr = &outputPtr[loopIndex = getNextIndex()];
-        outputPrevPrevPrev = &outputPtr[getIndexOffset(-4)];
-        outputType = outputCurr->type;
-        
-        // Set some vars
-        expr.outputReturnRegister = REGISTER_HL;
-        expr.outputIsString = false;
-
-        if (outputType == TYPE_OPERATOR) {
-            element_t *outputPrev, *outputPrevPrev, *outputNext, *outputNextNext;
-            bool canOptimizeConcatenateStrings;
-
-            // Wait, invalid operator?!
-            if (loopIndex < startIndex + 2) {
-                return E_SYNTAX;
-            }
-
-            if (AnsDepth > 3 && (uint8_t)outputCurr->operand.num != tStore) {
-                // We need to push HL since it isn't used in the next operator/function
-                outputPtr[tempIndex].type = TYPE_CHAIN_PUSH;
-                PushHLDE();
-                expr.outputRegister = REGISTER_HL;
-            }
-
-            // Get the previous entries, -2 is the previous one, -3 is the one before etc
-            outputPrev     = &outputPtr[getIndexOffset(-2)];
-            outputPrevPrev = &outputPtr[getIndexOffset(-3)];
-            outputNext     = &outputPtr[getIndexOffset(0)];
-            outputNextNext = &outputPtr[getIndexOffset(1)];
-            
-            // Check if we can optimize StrX + "..." -> StrX
-            canOptimizeConcatenateStrings = (
-                (uint8_t)(outputCurr->operand.num) == tAdd &&
-                outputPrevPrev->isString && outputPrevPrev->type == TYPE_NUMBER &&
-                outputNext->isString && outputNext->type == TYPE_NUMBER &&
-                outputNext->operand.num == outputPrevPrev->operand.num &&
-                outputNextNext->type == TYPE_OPERATOR &&
-                (uint8_t)(outputNextNext->operand.num) == tStore
-            );
-
-            // Parse the operator with the 2 latest operands of the stack!
-            if ((temp = parseOperator(outputPrevPrevPrev, outputPrevPrev, outputPrev, outputCurr, canOptimizeConcatenateStrings)) != VALID) {
-                return temp;
-            }
-
-            // Remove the index of the first and the second argument, the index of the operator will be the chain
-            removeIndexFromStack(getCurrentIndex() - 2);
-            removeIndexFromStack(getCurrentIndex() - 2);
-            AnsDepth = 0;
-
-            // Eventually remove the ->StrX too
-            if (canOptimizeConcatenateStrings) {
-                loopIndex = getIndexOffset(1);
-                removeIndexFromStack(getCurrentIndex());
-                removeIndexFromStack(getCurrentIndex() + 1);
-
-                outputCurr->isString = true;
-                outputCurr->type = TYPE_NUMBER;
-                outputCurr->operand.num = outputPrevPrev->operand.num;
-                expr.outputIsString = true;
-            } else {
-                // Check if it was a command with 2 strings, then the output is a string, not Ans
-                if ((uint8_t)outputCurr->operand.num == tAdd && outputPrevPrev->isString && outputPrev->isString) {
-                    outputCurr->isString = true;
-                    outputCurr->type = TYPE_STRING;
-                    if (outputPrevPrev->operand.num == prescan.tempStrings[TempString2] || outputPrev->operand.num == prescan.tempStrings[TempString1]) {
-                        outputCurr->operand.num = prescan.tempStrings[TempString2];
-                    } else {
-                        outputCurr->operand.num = prescan.tempStrings[TempString1];
-                    }
-                    expr.outputIsString = true;
-                } else {
-                    AnsDepth = 1;
-                    outputCurr->type = TYPE_CHAIN_ANS;
-                }
-                tempIndex = loopIndex;
-            }
-        }
-
-        else if (outputType == TYPE_FUNCTION) {
-            // Use this to cleanup the function after parsing
-            uint8_t amountOfArguments = outputCurr->operand.func.amountOfArgs;
-            uint8_t function2 = outputCurr->operand.func.function2;
-            
-            // Only execute when it's not a pointer directly after a ->
-            if (outputCurr->operand.num != 0x010108) {
-                uint8_t index = GetIndexOfFunction(outputCurr->operand.num, function2);
-                
-                // Check if we need to push Ans
-                if (AnsDepth > 1 + amountOfArguments || (AnsDepth && implementedFunctions[index].pushBackwards)) {
-                    // We need to push HL since it isn't used in the next operator/function
-                    outputPtr[tempIndex].type = TYPE_CHAIN_PUSH;
-                    PushHLDE();
-                    expr.outputRegister = REGISTER_HL;
-                }
-                
-                if (amountOfArguments != implementedFunctions[index].amountOfArgs && implementedFunctions[index].amountOfArgs != 255) {
-                    return E_ARGUMENTS;
-                }
-
-                if ((temp = parseFunction(loopIndex)) != VALID) {
-                    return temp;
-                }
-
-                // Cleanup, if it's not a det(
-                if (index == 255 || !implementedFunctions[index].pushBackwards) {
-                    for (temp = 0; temp < amountOfArguments; temp++) {
-                        removeIndexFromStack(getCurrentIndex() - 2);
-                    }
-                }
-
-                // I don't care that this will be ignored when it's a pointer, because I know there is a -> directly after
-                // If it's a sub(, the output should be a string, not Ans
-                if ((uint8_t)outputCurr->operand.num == t2ByteTok && function2 == tSubStrng) {
-                    outputCurr->isString = true;
-                    outputCurr->type = TYPE_STRING;
-                    if (outputPrevPrevPrev->operand.num == prescan.tempStrings[TempString1]) {
-                        outputCurr->operand.num = prescan.tempStrings[TempString2];
-                    } else {
-                        outputCurr->operand.num = prescan.tempStrings[TempString1];
-                    }
-                    expr.outputIsString = true;
-                    AnsDepth = 0;
-                }
-
-                // Check chain push/ans
-                else {
-                    AnsDepth = 1;
-                    tempIndex = loopIndex;
-                    outputCurr->type = TYPE_CHAIN_ANS;
-                }
-            }
-        }
-
-        if (AnsDepth) {
-            AnsDepth++;
-        }
-    } while (loopIndex != endIndex);
-
-    return VALID;
+    
+    return res;
 }
 
 static uint8_t functionI(int token) {
@@ -1665,14 +1123,14 @@ static uint8_t functionFor(int token) {
                     DEC_HL();
                 }
             } else {
-                LD_DE_IMM(stepNumber);
+                LD_DE_IMM(stepNumber, TYPE_NUMBER);
                 ADD_HL_DE();
             }
         } else {
             w24(stepExpression + 1, ice.programPtr + PRGM_START - ice.programData + 1);
             ice.ForLoopSMCStack[ice.ForLoopSMCElements++] = (uint24_t*)(endPointExpressionValue + 1);
 
-            LD_DE_IMM(0);
+            LD_DE_IMM(0, TYPE_NUMBER);
             ADD_HL_DE();
         }
         LD_IX_OFF_IND_HL(variable);
@@ -1694,9 +1152,9 @@ static uint8_t functionFor(int token) {
 
     if (endPointIsNumber) {
         if (stepNumber < 0x800000) {
-            LD_DE_IMM(endPointNumber + 1);
+            LD_DE_IMM(endPointNumber + 1, TYPE_NUMBER);
         } else {
-            LD_DE_IMM(endPointNumber);
+            LD_DE_IMM(endPointNumber, TYPE_NUMBER);
             reversedCond = true;
         }
         OR_A_A();
@@ -1704,7 +1162,7 @@ static uint8_t functionFor(int token) {
         w24(endPointExpressionValue + 1, ice.programPtr + PRGM_START - ice.programData + 1);
         ice.ForLoopSMCStack[ice.ForLoopSMCElements++] = (uint24_t*)(endPointExpressionValue + 1);
 
-        LD_DE_IMM(0);
+        LD_DE_IMM(0, TYPE_NUMBER);
         if (stepNumber < 0x800000) {
             SCF();
         } else {
@@ -1743,8 +1201,7 @@ static uint8_t functionPrgm(int token) {
     *ice.programDataPtr = TI_PRGM_TYPE;
     memcpy(ice.programDataPtr + 1, outputPrgm->prog, length + 1);
     
-    ProgramPtrToOffsetStack();
-    LD_HL_IMM((uint24_t)ice.programDataPtr);
+    LD_HL_IMM((uint24_t)ice.programDataPtr, TYPE_STRING);
     CALL(_Mov9ToOP1);
     CallRoutine(&ice.usedAlreadyPrgm, &ice.PrgmAddr, (uint8_t*)PrgmData, SIZEOF_PRGM_DATA);
     
@@ -1875,7 +1332,7 @@ static uint8_t functionInput(int token) {
         ice.programPtr--;
 
         // FF0000 reads all zeroes, and that's important
-        LD_HL_IMM(0xFF0000);
+        LD_HL_IMM(0xFF0000, TYPE_NUMBER);
     }
 
     if (ice.tempToken != tEnter || !expr.outputIsVariable) {
@@ -2226,7 +1683,7 @@ static uint8_t (*functions[256])(int) = {
     tokenUnimplemented, //189
     tokenUnimplemented, //190
     tokenUnimplemented, //191
-    tokenUnimplemented, //192
+    parseExpression,    //192
     tokenUnimplemented, //193
     parseExpression,    //194
     tokenUnimplemented, //195

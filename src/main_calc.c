@@ -6,7 +6,6 @@
 #include "ast.h"
 #include "functions.h"
 #include "errors.h"
-#include "stack.h"
 #include "parse.h"
 #include "output.h"
 #include "operator.h"
@@ -178,8 +177,7 @@ displayMainScreen:
                     }
                 } else {
                     clearProgramList();
-                    selectedProgram = 1;
-                    relativeSelectedProgram = 1;
+                    selectedProgram = relativeSelectedProgram = 1;
                     beginList = 0;
                     displayProgramList(beginList, amountOfProgramsToDisplay);
                 }
@@ -190,7 +188,7 @@ displayMainScreen:
                 if (selectedProgram != 1) {
                     selectedProgram--;
                     relativeSelectedProgram--;
-                    if(relativeSelectedProgram == 0) {
+                    if(!relativeSelectedProgram) {
                         clearProgramList();
                         relativeSelectedProgram++;
                         beginList--;

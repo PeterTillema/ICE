@@ -14,7 +14,7 @@ void SeekMinus1(void);
 void displayLoadingBar(void);
 void WriteIntToDebugProg(uint24_t);
 void ClearAnsFlags(void);
-void LoadRegValue(uint8_t, uint24_t);
+void LoadRegValue(uint8_t, uint24_t, uint8_t);
 void LoadRegVariable(uint8_t, uint8_t);
 void ChangeRegValue(uint24_t, uint24_t, uint8_t opcodes[7]);
 void ResetAllRegs(void);
