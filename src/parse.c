@@ -66,21 +66,14 @@ uint8_t parseProgram(void) {
     
     if (ice.debug) {
         uint8_t curVar;
-        const uint8_t mem[] = {OP_LD_HL_IND, 0xE4, 0x25, 0xD0, 0xED, 0x17, OP_EX_DE_HL, OP_LD_BC, 0x83, OP_CP_A_A, OP_RET,
-                                           OP_OR_A_A, 0xED, 0x42, OP_RET_NZ, OP_EX_DE_HL, OP_INC_HL, OP_INC_HL, OP_INC_HL, 0};
-        char buf[10];
         
-        OutputWriteMem(mem);
-        *--ice.programDataPtr = 0;
         sprintf(buf, "%c%.5sDBG", TI_APPVAR_TYPE, ice.outName);
         ice.programDataPtr -= strlen(buf);
         strcpy((char*)ice.programDataPtr, buf);
         ProgramPtrToOffsetStack();
         LD_DE_IMM((uint24_t)ice.programDataPtr);
         
-        *--ice.programDataPtr = OP_JP_HL;
-        ProgramPtrToOffsetStack();
-        CALL((uint24_t)ice.programDataPtr);
+        CALL(ice.debugLibPtr - ice.programData + PRGM_START);
         
         LD_IY_IMM(flags);
         OutputWriteByte(OP_RET_C);

@@ -238,7 +238,7 @@ uint8_t parsePrescan(void) {
                 JP(a * 3);
             }
         }
-    } else if (prescan.hasFileiocFunctions) {
+    } else if (prescan.hasFileiocFunctions || ice.debug) {
         ice.programPtr += SIZEOF_CHEADER - 9;
     }
     
@@ -254,6 +254,13 @@ uint8_t parsePrescan(void) {
                 JP(a * 3);
             }
         }
+    }
+    
+    if (ice.debug) {
+        memcpy(ice.programPtr, ICEDebugheaderData, 11);
+        ice.programPtr += 11;
+        ice.debugLibPtr = ice.programPtr;
+        JP(0);
     }
     
     // Set free RAM pointers (for strings)
