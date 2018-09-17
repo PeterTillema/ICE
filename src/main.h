@@ -35,7 +35,6 @@
 #define tCompare           0x13
 
 #define END_MALLOC         0xD13703
-#define DEBUGGER_CODE      0xD12F34         // saveSScreen + 21945 - 260 - 4000
 #define IX_VARIABLES       0xD13F56         // saveSScreen + 21945 - 130
 
 typedef struct {
@@ -248,8 +247,7 @@ void SqrtData(void);
 void PauseData(void);
 void GotoEditor(char*, uint16_t);
 void RunPrgm(char*);
-void SetHooks1(uint8_t*);
-void SetHooks2(uint8_t*);
+void SetHooks(uint8_t*);
 #endif
 
 #endif

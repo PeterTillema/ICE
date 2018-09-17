@@ -63,12 +63,7 @@ void main(void) {
     ti_CloseAll();
     if ((tempProg = ti_Open("ICEHOOKS", "r"))) {
         ti_SetArchiveStatus(true, tempProg);
-        SetHooks1(ti_GetDataPtr(tempProg));
-    }
-    
-    if ((tempProg = ti_Open("ICEDEBUG", "r"))) {
-        ti_SetArchiveStatus(true, tempProg);
-        SetHooks2(ti_GetDataPtr(tempProg));
+        SetHooks(ti_GetDataPtr(tempProg));
     }
     
     // Enable lowercase
