@@ -44,7 +44,7 @@ script:
   - curl -s https://tiplanet.org/scripts/travis/$ROM_FILE_NAME 2>/dev/null > $ROM_FILE_NAME
   - export AUTOTESTER_ROM=$(pwd)/$ROM_FILE_NAME
 # Test tests
-  - RESULT=0; for f in tests/*/*.json; do echo "Launching autotester on $f"; autotester "$f"; RESULT=`expr $RESULT + $?`; done; return $RESULT
+  - RESULT=0; for f in tests/*/*.json; do echo "Launching autotester on $f"; autotester -d "$f"; RESULT=`expr $RESULT + $?`; done; return $RESULT
 
 notifications:
   irc:
