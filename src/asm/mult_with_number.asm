@@ -3,6 +3,7 @@ segment data
 .def _MultWithNumber
 .ref _SetRegHLToRegDE
 .ref _SetRegDEToRegHL
+.ref _ResetHL
 .ref _reg
 
 _MultWithNumber:
@@ -106,10 +107,14 @@ InsertAddHLDE:
 	or	a, a
 	adc	hl, hl
 	ret	z
+	call	_ResetHL
 	ld	a, 029h
 	call	InsertA
 	ld	a, 019h
-	call	c, InsertA
+	jr	nc, .cont
+	call	InsertA
+	call	_ResetHL
+.cont:
 	jr	InsertAddHLDE
 InsertA:
 	push	hl
