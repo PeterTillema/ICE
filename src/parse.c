@@ -112,7 +112,6 @@ uint8_t parseProgram(void) {
     
 #ifdef CALCULATOR
     if (ice.debug) {
-        ti_PutC(0xFF, ice.dbgPrgm);
         w24(amountOfLinesOffset, ice.currentLine);
         
         // Write all the startup breakpoints to the debug appvar

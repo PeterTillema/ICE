@@ -9,11 +9,17 @@ Debug appvar
 	- if If/Repeat/While/For/Call/Goto: jump address
 		- else if Return/ReturnIf: -1
 		- else: 0
-- $FF byte to signify end of program
 - amount of startup breakpoints (1 byte)
 - breakpoints line numbers (max 255*3 bytes)
 - amount of labels (1 byte)
 - labels + addresses (max 255*(21+3) bytes)
+
+Breakpoints
+===============================================
+- type (fixed/temp) (1 byte)
+- line number (3 bytes)
+- program pointer (3 bytes)
+- original code (4 bytes)
 
 Slots
 ===============================================
@@ -27,11 +33,3 @@ Example:
 Slot Type Name      DataPtr Size  Offset
 1:   15   #HDPICCNV $D01256 65535 65535
 2:   5    TEST      $0C0C01 15    3
-
-Needed functions:
-ti_GetName()
-ti_IsArchived()
-ti_GetDataPtr()
-ti_GetSize()
-ti_Tell()
-ti_GetVATPtr()
