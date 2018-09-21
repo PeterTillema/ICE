@@ -52,7 +52,7 @@ typedef struct {
     bool     usingInputProgram;                             // Using input program from string
 
     char     outName[9];                                    // Output variable name
-    char     currProgName[5][9];                            // Current program compiling
+    char     currProgName[6][9];                            // Current program compiling
 
     uint8_t  *programData;                                  // Address of the program
     uint8_t  *programDataData;                              // Address of the end of the program data
