@@ -61,8 +61,6 @@ typedef struct {
     uint8_t  *programDataPtr;                               // Pointer to the program data
     uint8_t  tempToken;                                     // Used for functions, i.e. For(, where an argument can stop with either a comma or a parentheses
     uint8_t  stackDepth;                                    // Used for compiling arguments of C functions
-    uint8_t  *jumpAddress;                                  // Used for debugging
-    uint8_t  *debugLibPtr;                                  // Used for debugging
     
     label_t  *LblStack;                                     // Pointer to label stack
     label_t  *GotoStack;                                    // Pointer to goto stack
@@ -79,12 +77,9 @@ typedef struct {
     uint24_t curLbl;                                        // Current label
     uint24_t curGoto;                                       // Current goto
     uint24_t programLength;                                 // Size of input program
-    uint24_t currentBreakPointLine;                         // Used for debugging
-    uint24_t breakPointLines[100];                          // Used for debugging
 
     ti_var_t inPrgm;                                        // Used for getting tokens
     ti_var_t outPrgm;                                       // Used for writing bytes
-    ti_var_t dbgPrgm;                                       // Used for writing debug things
 
     bool     lastTokenIsReturn;                             // Last token is a "Return", so we can omit our "ret" :)
     bool     modifiedIY;                                    // Some routines modify IY, and some routines needs it
@@ -129,6 +124,18 @@ typedef struct {
     bool     usedAlreadyPrgm;                               // Only once the prgm routine in the program data
     uint24_t PrgmAddr;                                      // Address of the prgm routine in the program data
 } ice_t;
+
+#ifdef CALCULATOR
+typedef struct {
+    uint8_t  *jumpAddress;                                  // Used for debugging
+    uint8_t  *debugLibPtr;                                  // Used for debugging
+    
+    uint24_t currentBreakPointLine;                         // Used for debugging
+    uint24_t breakPointLines[100];                          // Used for debugging
+    
+    ti_var_t dbgPrgm;                                       // Used for writing debug things
+} debug_t;
+#endif
 
 typedef struct {
     bool     inString;
@@ -220,6 +227,8 @@ extern reg_t reg;
 extern variable_t variable;
 
 #ifdef CALCULATOR
+extern debug_t debug;
+
 void CheaderData(void);
 void GraphxHeader(void);
 void FileiocheaderData(void);

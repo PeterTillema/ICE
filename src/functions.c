@@ -624,7 +624,7 @@ uint8_t parseFunction(uint24_t index) {
 #ifdef CALCULATOR
                 if (!outputPrevOperand) {
                     // Add ice.currentLine to the stack of startup breakpoints
-                    ice.breakPointLines[ice.currentBreakPointLine++] = ice.currentLine - 1;
+                    debug.breakPointLines[debug.currentBreakPointLine++] = ice.currentLine - 1;
                     OutputWriteByte(0);
                 } else {
                     return E_SYNTAX;

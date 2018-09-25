@@ -259,7 +259,7 @@ uint8_t parsePrescan(void) {
     if (ice.debug) {
         memcpy(ice.programPtr, ICEDebugheaderData, 11);
         ice.programPtr += 11;
-        ice.debugLibPtr = ice.programPtr;
+        debug.debugLibPtr = ice.programPtr;
         JP(0);
     }
     

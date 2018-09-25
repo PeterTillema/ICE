@@ -19,6 +19,8 @@ extern const uint8_t DispData[];
 extern const uint8_t RandData[];
 
 extern char *str_dupcat(const char *s, const char *c);
+#else
+debug_t debug;
 #endif
 
 static uint8_t (*functions[256])(int token);
@@ -62,7 +64,7 @@ uint8_t parseProgram(void) {
     // Open debug appvar to store things to
 #ifdef CALCULATOR
     sprintf(buf, "%.5sDBG", ice.outName);
-    ice.dbgPrgm = ti_Open(buf, "w");
+    debug.dbgPrgm = ti_Open(buf, "w");
     
     if (ice.debug) {
         uint8_t curVar;
@@ -73,7 +75,7 @@ uint8_t parseProgram(void) {
         ProgramPtrToOffsetStack();
         LD_DE_IMM((uint24_t)ice.programDataPtr);
         
-        CALL(ice.debugLibPtr - ice.programData + PRGM_START);
+        CALL(debug.debugLibPtr - ice.programData + PRGM_START);
         
         LD_IY_IMM(flags);
         OutputWriteByte(OP_RET_C);
@@ -81,23 +83,23 @@ uint8_t parseProgram(void) {
         
         ResetAllRegs();
         
-        if (!ice.dbgPrgm) {
+        if (!debug.dbgPrgm) {
             return E_NO_DBG_FILE;
         }
         
         // Write input name to debug appvar
         sprintf(buf, "%s\x00", ice.currProgName[ice.inPrgm]);
-        ti_Write(buf, strlen(buf) + 1, 1, ice.dbgPrgm);
+        ti_Write(buf, strlen(buf) + 1, 1, debug.dbgPrgm);
         
-        ti_PutC(prescan.amountOfVariablesUsed, ice.dbgPrgm);
+        ti_PutC(prescan.amountOfVariablesUsed, debug.dbgPrgm);
         for (curVar = 0; curVar < prescan.amountOfVariablesUsed; curVar++) {
             sprintf(buf, "%s\x00", prescan.variables[curVar].name);
-            ti_Write(buf, strlen(buf) + 1, 1, ice.dbgPrgm);
+            ti_Write(buf, strlen(buf) + 1, 1, debug.dbgPrgm);
         }
         
-        amountOfLinesOffset = ti_GetDataPtr(ice.dbgPrgm);
+        amountOfLinesOffset = ti_GetDataPtr(debug.dbgPrgm);
         WriteIntToDebugProg(0);
-    } else if (ice.dbgPrgm) {
+    } else if (debug.dbgPrgm) {
         ti_Delete(buf);
     }
 #endif
@@ -115,19 +117,19 @@ uint8_t parseProgram(void) {
         w24(amountOfLinesOffset, ice.currentLine);
         
         // Write all the startup breakpoints to the debug appvar
-        ti_PutC(ice.currentBreakPointLine, ice.dbgPrgm);
-        for (currentLbl = 0; currentLbl < ice.currentBreakPointLine; currentLbl++) {
-            WriteIntToDebugProg(ice.breakPointLines[currentLbl]);
+        ti_PutC(debug.currentBreakPointLine, debug.dbgPrgm);
+        for (currentLbl = 0; currentLbl < debug.currentBreakPointLine; currentLbl++) {
+            WriteIntToDebugProg(debug.breakPointLines[currentLbl]);
         }
         
         // Write all the labels to the debug appvar
-        ti_PutC(ice.curLbl, ice.dbgPrgm);
+        ti_PutC(ice.curLbl, debug.dbgPrgm);
         
         for (currentLbl = 0; currentLbl < ice.curLbl; currentLbl++) {
             label_t *curLbl = &ice.LblStack[currentLbl];
             uint24_t addr = curLbl->addr - ice.programData + PRGM_START;
             
-            ti_Write(curLbl->name, strlen(curLbl->name) + 1, 1, ice.dbgPrgm);
+            ti_Write(curLbl->name, strlen(curLbl->name) + 1, 1, debug.dbgPrgm);
             WriteIntToDebugProg(addr);
         }
     }
@@ -176,7 +178,7 @@ uint8_t parseProgramUntilEnd(void) {
         
 #ifdef CALCULATOR
         if (ice.debug) {
-            currentOffset = ti_Tell(ice.dbgPrgm);
+            currentOffset = ti_Tell(debug.dbgPrgm);
             WriteIntToDebugProg((uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
             
             if ((uint8_t)token == tReturn) {
@@ -198,7 +200,7 @@ uint8_t parseProgramUntilEnd(void) {
                 OutputWriteByte(0);
             }
             
-            if (ti_Tell(ice.dbgPrgm) - currentOffset == 3) {
+            if (ti_Tell(debug.dbgPrgm) - currentOffset == 3) {
                 WriteIntToDebugProg(0);
             }
         }
@@ -1052,7 +1054,7 @@ static uint8_t functionIf(int token) {
         
 #ifdef CALCULATOR
         if (ice.debug) {
-            IfJumpAddr = ti_GetDataPtr(ice.dbgPrgm);
+            IfJumpAddr = ti_GetDataPtr(debug.dbgPrgm);
             WriteIntToDebugProg(0);
         }
 #endif
@@ -1105,7 +1107,7 @@ static uint8_t functionIf(int token) {
             
 #ifdef CALCULATOR
             if (ice.debug) {
-                ElseJumpAddr = ti_GetDataPtr(ice.dbgPrgm);
+                ElseJumpAddr = ti_GetDataPtr(debug.dbgPrgm);
                 WriteIntToDebugProg(0);
                 w24(IfJumpAddr, (uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
             }
@@ -1253,7 +1255,7 @@ static uint8_t functionWhile(int token) {
     
 #ifdef CALCULATOR
     if (ice.debug) {
-        debugProgDataPtr = ti_GetDataPtr(ice.dbgPrgm);
+        debugProgDataPtr = ti_GetDataPtr(debug.dbgPrgm);
         WriteIntToDebugProg(0);
     }
 #endif
@@ -1552,7 +1554,7 @@ static uint8_t functionFor(int token) {
     uint8_t *ForJumpAddr = NULL;
     
     if (ice.debug) {
-        ForJumpAddr = ti_GetDataPtr(ice.dbgPrgm);
+        ForJumpAddr = ti_GetDataPtr(debug.dbgPrgm);
         WriteIntToDebugProg(0);
     }
 #endif
@@ -1808,7 +1810,7 @@ void insertGotoLabel(void) {
     
 #ifdef CALCULATOR
     if (ice.debug) {
-        gotoCurr->debugJumpDataPtr = ti_GetDataPtr(ice.dbgPrgm);
+        gotoCurr->debugJumpDataPtr = ti_GetDataPtr(debug.dbgPrgm);
     }
 #endif
 }
