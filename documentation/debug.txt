@@ -1,6 +1,10 @@
 Debug appvar
 ===============================================
-- source program name (max 10 bytes)
+- amount of (sub)programs (1 byte)
+- for each (sub)program:
+    - name (8 bytes)
+	- starting line (2 bytes)
+	- ending line (2 bytes)
 - amount of variables (1 byte)
 - variables (max 85*21 bytes)
 - amount of lines (3 bytes)
@@ -23,11 +27,13 @@ Breakpoints
 
 Slots
 ===============================================
-Check if open: GetSize != -1 (5 chars)
+Check if open: GetSize != -1
+- Slot num (5 chars)
+- Type (5 chars)
 - (*)Name - * if archived (10 chars)
 - DataPtr (8 chars)
 - Size (6 chars)
-- Offset (7 chars)
+- Offset (6 chars)
 
 Example:
 Slot Type Name      DataPtr Size  Offset

@@ -1,0 +1,277 @@
+Sep 24 22:25:12 <P_T>	So, Runer, any ideas about subprograms?
+Sep 24 22:25:34 <P_T>	How to tell the debugger you're now going into a subprogram?
+Sep 24 22:25:45 <Runer112>	what do you mean
+Sep 24 22:26:01 <P_T>	The debugger flips when you have something like AsmComp(X
+Sep 24 22:26:17 <P_T>	Since it takes only the source of the main BASIC program
+Sep 24 22:26:16 <Runer112>	what is that
+Sep 24 22:26:22 <Runer112>	an ICE subprogram?
+Sep 24 22:26:43 <Runer112>	yeah have fun reworking everything
+Sep 24 22:27:06 <Runer112>	wherever you currently have line numbers, you should have a combination of file and line numer
+Sep 24 22:27:08 <Runer112>	number*
+Sep 24 22:27:47 <Runer112>	I guess you could still just store it as a line number
+Sep 24 22:27:57 <Runer112>	and pretend the main file and all subprograms are joined together
+Sep 24 22:30:44 <Runer112>	and then you'd just have an extra list of pairs
+Sep 24 22:30:58 <Runer112>	of source name and line number
+Sep 24 22:31:34 <Runer112>	makes sense?
+Sep 24 22:32:44 <P_T>	A bit
+Sep 24 22:33:05 <P_T>	Only in the output they are merged (compiled program)
+Sep 24 22:33:22 <Runer112>	they should be
+Sep 24 22:33:25 <Runer112>	right..?
+Sep 24 22:33:31 <P_T>	So it's like I need a list with all the subprograms and their starting/ending "line" in the output
+Sep 24 22:33:32 <P_T>	Yes
+Sep 24 22:33:45 <Runer112>	just starting line, I think
+Sep 24 22:33:51 <P_T>	Ending line as well
+Sep 24 22:34:06 <Runer112>	why
+Sep 24 22:34:04 <P_T>	Or amount of lines, whatever
+Sep 24 22:34:24 <Runer112>	why
+Sep 24 22:34:37 <P_T>	To once return from the BASIC subprogram?
+Sep 24 22:34:42 <Runer112>	you just need total amount of lines
+Sep 24 22:34:44 <P_T>	Sure
+Sep 24 22:34:54 <Runer112>	not per source file
+Sep 24 22:35:01 <P_T>	What if you have like this:
+Sep 24 22:35:02 <P_T>	[i]B
+Sep 24 22:35:05 <P_T>	AsmComp(X
+Sep 24 22:35:07 <P_T>	AsmComp(Y
+Sep 24 22:35:18 <P_T>	How do I tell the debugger line Z is from program Y?
+Sep 24 22:35:31 <P_T>	By looking at the start line, you say, but
+Sep 24 22:35:38 <Runer112>	so in that case, you'll have
+Sep 24 22:35:43 <P_T>	If there's any code after AsmComp(Y, you won't be able to know
+Sep 24 22:35:52 <Runer112>	line 0: main program
+Sep 24 22:35:59 <Runer112>	line 0: X
+Sep 24 22:36:02 <Runer112>	err
+Sep 24 22:36:09 <Runer112>	oh right lol
+Sep 24 22:36:26 <P_T>	Your trick only works if there's no code in between AsmComp('s
+Sep 24 22:36:51 <Runer112>	btw, does ICE allow recursive subprograms
+Sep 24 22:37:05 <P_T>	Compiling them?
+Sep 24 22:37:07 <Runer112>	not like deeply recursive, but at least more than 1 levle
+Sep 24 22:37:10 <Runer112>	hyes
+Sep 24 22:37:31 <P_T>	No, because then it keeps compiling the program, and you can have at most 5 (4?) nested programs
+Sep 24 22:37:49 <Runer112>	boo
+Sep 24 22:38:01 <P_T>	What else? Calling line 1 instead of compiling it?
+Sep 24 22:38:05 <Runer112>	err wait
+Sep 24 22:38:20 <Runer112>	you said no, but then you said 5 (4?) nested programs
+Sep 24 22:38:23 <Runer112>	that sounds like yes
+Sep 24 22:38:38 <P_T>	You can have AsmComp(X : <prgmX> AsmComp(Y
+Sep 24 22:38:47 <Runer112>	okay
+Sep 24 22:38:52 <P_T>	But AsmComp(X : <prgmX> AsmComp(X won't work
+Sep 24 22:39:11 <Runer112>	well that would just be infinite recursion
+Sep 24 22:39:13 <P_T>	Yeah :p
+Sep 24 22:39:35 <Runer112>	alright, yeah, you should include number of lines or end line per source file
+Sep 24 22:39:43 <P_T>	End line seems easier to me
+Sep 24 22:40:09 <P_T>	Then, when opening the basic debugger, I loop through all programs and check if line > starting_line and line < ending_line or something
+Sep 24 22:40:32 <P_T>	(and use the proper offsets for breakpoints etc)
+Sep 24 22:41:04 <Runer112>	well, assuming the files are listed in increasing order of starting line
+Sep 24 22:41:07 <P_T>	Sure
+Sep 24 22:41:47 <Runer112>	hmm
+Sep 24 22:41:55 <P_T>	I see another issue coming
+Sep 24 22:42:00 <Runer112>	locating the correct program is slightly tricky
+Sep 24 22:42:01 <P_T>	Yeah
+Sep 24 22:42:13 <P_T>	You have to get the smallest range or something?
+Sep 24 22:42:33 <P_T>	Otherwise both the main and the subprogram would match line > starting_line and line < endling_line
+Sep 24 22:42:40 <Runer112>	hmm no, I don't think it should be a problem
+Sep 24 22:43:13 <Runer112>	just scan the whole list
+Sep 24 22:43:19 <P_T>	And then?
+Sep 24 22:43:28 <Runer112>	if line >= start && line < end, set program
+Sep 24 22:43:34 <P_T>	The last one is always the right one, right?
+Sep 24 22:43:39 <Runer112>	yes
+Sep 24 22:43:46 <P_T>	Then I can better search backwards :p
+Sep 24 22:43:56 <Runer112>	no
+Sep 24 22:43:59 <Runer112>	err
+Sep 24 22:44:05 <Runer112>	I guess
+Sep 24 22:44:12 <P_T>	Then the first match would return
+Sep 24 22:44:21 <Runer112>	it's debatable whether that's better
+Sep 24 22:44:31 <Runer112>	maybe it is
+Sep 24 22:44:38 <P_T>	(I do the same with searching the line number by an address)
+Sep 24 22:44:46 <Runer112>	err hold on
+Sep 24 22:45:33 <Runer112>	this isn't what I suggested at all
+Sep 24 22:45:43 <Runer112>	lol
+Sep 24 22:45:59 <Runer112>	oh
+Sep 24 22:46:05 <Runer112>	yeah this is all a bit problematic
+Sep 24 22:46:08 <P_T>	Why?
+Sep 24 22:46:43 <Runer112>	getting source line numbers
+Sep 24 22:46:51 <Runer112>	from mangled line numbers
+Sep 24 22:47:38 <P_T>	Stepping over would be even more fun
+Sep 24 22:47:43 <P_T>	St
+Sep 24 22:47:49 <P_T>	"Step over AsmComp(X" hmmmmmmm
+...
+Sep 24 22:49:00 <Runer112>	well, two I guess
+Sep 24 22:49:05 <P_T>	two what?
+...
+Sep 24 22:49:36 <Runer112>	if it's empty, then stepping over isn't even a consideration
+Sep 24 22:49:47 <Runer112>	because you can never break on it in the first place
+Sep 24 22:49:55 <P_T>	Sorry I got disconnected a few times
+Sep 24 22:50:00 <P_T>	two what?
+Sep 24 22:50:09 <Runer112>	16:49:17 <â€¢Runer112> basically either treat it as an empty line or as a code line
+Sep 24 22:50:09 <Runer112>	16:49:37 <â€¢Runer112> if it's empty, then stepping over isn't even a consideration
+Sep 24 22:50:28 <P_T>	Yeah but when is a subprogram empty?
+Sep 24 22:50:30 <Runer112>	empty treats it like a preprocessor include, which is kind of closer to reality anyway
+Sep 24 22:50:33 <Runer112>	no
+Sep 24 22:50:40 <Runer112>	the source line in the including file
+Sep 24 22:50:54 <Runer112>	you treat that line as having compiled to 0 bytes
+Sep 24 22:50:59 <P_T>	Ooh
+Sep 24 22:51:01 <Runer112>	so it doesn't even get a break-able line
+Sep 24 22:51:14 <P_T>	But then you can't step to it either?
+Sep 24 22:51:17 <Runer112>	you'd step immediately from the line before into the first line of the subprogram
+Sep 24 22:51:58 <Runer112>	correct, you would be unable to break on that line
+Sep 24 22:52:14 <P_T>	So only if I'm Step'ing all the time, I must add an extra check to see if it's the first line of a subprogram?
+Sep 24 22:52:19 <Runer112>	but that's how preprocessor statements work in all compilers
+Sep 24 22:52:30 <Runer112>	no
+Sep 24 22:52:59 <Runer112>	I don't see why any extra checks are necessary
+Sep 24 22:53:20 <P_T>	Btw, idk, but this doens't matter anything; when you step/step over/step next from the line before the AsmComp, it jumps anyway to the subprogram
+Sep 24 22:53:41 <Runer112>	yes, that's how it should behave, I'd suggest
+Sep 24 22:54:00 <Runer112>	the source line itself contributes no bytes of executable code
+Sep 24 22:53:59 <P_T>	But what if you step over an AsmComp(?
+Sep 24 22:54:04 <Runer112>	so it shouldn't be breakable
+Sep 24 22:54:07 <Runer112>	you can't
+Sep 24 22:54:09 <P_T>	oh
+Sep 24 22:54:14 <P_T>	that was my misunderstanding
+Sep 24 22:54:17 <Runer112>	you'll never be in the debugger with an AsmComp as the active line
+Sep 24 22:54:25 <P_T>	That's right
+Sep 24 22:55:16 <Runer112>	anyway, this still makes line number normalization a pain in the butt
+Sep 24 22:55:16 <P_T>	so there's no way at all to immediately run a subprogram and continue debugging?
+Sep 24 22:55:39 <Runer112>	sure, step next
+Sep 24 22:55:44 <P_T>	No
+Sep 24 22:55:49 <Runer112>	that steps to the next code line in the current program
+Sep 24 22:56:07 <P_T>	Yes, but that is the first line of the subprogram if subprograms
+Sep 24 22:56:31 <Runer112>	?
+Sep 24 22:56:52 <P_T>	The format I'm looking at is this:
+Sep 24 22:56:55 <Runer112>	hmm
+Sep 24 22:57:02 <Runer112>	actually I guess step next shouldn't really do that
+Sep 24 22:57:07 <Runer112>	it should go into the included program
+Sep 24 22:57:58 <P_T>	https://pastebin.com/6zZdruEB this
+Sep 24 22:58:17 <Runer112>	correct
+Sep 24 22:58:29 <P_T>	So you can't skip a subprogram nor step out from it hmm
+Sep 24 22:58:36 <Runer112>	no
+Sep 24 22:58:53 <Runer112>	it's not a subroutine
+Sep 24 22:58:58 <P_T>	That's true
+Sep 24 22:59:08 <Runer112>	if you want to be able to step out or over, you should make it a subroutine
+Sep 24 22:59:26 <Runer112>	Lbl DOSTUFF : AsmComp(DOSTUFF) : Return
+Sep 24 22:59:28 <P_T>	Yeah
+Sep 24 22:59:37 <Runer112>	then you can step over/out of it
+Sep 24 22:59:41 <P_T>	Or I add an option to blace a "breakpoint" at the end of the program
+Sep 24 22:59:48 <P_T>	True
+Sep 24 23:00:06 <Runer112>	anyway, as I was saying before
+Sep 24 23:00:09 <P_T>	There are still a few options I want to add, like showing line numbers, jumping instant to lines
+Sep 24 23:00:13 <Runer112>	this will make translating line numbers a bit of a pain
+Sep 24 23:00:19 <P_T>	Yeah :/
+Sep 24 23:00:30 <Runer112>	you could avoid that pain
+Sep 24 23:00:46 <Runer112>	by changing the way you list line number -> address
+Sep 24 23:01:04 <P_T>	I'm open for all ideas
+Sep 24 23:01:12 <Runer112>	and made the line number explicit instead of implicit in that list
+Sep 24 23:01:25 <Runer112>	addresses will always be strictly increasing
+Sep 24 23:01:36 <Runer112>	and line numbers will be sparse and may be discontinuous
+Sep 24 23:01:39 <P_T>	explicit/implicit?
+Sep 24 23:01:51 <Runer112>	currently, line number is just index
+Sep 24 23:01:52 <P_T>	Yes
+Sep 24 23:02:11 <Runer112>	line number becomes an actual entry in each list element now, along with compiled address
+Sep 24 23:02:20 <Runer112>	which allows you to skip line numbers
+Sep 24 23:02:22 <Runer112>	and even go backwards
+Sep 24 23:02:34 <Runer112>	then, you assign line numbers like
+Sep 24 23:02:42 <Runer112>	main program gets all its line numbers normally
+Sep 24 23:02:56 <Runer112>	first subprogram starts after that
+Sep 24 23:03:02 <Runer112>	second subprogram after that
+Sep 24 23:03:02 <Runer112>	etc
+Sep 24 23:03:23 <Runer112>	that way, the "mangled" line numbers for every program are still continuous
+Sep 24 23:03:28 <Runer112>	just shifted by a constant offset
+Sep 24 23:03:36 <Runer112>	so normalization is just subtracting a number
+Sep 24 23:04:09 <Runer112>	makes sense?
+Sep 24 23:04:15 <P_T>	Sorry, I don't understand it :(
+Sep 24 23:04:29 <Runer112>	what's the first part you don't understand
+Sep 24 23:04:42 <P_T>	<Runer112> main program gets all its line numbers normally
+Sep 24 23:05:09 <P_T>	You suggest adding the line numbers to the debug appvar, so each line is 9 bytes worth instead of 6 in the debug appvar?
+Sep 24 23:05:17 <Runer112>	main program is assigned lines 1 to main_lines
+Sep 24 23:05:31 <Runer112>	first subprogram is assigned lines main_lines+1 to main_lines+sub_lines
+Sep 24 23:05:43 <Runer112>	etc
+Sep 24 23:05:52 <Runer112>	well, only needs to be 8 bytes
+Sep 24 23:06:03 <Runer112>	line number only needs 16-bit
+Sep 24 23:06:10 <P_T>	But then the compiler should know how many lines a program has before compiling it, to allocate space?
+Sep 24 23:06:26 <Runer112>	no
+Sep 24 23:06:32 <P_T>	Or allocate before doing anything and merging it all together afterwards?
+Sep 24 23:06:41 <Runer112>	hmm
+Sep 24 23:07:26 <Runer112>	oh duh
+Sep 24 23:07:49 <Runer112>	no need to dish out the line numbers in order
+Sep 24 23:08:01 <Runer112>	err but how does that help
+Sep 24 23:08:01 <Runer112>	hmm
+Sep 24 23:08:19 <P_T>	It might be an idea to provide an example using the small program I sent?
+Sep 24 23:08:34 <Runer112>	well I'm still trying to figure this out myseldf
+Sep 24 23:08:35 <P_T>	Haha
+Sep 24 23:08:42 <Runer112>	don't have a good solution yet
+Sep 24 23:12:23 <Runer112>	hmm, I'm not sure if this can be done without some kind backfilling of info
+Sep 24 23:12:34 <P_T>	Or something giant LUT where every line has like 4 bytes each: 1 = which subprogram, 3 = relative line number
+Sep 24 23:13:47 <P_T>	That way if you advance a line, you just grab the next line, get the source program and tada
+Sep 24 23:14:53 <Runer112>	bleh I'm torn
+Sep 24 23:15:45 <P_T>	And then when you want to get the line based on an address, you just do exactly the same as what I do now, except that extra pass to get the source program and line number
+Sep 24 23:16:33 <P_T>	Do you understand that?
+Sep 24 23:17:03 <Runer112>	I don't like the idea of "giant LUT"
+Sep 24 23:17:23 <P_T>	It's basically 10 bytes instead of 6 per line
+Sep 24 23:19:09 <Runer112>	honestly it may not be that bad to do the translation by just scanning the subprogram list
+Sep 24 23:20:29 <P_T>	https://pastebin.com/E4TUrNRm this is my idea
+Sep 24 23:21:03 <Runer112>	sure
+Sep 24 23:21:18 <Runer112>	but it's a good idea to minimize this debug file size
+Sep 24 23:21:21 <P_T>	Heh
+Sep 24 23:21:30 <P_T>	And decrease the debugging speed
+Sep 24 23:21:32 *	P_T hides
+Sep 24 23:21:42 <Runer112>	and honestly it's probably not that bad to figure out the line number at runtime
+Sep 24 23:22:20 <Runer112>	basically just scan the program list
+Sep 24 23:23:31 <Runer112>	something like uhh
+Sep 24 23:33:03 <Runer112>	https://www.irccloud.com/pastebin/pAWIqHui/
+Sep 24 23:33:11 <Runer112>	that looks about right
+Sep 24 23:33:41 <Runer112>	err
+Sep 24 23:33:59 <Runer112>	https://www.irccloud.com/pastebin/V5bTdg1G/
+Sep 24 23:34:41 <Runer112>	assumes exclusive end lines
+Sep 24 23:34:56 <Runer112>	that logic isn't too bad
+Sep 24 23:35:14 <P_T>	Still need to search backwards
+Sep 24 23:35:27 <Runer112>	err
+Sep 24 23:35:36 <Runer112>	no?
+Sep 24 23:35:37 <P_T>	Otherwise the first subprogram would match the if (mangledLine < prog.endLine)
+Sep 24 23:35:51 <Runer112>	sure
+Sep 24 23:35:54 <Runer112>	what
+Sep 24 23:35:57 <P_T>	(if there's a subprogram in the subprogram)
+Sep 24 23:36:15 <Runer112>	matching that is fine
+Sep 24 23:36:20 <P_T>	Then both subprogram 2 and 3 matches, but you need to have 3
+Sep 24 23:36:40 <Runer112>	say main prog starts on line 1
+Sep 24 23:36:46 <Runer112>	subA start on line 3
+Sep 24 23:36:49 <Runer112>	subB starts on line 5
+Sep 24 23:36:58 <Runer112>	you're trying to look up line 6
+Sep 24 23:37:14 <P_T>	if (mangledLine < prog.endLine) is true for A, in that case
+Sep 24 23:37:16 <Runer112>	if (6 < 1), no
+Sep 24 23:37:32 <Runer112>	else if (6 < whatever), yes
+Sep 24 23:37:35 <Runer112>	startLine = 1
+Sep 24 23:37:40 <Runer112>	continue
+Sep 24 23:37:38 <P_T>	Yes, but it needs to be subB
+Sep 24 23:37:45 <P_T>	oh
+Sep 24 23:37:47 <P_T>	right
+Sep 24 23:37:51 <Runer112>	if (6 < 3), no
+Sep 24 23:37:52 <P_T>	I thought you return immediately :P
+Sep 24 23:37:57 <Runer112>	well maybe you see it
+Sep 24 23:38:06 <Runer112>	this is using python style scoping :p
+Sep 24 23:38:05 <P_T>	Yes I get it
+Sep 24 23:38:29 <P_T>	Actually, it's not that bad I would say
+Sep 24 23:38:45 <Runer112>	yeah, once you sort out the logic, it's actually pretty simple
+Sep 24 23:38:47 <P_T>	Heh
+Sep 24 23:40:26 <Runer112>	this requires minimal data being stored in the appvar
+Sep 24 23:41:05 <P_T>	Yeah, only the program name + begin + end line and like current, address of the overall line + jump/return
+Sep 24 23:41:27 <Runer112>	yeah, line <-> compiled address list is unchanged
+Sep 24 23:41:38 <Runer112>	it's just the extra info per source file
+Sep 24 23:41:41 <P_T>	The compiler barely needs to be changed
+Sep 24 23:41:49 <Runer112>	which is just 12 bytes per
+Sep 24 23:42:48 <Runer112>	or potentially less
+Sep 24 23:42:54 <P_T>	12 is the minimum
+Sep 24 23:43:00 <Runer112>	if you decided to use zero-terminated strings
+Sep 24 23:43:06 <P_T>	8 for the name and 2 for begin/end
+Sep 24 23:43:09 <Runer112>	but that seems more annoying
+Sep 24 23:43:58 <P_T>	Okay, bed time for me, I will try to start with this all the coming days, as it's rather important
+Sep 24 23:44:11 <P_T>	Thank you so much for all your help! The debugger wouldn't be anything without you lol
+Sep 24 23:44:27 *	PT_ has quit (Quit: Page closed)
+Sep 24 23:44:30 <P_T>	That was me 1
+Sep 24 23:44:47 <P_T>	Good thing I have IRC logs :p
+Sep 24 23:44:50 <Runer112>	hmm, might be more efficient to store number of lines instead of end line
+Sep 24 23:45:01 <Runer112>	you can play with that as necessary
+Sep 24 23:45:38 <P_T>	Would that matter? Then the first comparison would be "if (mangledLine < prog.startLine + size)" and the second addition is like "startLine += size" :P
+Sep 24 23:45:56 <Runer112>	well, when translated to assembly
+Sep 24 23:46:00 <P_T>	Although addition is faster than substraction, so we will see
+Sep 24 23:46:10 <Runer112>	first comparison is like sbc hl,de
+Sep 24 23:46:20 <Runer112>	if you just get size, then you can do sbc hl,de after that
+Sep 24 23:46:39 <Runer112>	without ever bothering to "undo" the first subtraction
+Sep 24 23:47:04 <P_T>	Well, we will see
+Sep 24 23:47:06 *	P_T off o/
