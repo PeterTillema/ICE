@@ -107,9 +107,11 @@ InsertAddHLDE:
 	or	a, a
 	adc	hl, hl
 	ret	z
+	push	af
 	call	_ResetHL
 	ld	a, 029h
 	call	InsertA
+	pop	af
 	ld	a, 019h
 	jr	nc, .cont
 	call	InsertA
