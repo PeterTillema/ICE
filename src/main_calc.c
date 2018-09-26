@@ -13,6 +13,9 @@
 #include "routines.h"
 #include "prescan.h"
 
+#define DEBUG_VERSION_MAJOR 0
+#define DEBUG_VERSION_MINOR 0
+
 #define NUMBEROFPROGRAM 256
 #define PROGRAMPERSCREEN 21
 
@@ -256,7 +259,11 @@ compile_program:
             goto stop;
         }
         
-        // Write amount of programs to output file
+        // Write version bytes to debug appvar
+        ti_PutC(DEBUG_VERSION_MAJOR, debug.dbgPrgm);
+        ti_PutC(DEBUG_VERSION_MINOR, debug.dbgPrgm);
+        
+        // Write amount of programs to debug appvar
         ti_PutC(0, debug.dbgPrgm);
     } else if (debug.dbgPrgm) {
         ti_Delete(buf);
