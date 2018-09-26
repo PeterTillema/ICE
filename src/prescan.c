@@ -30,7 +30,8 @@ void preScanProgram(void) {
     
 #ifdef CALCULATOR
     if (ice.debug) {
-        char buf[12] = {0};
+        // The line is 1 at the first program, otherwise it would get overwritten with AsmComp(
+        char buf[12] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0};
         uint16_t CRC;
         
         // Write the name + start line + end line to debug appvar

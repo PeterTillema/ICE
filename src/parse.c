@@ -1950,11 +1950,23 @@ static uint8_t functionBB(int token) {
 #else
         if ((ice.inPrgm = _open(outputPrgm->prog))) {
             char buf[35];
-
+            uint24_t amountOfSubPrograms = 0;
+            
+            // Display message
             displayLoadingBarFrame();
             sprintf(buf, "Compiling subprogram %s...", outputPrgm->prog);
             displayMessageLineScroll(buf);
             free(outputPrgm);
+            
+            if (ice.debug) {
+                // Increment amount of programs
+                amountOfSubPrograms = ++debug.amountOfPrograms;
+                
+                // Write starting line to debug appvar; skip version bytes + amount of programs byte + previous subprograms + name bytes
+                ti_Seek(3 + amountOfSubPrograms * 14 + 8, SEEK_SET, debug.dbgPrgm);
+                ti_Write(&debug.currentLine, 2, 1, debug.dbgPrgm);
+                ti_Seek(0, SEEK_END, debug.dbgPrgm);
+            }
 
             // Compile it, and close
             ice.currentLine = 0;
@@ -1962,10 +1974,18 @@ static uint8_t functionBB(int token) {
                 return res;
             }
             ti_Close(ice.inPrgm);
-
+            
+            // Display message
             displayLoadingBarFrame();
             displayMessageLineScroll("Return from subprogram...");
             ice.currentLine = currentLine;
+            
+            if (ice.debug) {
+                // Write ending line to debug appvar
+                ti_Seek(3 + amountOfSubPrograms * 14 + 10, SEEK_SET, debug.dbgPrgm);
+                ti_Write(&debug.currentLine, 2, 1, debug.dbgPrgm);
+                ti_Seek(0, SEEK_END, debug.dbgPrgm);
+            }
         } else {
             free(outputPrgm);
             res = E_PROG_NOT_FOUND;

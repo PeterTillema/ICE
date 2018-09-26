@@ -333,12 +333,14 @@ compile_program:
         if (programDataSize) ti_Write(ice.programDataPtr, programDataSize, 1, ice.outPrgm);
         _rewind(ice.outPrgm);
         
-        // Write final CRC to debug program
+        // Write final CRC to debug program, as well as the ending line of the first program
         if (ice.debug) {
             uint16_t CRC;
             
             CRC = GetCRC(ti_GetDataPtr(ice.outPrgm), ti_GetSize(ice.outPrgm));
             ti_Write(&CRC, sizeof(uint16_t), 1, debug.dbgPrgm);
+            ti_Seek(3 + 8 + 2, SEEK_SET, debug.dbgPrgm);
+            ti_Write(&debug.currentLine, 2, 1, debug.dbgPrgm);
         }
 
         // Yep, we are really done!
