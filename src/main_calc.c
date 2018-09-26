@@ -232,17 +232,39 @@ compile_program:
 
     ice.inPrgm = _open(var_name);
     _seek(0, SEEK_END, ice.inPrgm);
-    strcpy(ice.currProgName[ice.inPrgm], var_name);
 
     ice.programLength   = _tell(ice.inPrgm);
     ice.programData     = (uint8_t*)0xD52C00;
     ice.programPtr      = ice.programData;
     ice.programDataData = ice.programData + 0xFFFF;
     ice.programDataPtr  = ice.programDataData;
+    
+    // Get the name/icon/description
+    _rewind(ice.inPrgm);
+    if ((res = getNameIconDescription()) != VALID) {
+        displayError(res);
+        goto stop;
+    }
+    
+    // Open debug appvar to store things to
+    sprintf(buf, "%.5sDBG", ice.outName);
+    debug.dbgPrgm = ti_Open(buf, "w");
+    
+    if (ice.debug) {
+        if (!debug.dbgPrgm) {
+            displayError(E_NO_DBG_FILE);
+            goto stop;
+        }
+        
+        // Write amount of programs to output file
+        ti_PutC(0, debug.dbgPrgm);
+    } else if (debug.dbgPrgm) {
+        ti_Delete(buf);
+    }
 
-    // Check for icon and description before putting the C functions in the output program
+    // Prescan the program and output the header
     preScanProgram();
-    if ((res = getNameIconDescription()) != VALID || (res = parsePrescan()) != VALID) {
+    if ((res = parsePrescan()) != VALID) {
         displayError(res);
         goto stop;
     }
@@ -302,6 +324,15 @@ compile_program:
         // Write the header, main program, and data to output :D
         ti_Write(ice.programData, ice.programSize, 1, ice.outPrgm);
         if (programDataSize) ti_Write(ice.programDataPtr, programDataSize, 1, ice.outPrgm);
+        _rewind(ice.outPrgm);
+        
+        // Write final CRC to debug program
+        if (ice.debug) {
+            uint16_t CRC;
+            
+            CRC = GetCRC(ti_GetDataPtr(ice.outPrgm), ti_GetSize(ice.outPrgm));
+            ti_Write(&CRC, sizeof(uint16_t), 1, debug.dbgPrgm);
+        }
 
         // Yep, we are really done!
         gfx_SetTextFGColor(4);
@@ -358,7 +389,10 @@ err:
             goto displayMainScreen;
         }
         if (key == sk_Trace && res != VALID && !ti_IsArchived(ice.inPrgm)) {
-            GotoEditor(ice.currProgName[ice.inPrgm], ti_Tell(ice.inPrgm) - 1);
+            char buf[9];
+            
+            ti_GetName(buf, ice.inPrgm);
+            GotoEditor(buf, ti_Tell(ice.inPrgm) - 1);
         }
     }
     ti_CloseAll();

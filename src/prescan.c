@@ -27,6 +27,21 @@ void preScanProgram(void) {
     int token;
     
     _rewind(ice.inPrgm);
+    
+#ifdef CALCULATOR
+    if (ice.debug) {
+        char buf[12] = {0};
+        uint16_t CRC;
+        
+        // Write the name + start line + end line to debug appvar
+        ti_GetName(buf, ice.inPrgm);
+        ti_Write(buf, 12, 1, debug.dbgPrgm);
+        
+        // Get CRC and write to debug appvar
+        CRC = GetCRC(ti_GetDataPtr(ice.inPrgm), ti_GetSize(ice.inPrgm));
+        ti_Write(&CRC, sizeof(uint16_t), 1, debug.dbgPrgm);
+    }
+#endif
 
     // Scan the entire program
     while ((token = _getc()) != EOF) {
@@ -95,7 +110,8 @@ void preScanProgram(void) {
                             if ((ice.inPrgm = _open(newProg->prog))) {
 #else
                             char *inName = str_dupcat(newProg->prog, ".8xp");
-			    if ((ice.inPrgm = _open(inName))) {
+                        
+                            if ((ice.inPrgm = _open(inName))) {
 #endif
                                 preScanProgram();
                                 _close(ice.inPrgm);
@@ -256,6 +272,7 @@ uint8_t parsePrescan(void) {
         }
     }
     
+    // Write the lib header to the output program
     if (ice.debug) {
         memcpy(ice.programPtr, ICEDebugheaderData, 11);
         ice.programPtr += 11;

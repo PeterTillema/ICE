@@ -52,7 +52,6 @@ typedef struct {
     bool     usingInputProgram;                             // Using input program from string
 
     char     outName[9];                                    // Output variable name
-    char     currProgName[6][9];                            // Current program compiling
 
     uint8_t  *programData;                                  // Address of the program
     uint8_t  *programDataData;                              // Address of the end of the program data
@@ -127,11 +126,13 @@ typedef struct {
 
 #ifdef CALCULATOR
 typedef struct {
+    uint8_t  amountOfPrograms;                              // Count the amount of (sub)programs
     uint8_t  *jumpAddress;                                  // Used for debugging
     uint8_t  *debugLibPtr;                                  // Used for debugging
     
-    uint24_t currentBreakPointLine;                         // Used for debugging
-    uint24_t breakPointLines[100];                          // Used for debugging
+    uint24_t currentBreakPointLine;                         // Amount of breakpoints at startup
+    uint24_t breakPointLines[100];                          // List with startup breakpoint line numbers
+    uint24_t currentLine;                                   // The amount of parsed lines in the output program
     
     ti_var_t dbgPrgm;                                       // Used for writing debug things
 } debug_t;
@@ -257,6 +258,7 @@ void PauseData(void);
 void GotoEditor(char*, uint16_t);
 void RunPrgm(char*);
 void SetHooks(uint8_t*);
+uint16_t GetCRC(uint8_t*, size_t);
 #endif
 
 #endif

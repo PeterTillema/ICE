@@ -63,9 +63,6 @@ uint8_t parseProgram(void) {
     
     // Open debug appvar to store things to
 #ifdef CALCULATOR
-    sprintf(buf, "%.5sDBG", ice.outName);
-    debug.dbgPrgm = ti_Open(buf, "w");
-    
     if (ice.debug) {
         uint8_t curVar;
         
@@ -83,14 +80,6 @@ uint8_t parseProgram(void) {
         
         ResetAllRegs();
         
-        if (!debug.dbgPrgm) {
-            return E_NO_DBG_FILE;
-        }
-        
-        // Write input name to debug appvar
-        sprintf(buf, "%s\x00", ice.currProgName[ice.inPrgm]);
-        ti_Write(buf, strlen(buf) + 1, 1, debug.dbgPrgm);
-        
         ti_PutC(prescan.amountOfVariablesUsed, debug.dbgPrgm);
         for (curVar = 0; curVar < prescan.amountOfVariablesUsed; curVar++) {
             sprintf(buf, "%s\x00", prescan.variables[curVar].name);
@@ -99,8 +88,6 @@ uint8_t parseProgram(void) {
         
         amountOfLinesOffset = ti_GetDataPtr(debug.dbgPrgm);
         WriteIntToDebugProg(0);
-    } else if (debug.dbgPrgm) {
-        ti_Delete(buf);
     }
 #endif
 
@@ -114,7 +101,7 @@ uint8_t parseProgram(void) {
     
 #ifdef CALCULATOR
     if (ice.debug) {
-        w24(amountOfLinesOffset, ice.currentLine);
+        w24(amountOfLinesOffset, debug.currentLine);
         
         // Write all the startup breakpoints to the debug appvar
         ti_PutC(debug.currentBreakPointLine, debug.dbgPrgm);
@@ -184,6 +171,8 @@ uint8_t parseProgramUntilEnd(void) {
             if ((uint8_t)token == tReturn) {
                 WriteIntToDebugProg(-1);
             }
+            
+            debug.currentLine++;
         }
 #endif
         
@@ -1965,7 +1954,6 @@ static uint8_t functionBB(int token) {
             displayLoadingBarFrame();
             sprintf(buf, "Compiling subprogram %s...", outputPrgm->prog);
             displayMessageLineScroll(buf);
-            strcpy(ice.currProgName[ice.inPrgm], outputPrgm->prog);
             free(outputPrgm);
 
             // Compile it, and close

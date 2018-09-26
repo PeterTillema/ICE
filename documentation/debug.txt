@@ -1,10 +1,12 @@
 Debug appvar
 ===============================================
+- version bytes (2 bytes)
 - amount of (sub)programs (1 byte)
 - for each (sub)program:
     - name (8 bytes)
 	- starting line (2 bytes)
 	- ending line (2 bytes)
+	- CRC of source (2 bytes)
 - amount of variables (1 byte)
 - variables (max 85*21 bytes)
 - amount of lines (3 bytes)
@@ -17,6 +19,7 @@ Debug appvar
 - breakpoints line numbers (max 255*3 bytes)
 - amount of labels (1 byte)
 - labels + addresses (max 255*(21+3) bytes)
+- CRC of compiled program (2 bytes)
 
 Breakpoints
 ===============================================
