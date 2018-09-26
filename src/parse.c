@@ -1967,6 +1967,8 @@ static uint8_t functionBB(int token) {
                 ti_Seek(3 + amountOfSubPrograms * sizeof(debug_prog) + offsetof(debug_prog_t, startingLine), SEEK_SET, debug.dbgPrgm);
                 ti_Write(&debug.currentLine, sizeof(uint16_t), 1, debug.dbgPrgm);
                 ti_Seek(0, SEEK_END, debug.dbgPrgm);
+                
+                WriteIntToDebugProg(0);
             }
 
             // Compile it, and close
