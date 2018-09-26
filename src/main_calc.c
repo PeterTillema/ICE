@@ -14,7 +14,7 @@
 #include "prescan.h"
 
 #define DEBUG_VERSION_MAJOR 0
-#define DEBUG_VERSION_MINOR 0
+#define DEBUG_VERSION_MINOR 1
 
 #define NUMBEROFPROGRAM 256
 #define PROGRAMPERSCREEN 21
