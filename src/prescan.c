@@ -36,7 +36,7 @@ void preScanProgram(void) {
         
         // Write the name + start line + end line to debug appvar
         ti_GetName(buf, ice.inPrgm);
-        ti_Write(buf, 12, 1, debug.dbgPrgm);
+        ti_Write(buf, sizeof(buf), 1, debug.dbgPrgm);
         
         // Get CRC and write to debug appvar
         CRC = GetCRC(ti_GetDataPtr(ice.inPrgm), ti_GetSize(ice.inPrgm));

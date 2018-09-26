@@ -136,6 +136,13 @@ typedef struct {
     
     ti_var_t dbgPrgm;                                       // Used for writing debug things
 } debug_t;
+
+typedef struct {
+    char     name[8];
+    uint16_t startingLine;
+    uint16_t endingLine;
+    uint16_t CRC;
+} debug_prog_t;
 #endif
 
 typedef struct {
@@ -229,6 +236,7 @@ extern variable_t variable;
 
 #ifdef CALCULATOR
 extern debug_t debug;
+extern debug_prog_t debug_prog;
 
 void CheaderData(void);
 void GraphxHeader(void);

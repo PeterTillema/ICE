@@ -333,14 +333,16 @@ compile_program:
         if (programDataSize) ti_Write(ice.programDataPtr, programDataSize, 1, ice.outPrgm);
         _rewind(ice.outPrgm);
         
-        // Write final CRC to debug program, as well as the ending line of the first program
+        // Write final CRC to debug program, as well as the ending line of the first program and the amount of total programs
         if (ice.debug) {
             uint16_t CRC;
             
             CRC = GetCRC(ti_GetDataPtr(ice.outPrgm), ti_GetSize(ice.outPrgm));
             ti_Write(&CRC, sizeof(uint16_t), 1, debug.dbgPrgm);
-            ti_Seek(3 + 8 + 2, SEEK_SET, debug.dbgPrgm);
-            ti_Write(&debug.currentLine, 2, 1, debug.dbgPrgm);
+            ti_Seek(3 + offsetof(debug_prog_t, endingLine), SEEK_SET, debug.dbgPrgm);
+            ti_Write(&debug.currentLine, sizeof(uint16_t), 1, debug.dbgPrgm);
+            ti_Seek(2, SEEK_SET, debug.dbgPrgm);
+            ti_PutC(debug.amountOfPrograms + 1, debug.dbgPrgm);         // +1 because the main program starts at 0
         }
 
         // Yep, we are really done!

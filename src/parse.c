@@ -21,6 +21,7 @@ extern const uint8_t RandData[];
 extern char *str_dupcat(const char *s, const char *c);
 #else
 debug_t debug;
+debug_prog_t debug_prog;
 #endif
 
 static uint8_t (*functions[256])(int token);
@@ -1963,8 +1964,8 @@ static uint8_t functionBB(int token) {
                 amountOfSubPrograms = ++debug.amountOfPrograms;
                 
                 // Write starting line to debug appvar; skip version bytes + amount of programs byte + previous subprograms + name bytes
-                ti_Seek(3 + amountOfSubPrograms * 14 + 8, SEEK_SET, debug.dbgPrgm);
-                ti_Write(&debug.currentLine, 2, 1, debug.dbgPrgm);
+                ti_Seek(3 + amountOfSubPrograms * sizeof(debug_prog) + offsetof(debug_prog_t, startingLine), SEEK_SET, debug.dbgPrgm);
+                ti_Write(&debug.currentLine, sizeof(uint16_t), 1, debug.dbgPrgm);
                 ti_Seek(0, SEEK_END, debug.dbgPrgm);
             }
 
@@ -1982,8 +1983,8 @@ static uint8_t functionBB(int token) {
             
             if (ice.debug) {
                 // Write ending line to debug appvar
-                ti_Seek(3 + amountOfSubPrograms * 14 + 10, SEEK_SET, debug.dbgPrgm);
-                ti_Write(&debug.currentLine, 2, 1, debug.dbgPrgm);
+                ti_Seek(3 + amountOfSubPrograms * sizeof(debug_prog) + offsetof(debug_prog_t, endingLine), SEEK_SET, debug.dbgPrgm);
+                ti_Write(&debug.currentLine, sizeof(uint16_t), 1, debug.dbgPrgm);
                 ti_Seek(0, SEEK_END, debug.dbgPrgm);
             }
         } else {
