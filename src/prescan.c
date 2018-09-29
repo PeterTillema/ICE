@@ -25,18 +25,21 @@ const uint8_t colorTable[16] = {255,24,224,0,248,36,227,97,9,19,230,255,181,107,
 void preScanProgram(void) {
     bool inString = false, afterNewLine = true;
     int token;
+    uint16_t amountOfLines = 1;
+    uint16_t *amountOfLinesPtr = NULL;
     
     _rewind(ice.inPrgm);
     
 #ifdef CALCULATOR
     if (ice.debug) {
         // The line is 1 at the first program, otherwise it would get overwritten with AsmComp(
-        char buf[12] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0};
+        char buf[14] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
         uint16_t CRC;
         
         // Write the name + start line + end line to debug appvar
         ti_GetName(buf, ice.inPrgm);
         ti_Write(buf, sizeof(buf), 1, debug.dbgPrgm);
+        amountOfLinesPtr = ti_GetDataPtr(debug.dbgPrgm);
         
         // Get CRC and write to debug appvar
         CRC = GetCRC(ti_GetDataPtr(ice.inPrgm), ti_GetSize(ice.inPrgm));
@@ -57,14 +60,17 @@ void preScanProgram(void) {
             if (tok == tii) {
                 skipLine();
                 afterNewLine = true;
+                amountOfLines++;
             } else if (tok == tLbl) {
                 prescan.amountOfLbls++;
                 skipLine();
                 afterNewLine = true;
+                amountOfLines++;
             } else if (tok == tGoto || (tok == tVarOut && tok2 == tCall)) {
                 prescan.amountOfGotos++;
                 skipLine();
                 afterNewLine = true;
+                amountOfLines++;
             }
         }
 
@@ -77,6 +83,7 @@ void preScanProgram(void) {
             if (tok == tEnter || (tok == tColon && !inString)) {
                 inString = false;
                 afterNewLine = true;
+                amountOfLines++;
             } else if (!inString) {
                 if (tok >= tA && tok <= tTheta) {
                     GetVariableOffset(tok);
@@ -124,6 +131,7 @@ void preScanProgram(void) {
                         }
                         free(newProg);
                         afterNewLine = true;
+                        amountOfLines++;
                     } else if (tok2 == tRandInt) {
                         prescan.amountOfRandRoutines++;
                         prescan.modifiedIY = true;
@@ -148,6 +156,7 @@ void preScanProgram(void) {
                         token = tok1 - t0;
                         if (tok2 == tEnter || tok2 == tColon) {
                             afterNewLine = true;
+                            amountOfLines++;
                         }
                     } else {
                         token = (tok1 - t0) * 10 + (tok2 - t0);
@@ -177,6 +186,12 @@ void preScanProgram(void) {
             }
         }
     }
+    
+#ifdef CALCULATOR
+    if (ice.debug) {
+        *(amountOfLinesPtr - 1) = amountOfLines;
+    }
+#endif
 
     _rewind(ice.inPrgm);
 }

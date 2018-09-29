@@ -141,6 +141,7 @@ typedef struct {
     char     name[8];
     uint16_t startingLine;
     uint16_t endingLine;
+    uint16_t amountOfLines;
     uint16_t CRC;
 } debug_prog_t;
 #endif
