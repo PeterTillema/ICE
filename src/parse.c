@@ -68,7 +68,7 @@ uint8_t parseProgram(void) {
         uint8_t curVar;
         
         sprintf(buf, "%c%.5sDBG", TI_APPVAR_TYPE, ice.outName);
-        ice.programDataPtr -= strlen(buf);
+        ice.programDataPtr -= strlen(buf) + 1;
         strcpy((char*)ice.programDataPtr, buf);
         ProgramPtrToOffsetStack();
         LD_DE_IMM((uint24_t)ice.programDataPtr);
