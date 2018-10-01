@@ -6,7 +6,7 @@ Debug appvar
     - name (8 bytes)
 	- starting line (2 bytes)
 	- ending line (2 bytes)
-	- amount of lines (2 bytes)
+	- depth of subprogram (1 byte)
 	- CRC of source (2 bytes)
 - amount of variables (1 byte)
 - variables (max 85*21 bytes)

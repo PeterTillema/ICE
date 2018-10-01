@@ -141,7 +141,7 @@ typedef struct {
     char     name[8];
     uint16_t startingLine;
     uint16_t endingLine;
-    uint16_t amountOfLines;
+    uint8_t  depth;
     uint16_t CRC;
 } debug_prog_t;
 #endif
@@ -186,6 +186,7 @@ typedef struct {
     uint8_t    amountOfTimerRoutines;
     uint8_t    amountOfOSVarsUsed;
     uint8_t    amountOfVariablesUsed;
+    uint8_t    depth;
 
     uint24_t   amountOfLbls;
     uint24_t   amountOfGotos;
