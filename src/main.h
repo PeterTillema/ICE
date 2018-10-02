@@ -126,6 +126,7 @@ typedef struct {
 
 #ifdef CALCULATOR
 typedef struct {
+    uint8_t  curProgIndex;                                  // Currently compiling (sub)program
     uint8_t  amountOfPrograms;                              // Count the amount of (sub)programs
     uint8_t  *jumpAddress;                                  // Used for debugging
     uint8_t  *debugLibPtr;                                  // Used for debugging
@@ -141,9 +142,15 @@ typedef struct {
     char     name[8];
     uint16_t startingLine;
     uint16_t endingLine;
-    uint8_t  depth;
     uint16_t CRC;
 } debug_prog_t;
+
+typedef struct {
+    uint8_t  subprogramIndex;
+    uint16_t offset;
+    uint16_t localLine;
+    uint16_t jumpOffset;
+} line_t;
 #endif
 
 typedef struct {
@@ -186,7 +193,6 @@ typedef struct {
     uint8_t    amountOfTimerRoutines;
     uint8_t    amountOfOSVarsUsed;
     uint8_t    amountOfVariablesUsed;
-    uint8_t    depth;
 
     uint24_t   amountOfLbls;
     uint24_t   amountOfGotos;
@@ -237,6 +243,7 @@ extern reg_t reg;
 extern variable_t variable;
 
 #ifdef CALCULATOR
+extern line_t line;
 extern debug_t debug;
 extern debug_prog_t debug_prog;
 

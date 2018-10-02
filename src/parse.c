@@ -20,6 +20,7 @@ extern const uint8_t RandData[];
 
 extern char *str_dupcat(const char *s, const char *c);
 #else
+line_t line;
 debug_t debug;
 debug_prog_t debug_prog;
 #endif
@@ -167,10 +168,12 @@ uint8_t parseProgramUntilEnd(void) {
 #ifdef CALCULATOR
         if (ice.debug) {
             currentOffset = ti_Tell(debug.dbgPrgm);
-            WriteIntToDebugProg((uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
+            ti_PutC(debug.curProgIndex, debug.dbgPrgm);
+            WriteWordToDebugProg((uint24_t)(ice.programPtr - ice.programData));
+            WriteWordToDebugProg(ice.currentLine);
             
             if ((uint8_t)token == tReturn) {
-                WriteIntToDebugProg(-1);
+                WriteWordToDebugProg(-1);
             }
             
             debug.currentLine++;
@@ -190,8 +193,8 @@ uint8_t parseProgramUntilEnd(void) {
                 OutputWriteByte(0);
             }
             
-            if (ti_Tell(debug.dbgPrgm) - currentOffset == 3) {
-                WriteIntToDebugProg(0);
+            if (ti_Tell(debug.dbgPrgm) - currentOffset == 5) {
+                WriteWordToDebugProg(0);
             }
         }
 
@@ -1039,13 +1042,14 @@ static uint8_t functionIf(int token) {
     uint8_t tempLblElements = ice.curLbl;
     
     if ((token = _getc()) != EOF && token != tEnter && token != tColon) {
-        uint8_t *IfStartAddr, res, *IfJumpAddr = NULL;
+        uint8_t *IfStartAddr, res;
+        uint16_t *IfJumpAddr = NULL;
         uint24_t tempDataOffsetElements;
         
 #ifdef CALCULATOR
         if (ice.debug) {
             IfJumpAddr = ti_GetDataPtr(debug.dbgPrgm);
-            WriteIntToDebugProg(0);
+            WriteWordToDebugProg(0);
         }
 #endif
         
@@ -1083,7 +1087,7 @@ static uint8_t functionIf(int token) {
         // Check if we quit the program with an 'Else'
         if (res == E_ELSE) {
             bool shortElseCode;
-            uint8_t *ElseJumpAddr = NULL;
+            uint16_t *ElseJumpAddr = NULL;
             uint8_t tempGotoElements2 = ice.curGoto;
             uint8_t tempLblElements2 = ice.curLbl;
             uint24_t tempDataOffsetElements2;
@@ -1098,8 +1102,8 @@ static uint8_t functionIf(int token) {
 #ifdef CALCULATOR
             if (ice.debug) {
                 ElseJumpAddr = ti_GetDataPtr(debug.dbgPrgm);
-                WriteIntToDebugProg(0);
-                w24(IfJumpAddr, (uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
+                WriteWordToDebugProg(0);
+                *IfJumpAddr = ice.programPtr - ice.programData;
             }
 #endif
             
@@ -1112,8 +1116,8 @@ static uint8_t functionIf(int token) {
             
 #ifdef CALCULATOR
             if (ice.debug) {
-                WriteIntToDebugProg(0);
-                w24(ElseJumpAddr, (uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
+                WriteWordToDebugProg(0);
+                *ElseJumpAddr = ice.programPtr - ice.programData;
             }
 #endif
         }
@@ -1124,8 +1128,8 @@ static uint8_t functionIf(int token) {
             
 #ifdef CALCULATOR
             if (ice.debug) {
-                w24(IfJumpAddr, (uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
-                WriteIntToDebugProg(0);
+                *IfJumpAddr = ice.programPtr - ice.programData;
+                WriteWordToDebugProg(0);
             }
 #endif
         } else {
@@ -1238,7 +1242,7 @@ static uint8_t functionWhile(int token) {
     uint8_t *WhileStartAddr = ice.programPtr, res;
     uint8_t *WhileRepeatCondStartTemp = WhileRepeatCondStart;
     bool WhileJumpForwardSmall;
-    uint8_t *debugProgDataPtr = NULL;
+    uint16_t *debugProgDataPtr = NULL;
 
     // Basically the same as "Repeat", but jump to condition checking first
     JP(0);
@@ -1246,7 +1250,7 @@ static uint8_t functionWhile(int token) {
 #ifdef CALCULATOR
     if (ice.debug) {
         debugProgDataPtr = ti_GetDataPtr(debug.dbgPrgm);
-        WriteIntToDebugProg(0);
+        WriteWordToDebugProg(0);
     }
 #endif
     
@@ -1258,7 +1262,7 @@ static uint8_t functionWhile(int token) {
     
 #ifdef CALCULATOR
     if (ice.debug) {
-        w24(debugProgDataPtr, (uint24_t)WhileRepeatCondStart - (uint24_t)ice.programData + PRGM_START);
+        *debugProgDataPtr = WhileRepeatCondStart - ice.programData;
     }
 #endif
     
@@ -1287,7 +1291,7 @@ uint8_t functionRepeat(int token) {
     
 #ifdef CALCULATOR
     if (ice.debug && ((uint8_t)token == tRepeat)) {
-        WriteIntToDebugProg(0);
+        WriteWordToDebugProg(0);
     }
 #endif
 
@@ -1348,7 +1352,7 @@ uint8_t functionRepeat(int token) {
         
 #ifdef CALCULATOR
     if (ice.debug) {
-        WriteIntToDebugProg((uint24_t)RepeatCodeStart - (uint24_t)ice.programData + PRGM_START);
+        WriteWordToDebugProg(RepeatCodeStart - ice.programData);
     }
 #endif
     
@@ -1541,11 +1545,11 @@ static uint8_t functionFor(int token) {
     uint8_t tok, variable, res;
     
 #ifdef CALCULATOR
-    uint8_t *ForJumpAddr = NULL;
+    uint16_t *ForJumpAddr = NULL;
     
     if (ice.debug) {
         ForJumpAddr = ti_GetDataPtr(debug.dbgPrgm);
-        WriteIntToDebugProg(0);
+        WriteWordToDebugProg(0);
     }
 #endif
 
@@ -1664,7 +1668,7 @@ static uint8_t functionFor(int token) {
     
 #ifdef CALCULATOR
     if (ice.debug) {
-        w24(ForJumpAddr, (uint24_t)ice.programPtr - (uint24_t)ice.programData + PRGM_START);
+        *ForJumpAddr = ice.programPtr - ice.programData;
     }
 #endif
 
@@ -1700,7 +1704,7 @@ static uint8_t functionFor(int token) {
     
 #ifdef CALCULATOR
     if (ice.debug) {
-        WriteIntToDebugProg((uint24_t)loopStart - (uint24_t)ice.programData + PRGM_START);
+        WriteWordToDebugProg(loopStart - ice.programData);
     }
 #endif
 
@@ -1951,6 +1955,7 @@ static uint8_t functionBB(int token) {
 #else
         if ((ice.inPrgm = _open(outputPrgm->prog))) {
             char buf[35];
+            uint8_t tempCurProgIndex = 0;
             uint24_t amountOfSubPrograms = 0;
             
             // Display message
@@ -1960,17 +1965,14 @@ static uint8_t functionBB(int token) {
             free(outputPrgm);
             
             if (ice.debug) {
-                // Increment amount of programs
-                amountOfSubPrograms = ++debug.amountOfPrograms;
+                WriteWordToDebugProg(0);
+                tempCurProgIndex = debug.curProgIndex;
+                amountOfSubPrograms = debug.curProgIndex = ++debug.amountOfPrograms;
                 
                 // Write starting line to debug appvar; skip version bytes + amount of programs byte + previous subprograms + name bytes
                 ti_Seek(3 + amountOfSubPrograms * sizeof(debug_prog) + offsetof(debug_prog_t, startingLine), SEEK_SET, debug.dbgPrgm);
-                debug.currentLine++;
-                ti_Write(&debug.currentLine, sizeof(uint16_t), 1, debug.dbgPrgm);
+                WriteWordToDebugProg(debug.currentLine + 1);
                 ti_Seek(0, SEEK_END, debug.dbgPrgm);
-                debug.currentLine--;
-                
-                WriteIntToDebugProg(0);
             }
 
             // Compile it, and close
@@ -1988,8 +1990,9 @@ static uint8_t functionBB(int token) {
             if (ice.debug) {
                 // Write ending line to debug appvar
                 ti_Seek(3 + amountOfSubPrograms * sizeof(debug_prog) + offsetof(debug_prog_t, endingLine), SEEK_SET, debug.dbgPrgm);
-                ti_Write(&debug.currentLine, sizeof(uint16_t), 1, debug.dbgPrgm);
+                WriteWordToDebugProg(debug.currentLine);
                 ti_Seek(0, SEEK_END, debug.dbgPrgm);
+                debug.curProgIndex = tempCurProgIndex;
             }
         } else {
             free(outputPrgm);

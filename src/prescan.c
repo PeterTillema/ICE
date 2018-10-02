@@ -28,7 +28,6 @@ void preScanProgram(void) {
     uint16_t amountOfLines = 1;
     
     _rewind(ice.inPrgm);
-    prescan.depth++;
     
 #ifdef CALCULATOR
     if (ice.debug) {
@@ -36,10 +35,9 @@ void preScanProgram(void) {
         char buf[12] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0};
         uint16_t CRC;
         
-        // Write the name + start line + end line + depth to debug appvar
+        // Write the name + start line + end line to debug appvar
         ti_GetName(buf, ice.inPrgm);
         ti_Write(buf, sizeof(buf), 1, debug.dbgPrgm);
-        ti_PutC(prescan.depth, debug.dbgPrgm);
         
         // Get CRC and write to debug appvar
         CRC = GetCRC(ti_GetDataPtr(ice.inPrgm), ti_GetSize(ice.inPrgm));
@@ -182,7 +180,6 @@ void preScanProgram(void) {
     }
 
     _rewind(ice.inPrgm);
-    prescan.depth--;
 }
 
 uint8_t getNameIconDescription(void) {

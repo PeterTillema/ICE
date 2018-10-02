@@ -478,7 +478,11 @@ uint8_t GetVariableOffset(uint8_t tok) {
 #ifdef CALCULATOR
 
 void WriteIntToDebugProg(uint24_t num) {
-    ti_Write(&num, 3, 1, debug.dbgPrgm);
+    ti_Write(&num, sizeof(uint24_t), 1, debug.dbgPrgm);
+}
+
+void WriteWordToDebugProg(uint24_t num) {
+    ti_Write(&num, sizeof(uint16_t), 1, debug.dbgPrgm);
 }
 
 void displayLoadingBarFrame(void) {
