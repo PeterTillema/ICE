@@ -223,6 +223,7 @@ compile_program:
     memset(&expr, 0, sizeof expr);
     memset(&reg, 0, sizeof reg);
     memset(&prescan, 0, sizeof prescan);
+    memset(&debug, 0, sizeof debug);
     
     // Output debug appvar
     if (key == sk_Window) {
@@ -338,9 +339,9 @@ compile_program:
             uint16_t CRC;
             
             CRC = GetCRC(ti_GetDataPtr(ice.outPrgm), ti_GetSize(ice.outPrgm));
-            ti_Write(&CRC, sizeof(uint16_t), 1, debug.dbgPrgm);
+            WriteWordToDebugProg(CRC);
             ti_Seek(3 + offsetof(debug_prog_t, endingLine), SEEK_SET, debug.dbgPrgm);
-            ti_Write(&debug.currentLine, sizeof(uint16_t), 1, debug.dbgPrgm);
+            WriteWordToDebugProg(debug.currentLine);
             ti_Seek(2, SEEK_SET, debug.dbgPrgm);
             ti_PutC(debug.amountOfPrograms + 1, debug.dbgPrgm);         // +1 because the main program starts at 0
         }

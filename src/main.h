@@ -40,7 +40,7 @@
 typedef struct {
     char     name[20];
     uint8_t  *addr;
-    uint8_t  *debugJumpDataPtr;
+    uint16_t *debugJumpDataPtr;
     uint24_t offset;
 } label_t;
 

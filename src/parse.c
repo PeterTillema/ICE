@@ -137,7 +137,7 @@ uint8_t parseProgram(void) {
                 w24(curGoto->addr + 1, jumpAddress);
                 
                 if (ice.debug) {
-                    w24(curGoto->debugJumpDataPtr, jumpAddress);
+                    *curGoto->debugJumpDataPtr = jumpAddress - PRGM_START;
                 }
                 
                 goto findNextLabel;
