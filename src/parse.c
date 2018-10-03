@@ -1317,6 +1317,12 @@ uint8_t functionRepeat(int token) {
         return res;
     }
     ice.currentLine = tempCurrentLine2;
+    
+#ifdef CALCULATOR
+    if (ice.debug) {
+        WriteWordToDebugProg(RepeatCodeStart - ice.programData);
+    }
+#endif
 
     // And set the pointer after the "End"
     _seek(RepeatProgEnd, SEEK_SET, ice.inPrgm);
@@ -1349,12 +1355,6 @@ uint8_t functionRepeat(int token) {
     WhileJumpBackwardsLarge = !JumpBackwards(RepeatCodeStart, expr.AnsSetCarryFlag || expr.AnsSetCarryFlagReversed ?
         (expr.AnsSetCarryFlagReversed ? OP_JR_NC : OP_JR_C) :
         (expr.AnsSetZeroFlagReversed  ? OP_JR_NZ : OP_JR_Z));
-        
-#ifdef CALCULATOR
-    if (ice.debug) {
-        WriteWordToDebugProg(RepeatCodeStart - ice.programData);
-    }
-#endif
     
     return VALID;
 }
@@ -1619,6 +1619,10 @@ static uint8_t functionFor(int token) {
     } else {
         stepIsNumber = true;
         stepNumber = 1;
+    }
+    
+    if (ice.tempToken == tRParen) {
+        _getc();
     }
 
     jumpToCond = ice.programPtr;
@@ -1969,7 +1973,7 @@ static uint8_t functionBB(int token) {
                 tempCurProgIndex = debug.curProgIndex;
                 amountOfSubPrograms = debug.curProgIndex = ++debug.amountOfPrograms;
                 
-                // Write starting line to debug appvar; skip version bytes + amount of programs byte + previous subprograms + name bytes
+                // Write starting line to debug appvar
                 ti_Seek(3 + amountOfSubPrograms * sizeof(debug_prog) + offsetof(debug_prog_t, startingLine), SEEK_SET, debug.dbgPrgm);
                 WriteWordToDebugProg(debug.currentLine + 1);
                 ti_Seek(0, SEEK_END, debug.dbgPrgm);
