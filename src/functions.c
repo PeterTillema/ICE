@@ -889,7 +889,7 @@ uint8_t parseFunction(uint24_t index) {
             }
             
             // DefineTilemap(
-            else if (function2 == tDefineSprite) {
+            else if (function2 == tDefineTilemap) {
                 /****************************************************************
                 * C arguments:
                 *  - uint8_t *mapData (pointer to data)
