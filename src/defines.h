@@ -8,9 +8,7 @@
 #else
 #include <tice.h>
 #endif
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
