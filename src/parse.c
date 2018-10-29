@@ -1491,7 +1491,7 @@ static uint8_t functionOutput(int token) {
 
         if (expr.outputIsNumber) {
             ice.programPtr -= expr.SizeOfOutputNumber;
-			LD_A(expr.outputNumber);
+            LD_A(expr.outputNumber);
         } else if (expr.outputIsVariable) {
             *(ice.programPtr - 2) = OP_LD_A_HL;
         } else if (expr.outputRegister == REGISTER_HL) {
