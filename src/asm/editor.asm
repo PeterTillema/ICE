@@ -25,11 +25,12 @@ _GotoEditor:
 	
 ; Cleanup C things
 	ld	sp, (__errsp + 1);
-	pop	af
-	pop	de
-	ld	(de), a
 	pop	iy
+	pop	af
+	ex	(sp), hl
+	ld	(hl), a
 	call	_usb_ResetTimer
+	pop	hl
 	
 	ld	de, plotSScreen
 	ld	hl, StartProgramEditor
