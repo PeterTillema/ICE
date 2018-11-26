@@ -274,6 +274,7 @@ uint8_t parsePrescan(void) {
         }
     }
     
+#ifdef CALCULATOR
     // Write the lib header to the output program
     if (ice.debug) {
         memcpy(ice.programPtr, ICEDebugheaderData, 11);
@@ -281,6 +282,7 @@ uint8_t parsePrescan(void) {
         debug.debugLibPtr = ice.programPtr;
         JP(0);
     }
+#endif
     
     // Set free RAM pointers (for strings)
     prescan.freeMemoryPtr = (prescan.tempStrings[1] = (prescan.tempStrings[0] = pixelShadow + 2000 * prescan.amountOfOSVarsUsed) + 2000) + 2000;
