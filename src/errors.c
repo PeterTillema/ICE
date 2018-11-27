@@ -43,9 +43,9 @@ static const char *errors[] = {
 };
 
 void displayLabelError(char *label) {
-    char buf[30];
+    char buf[40];
 
-    sprintf(buf, "Label %.13s not found", label);
+    sprintf(buf, "Label %s not found", label);
 #ifdef CALCULATOR
     gfx_SetTextFGColor(224);
     displayMessageLineScroll(buf);

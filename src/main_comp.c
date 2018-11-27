@@ -58,6 +58,11 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Error: invalid amount of arguments\n");
         exit(1);
     }
+	
+    memset(&ice, 0, sizeof ice);
+    memset(&expr, 0, sizeof expr);
+    memset(&reg, 0, sizeof reg);
+    memset(&prescan, 0, sizeof prescan);
 
     ice.inPrgm = _open(var_name);
     if (!ice.inPrgm) {
