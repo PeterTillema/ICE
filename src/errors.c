@@ -50,7 +50,7 @@ void displayLabelError(char *label) {
     gfx_SetTextFGColor(224);
     displayMessageLineScroll(buf);
 #else
-    fprintf(stdout, "%s\n", buf);
+    fprintf(stderr, "%s\n", buf);
 #endif
 }
 
@@ -65,7 +65,7 @@ void displayError(uint8_t index) {
     sprintf(buf, "Error at line %u", ice.currentLine);
     displayMessageLineScroll(buf);
 #else
-    fprintf(stdout, "%s\n", errors[index]);
-    fprintf(stdout, "Error at line %u\n", ice.currentLine);
+    fprintf(stderr, "%s\n", errors[index]);
+    fprintf(stderr, "Error at line %u\n", ice.currentLine);
 #endif
 }
