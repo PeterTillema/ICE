@@ -26,11 +26,12 @@ StartRunProgram:
 	
 ; Cleanup C things
 	ld	sp, (__errsp + 1);
-	pop	af
-	pop	de
-	ld	(de), a
 	pop	iy
+	pop	af
+	ex	(sp), hl
+	ld	(hl), a
 	call	00004F0h		; usb_ResetTimers
+	pop	hl
 	
 ; Remove ICE from UserMem
 	ld	hl, 0D1A881h		; userMem
