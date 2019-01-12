@@ -23,15 +23,22 @@ enum {
     TYPE_MASK_U24
 };
 
-bool JumpForward(uint8_t*, uint8_t*, uint24_t, uint8_t, uint8_t);
-bool JumpBackwards(uint8_t*, uint8_t);
+bool JumpForward(uint8_t *, uint8_t *, unsigned int, uint8_t, uint8_t);
+
+bool JumpBackwards(uint8_t *, uint8_t);
+
 void optimizeZeroCarryFlagOutput(void);
+
 void skipLine(void);
+
 void insertGotoLabel(void);
 
-uint8_t parsePostFixFromIndexToIndex(uint24_t, uint24_t);
+uint8_t parsePostFixFromIndexToIndex(unsigned int, unsigned int);
+
 uint8_t functionRepeat(int);
+
 uint8_t parseProgram(void);
+
 uint8_t parseProgramUntilEnd(void);
 
 #endif

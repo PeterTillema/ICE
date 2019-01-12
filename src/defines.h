@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define _getc()      getNextToken()
+#define _getc() getNextToken()
 
 #if !defined(COMPUTER_ICE) && !defined(__EMSCRIPTEN__)
 
@@ -24,8 +24,8 @@
 #include <graphx.h>
 #include <keypadc.h>
 #include <debug.h>
-#define w24(x, y) (*(uint24_t*)(x) = y)
-#define r24(x) (*(uint24_t*)(x))
+#define w24(x, y) (*(unsigned int*)(x) = y)
+#define r24(x) (*(unsigned int*)(x))
 #define _rewind(x)   ti_Rewind(x)
 #define _close(x)    ti_Close(x)
 #define _open(x)     ti_OpenVar(x, "r", TI_PRGM_TYPE)
@@ -44,8 +44,6 @@ uint32_t r24(void *x);
 void export_program(const char *name, uint8_t *data, size_t size);
 
 typedef FILE* ti_var_t;
-typedef int32_t int24_t;
-typedef uint32_t uint24_t;
 
 #define _rewind(x)   fseek(x, 0x4A, SEEK_SET)
 #define _open(x)     fopen(x, "rb")

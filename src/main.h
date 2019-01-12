@@ -41,7 +41,7 @@ typedef struct {
     char     name[20];
     uint8_t  *addr;
     uint16_t *debugJumpDataPtr;
-    uint24_t offset;
+    unsigned int offset;
 } label_t;
 
 typedef struct {
@@ -64,18 +64,18 @@ typedef struct {
     label_t  *LblStack;                                     // Pointer to label stack
     label_t  *GotoStack;                                    // Pointer to goto stack
 
-    uint24_t *dataOffsetStack[1000];                        // Stack of the address to point to the data, which needs to be changed after compiling
-    uint24_t dataOffsetElements;                            // Amount of stack elements of above
-    uint24_t dataOffsetElementsBackup;                      // Same as above
-    uint24_t *ForLoopSMCStack[100];                         // Used for SMC in For loops
-    uint24_t ForLoopSMCElements;                            // Amount of elements in above stack
-    uint24_t currentLine;                                   // The amount of parsed lines, useful for displaying it when an error occurs
-    uint24_t programSize;                                   // Size of the output program
-    uint24_t *stack[STACK_SIZE*5];                          // Stacks for compiling arguments
-    uint24_t *stackStart;                                   // Start of the stack
-    uint24_t curLbl;                                        // Current label
-    uint24_t curGoto;                                       // Current goto
-    uint24_t programLength;                                 // Size of input program
+    unsigned int *dataOffsetStack[1000];                        // Stack of the address to point to the data, which needs to be changed after compiling
+    unsigned int dataOffsetElements;                            // Amount of stack elements of above
+    unsigned int dataOffsetElementsBackup;                      // Same as above
+    unsigned int *ForLoopSMCStack[100];                         // Used for SMC in For loops
+    unsigned int ForLoopSMCElements;                            // Amount of elements in above stack
+    unsigned int currentLine;                                   // The amount of parsed lines, useful for displaying it when an error occurs
+    unsigned int programSize;                                   // Size of the output program
+    unsigned int *stack[STACK_SIZE*5];                          // Stacks for compiling arguments
+    unsigned int *stackStart;                                   // Start of the stack
+    unsigned int curLbl;                                        // Current label
+    unsigned int curGoto;                                       // Current goto
+    unsigned int programLength;                                 // Size of input program
 
     ti_var_t inPrgm;                                        // Used for getting tokens
     ti_var_t outPrgm;                                       // Used for writing bytes
@@ -85,43 +85,43 @@ typedef struct {
     bool     debug;                                         // Used to export an appvar when debugging
 
     bool     usedAlreadyRand;                               // Only once the "rand" routine in the program data
-    uint24_t randAddr;                                      // Address of the "rand" routine in the program data
+    unsigned int randAddr;                                      // Address of the "rand" routine in the program data
 
     bool     usedAlreadyGetKeyFast;                         // Only once the "getKey(X)" routine in the program data
-    uint24_t getKeyFastAddr;                                // Address of the "getKey(X)" routine in the program data
+    unsigned int getKeyFastAddr;                                // Address of the "getKey(X)" routine in the program data
 
     bool     usedAlreadySqrt;                               // Only once the "sqrt(" routine in the program data
-    uint24_t SqrtAddr;                                      // Address of the "sqrt(" routine in the program data
+    unsigned int SqrtAddr;                                      // Address of the "sqrt(" routine in the program data
 
     bool     usedAlreadyMean;                               // Only once the "mean(" routine in the program data
-    uint24_t MeanAddr;                                      // Address of the "mean(" routine in the program data
+    unsigned int MeanAddr;                                      // Address of the "mean(" routine in the program data
 
     bool     usedAlreadyInput;                              // Only once the "Input" routine in the program data
-    uint24_t InputAddr;                                     // Address of the "Input" routine in the program data
+    unsigned int InputAddr;                                     // Address of the "Input" routine in the program data
 
     bool     usedAlreadyPause;                              // Only once the "Pause " routine in the program data
-    uint24_t PauseAddr;                                     // Address of the "Pause " routine in the program data
+    unsigned int PauseAddr;                                     // Address of the "Pause " routine in the program data
 
     bool     usedAlreadySinCos;                             // Only once the "sin(" or "cos(" routine in the program data
-    uint24_t SinCosAddr;                                    // Address of the "sin(" or "cos(" routine in the program data
+    unsigned int SinCosAddr;                                    // Address of the "sin(" or "cos(" routine in the program data
 
     bool     usedAlreadyLoadSprite;                         // Only once the "LoadData(" routine in the program data
-    uint24_t LoadSpriteAddr;                                // Address of the "LoadData(" routine in the program data
+    unsigned int LoadSpriteAddr;                                // Address of the "LoadData(" routine in the program data
 
     bool     usedAlreadyLoadTilemap;                        // Only once the "LoadData(" routine in the program data
-    uint24_t LoadTilemapAddr;                               // Address of the "LoadData(" routine in the program data
+    unsigned int LoadTilemapAddr;                               // Address of the "LoadData(" routine in the program data
 
     bool     usedAlreadyMalloc;                             // Only once the "Alloc(" routine in the program data
-    uint24_t MallocAddr;                                    // Address of the "Alloc(" routine in the program data
+    unsigned int MallocAddr;                                    // Address of the "Alloc(" routine in the program data
 
     bool     usedAlreadyTimer;                              // Only once the timer routine in the program data
-    uint24_t TimerAddr;                                     // Address of the timer routine in the program data
+    unsigned int TimerAddr;                                     // Address of the timer routine in the program data
     
     bool     usedAlreadyDisp;                               // Only once the Disp routine in the program data
-    uint24_t DispAddr;                                      // Address of the Disp routine in the program data
+    unsigned int DispAddr;                                      // Address of the Disp routine in the program data
     
     bool     usedAlreadyPrgm;                               // Only once the prgm routine in the program data
-    uint24_t PrgmAddr;                                      // Address of the prgm routine in the program data
+    unsigned int PrgmAddr;                                      // Address of the prgm routine in the program data
 } ice_t;
 
 #ifdef CALCULATOR
@@ -131,9 +131,9 @@ typedef struct {
     uint8_t  *jumpAddress;                                  // Used for debugging
     uint8_t  *debugLibPtr;                                  // Used for debugging
     
-    uint24_t currentBreakPointLine;                         // Amount of breakpoints at startup
-    uint24_t breakPointLines[100];                          // List with startup breakpoint line numbers
-    uint24_t currentLine;                                   // The amount of parsed lines in the output program
+    unsigned int currentBreakPointLine;                         // Amount of breakpoints at startup
+    unsigned int breakPointLines[100];                          // List with startup breakpoint line numbers
+    unsigned int currentLine;                                   // The amount of parsed lines in the output program
     
     ti_var_t dbgPrgm;                                       // Used for writing debug things
 } debug_t;
@@ -169,7 +169,7 @@ typedef struct {
     uint8_t  outputReturnRegister;
     uint8_t  SizeOfOutputNumber;
 
-    uint24_t outputNumber;
+    unsigned int outputNumber;
 } expr_t;
 
 typedef struct {
@@ -194,14 +194,14 @@ typedef struct {
     uint8_t    amountOfOSVarsUsed;
     uint8_t    amountOfVariablesUsed;
 
-    uint24_t   amountOfLbls;
-    uint24_t   amountOfGotos;
-    uint24_t   GraphxRoutinesStack[AMOUNT_OF_GRAPHX_FUNCTIONS];
-    uint24_t   FileiocRoutinesStack[AMOUNT_OF_FILEIOC_FUNCTIONS];
-    uint24_t   OSStrings[10];
-    uint24_t   OSLists[10];
-    uint24_t   freeMemoryPtr;
-    uint24_t   tempStrings[2];
+    unsigned int   amountOfLbls;
+    unsigned int   amountOfGotos;
+    unsigned int   GraphxRoutinesStack[AMOUNT_OF_GRAPHX_FUNCTIONS];
+    unsigned int   FileiocRoutinesStack[AMOUNT_OF_FILEIOC_FUNCTIONS];
+    unsigned int   OSStrings[10];
+    unsigned int   OSLists[10];
+    unsigned int   freeMemoryPtr;
+    unsigned int   tempStrings[2];
     
     variable_t variables[255];
 } prescan_t;
@@ -225,10 +225,10 @@ typedef struct {
     uint8_t  AVariable;
     uint8_t  tempVariable;
 
-    uint24_t HLValue;
-    uint24_t DEValue;
-    uint24_t BCValue;
-    uint24_t tempValue;
+    unsigned int HLValue;
+    unsigned int DEValue;
+    unsigned int BCValue;
+    unsigned int tempValue;
 } reg_t;
 
 typedef struct {

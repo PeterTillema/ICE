@@ -1,45 +1,39 @@
 #include "defines.h"
 #include "errors.h"
-
-#include "ast.h"
-#include "stack.h"
-#include "parse.h"
-#include "main.h"
-#include "output.h"
-#include "operator.h"
-#include "functions.h"
 #include "routines.h"
 
+#include "main.h"
+
 static const char *errors[] = {
-    "This token/function is not implemented (yet)",
+        "This token/function is not implemented (yet)",
 #ifdef CALCULATOR
-    "This token cannot be used at the start of the   line",
+        "This token cannot be used at the start of the   line",
 #else
-    "This token cannot be used at the start of the line",
+        "This token cannot be used at the start of the line",
 #endif
-    "This token doesn't have a condition",
-    "You used 'Else' outside an If-statement",
-    "You used 'End' outside a condition block",
-    "You have an invalid \")\", \",\", \"(\", \")\", \"}\" or \"]\"",
-    "You have an invalid expression",
-    "Your icon should start with a quote",
-    "Invalid hexadecimal",
-    "ICE ERROR: please report it!",
-    "You have the wrong number or arguments",
+        "This token doesn't have a condition",
+        "You used 'Else' outside an If-statement",
+        "You used 'End' outside a condition block",
+        "You have an invalid \")\", \",\", \"(\", \")\", \"}\" or \"]\"",
+        "You have an invalid expression",
+        "Your icon should start with a quote",
+        "Invalid hexadecimal",
+        "ICE ERROR: please report it!",
+        "You have the wrong number or arguments",
 #ifdef CALCULATOR
-    "Unknown C function. If you are sure this              function exists, please contact me!",
+        "Unknown C function. If you are sure this              function exists, please contact me!",
 #else
-    "Unknown C function. If you are sure this function exists, please contact me!",
+        "Unknown C function. If you are sure this function exists, please contact me!",
 #endif
-    "Subprogram not found",
-    "Compiling subprograms not supported",
-    "Invalid program name",
-    "Not enough memory for Lbl and Goto",
-    "Unable to open debug file",
-    "Error: not an ICE program\n",
-    "Error: not enough memory for variables",
-    "Warning: Unknown char in the string!",
-    "Warning: string has been automatically squish-ed!",
+        "Subprogram not found",
+        "Compiling subprograms not supported",
+        "Invalid program name",
+        "Not enough memory for Lbl and Goto",
+        "Unable to open debug file",
+        "Error: not an ICE program\n",
+        "Error: not enough memory for variables",
+        "Warning: Unknown char in the string!",
+        "Warning: string has been automatically squish-ed!",
 };
 
 void displayLabelError(char *label) {

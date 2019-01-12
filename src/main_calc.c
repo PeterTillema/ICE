@@ -30,8 +30,8 @@ static int myCompare(const void * a, const void * b) {
     return strcmp(*(const char **)a, *(const char **)b);
 }
 
-void displayProgramList(uint24_t beginList, uint24_t amountOfProgramsToDisplay) {
-    uint24_t i;
+void displayProgramList(unsigned int beginList, unsigned int amountOfProgramsToDisplay) {
+    unsigned int i;
     
     for (i = 0; i < amountOfProgramsToDisplay; i++) {
         gfx_PrintStringXY(inputPrograms[beginList + i], 10, i * 10 + 13);
@@ -39,7 +39,7 @@ void displayProgramList(uint24_t beginList, uint24_t amountOfProgramsToDisplay) 
 }
 
 void clearProgramList() {
-    uint24_t i;
+    unsigned int i;
     
     for (i = 0; i < PROGRAMPERSCREEN; i++) {
         gfx_FillRectangle_NoClip(10, i * 10 + 13, 200, 10);
@@ -52,7 +52,7 @@ void main(void) {
     uint16_t inputProgramSize;
     ti_var_t programSlot;
     uint8_t selectedProgram, amountOfPrograms, res = VALID, type;
-    uint24_t programDataSize, offset, totalSize;
+    unsigned int programDataSize, offset, totalSize;
     uint8_t beginList, amountOfProgramsToDisplay;
     uint8_t relativeSelectedProgram;
     const char ICEheader[] = {tii, 0};
@@ -286,7 +286,7 @@ compile_program:
 
     // Create or empty the output program if parsing succeeded
     if ((res = parseProgram()) == VALID) {
-        uint24_t previousSize = 0;
+        unsigned int previousSize = 0;
 
         // Get the sizes of both stacks
         ice.programSize = (uintptr_t)ice.programPtr - (uintptr_t)ice.programData;
@@ -295,7 +295,7 @@ compile_program:
         // Change the pointers to the data as well, but first calculate the offset
         offset = PRGM_START + ice.programSize - (uintptr_t)ice.programDataPtr;
         while (ice.dataOffsetElements--) {
-            uint24_t *tempDataOffsetStackPtr = ice.dataOffsetStack[ice.dataOffsetElements];
+            unsigned int *tempDataOffsetStackPtr = ice.dataOffsetStack[ice.dataOffsetElements];
 
             *tempDataOffsetStackPtr += offset;
         }

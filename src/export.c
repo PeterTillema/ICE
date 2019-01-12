@@ -1,10 +1,5 @@
 #include "defines.h"
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-
 #ifndef CALCULATOR
 
 #define m8(x)  ((x)&255)
@@ -12,7 +7,7 @@
 #define m16(x) ((x)&65535)
 
 static char *str_dup(const char *s) {
-    char *d = malloc(strlen(s)+1);  // allocate memory
+    char *d = malloc(strlen(s) + 1);  // allocate memory
     if (d) strcpy(d, s);                 // copy string if okay
     return d;                            // return new memory
 }
@@ -20,12 +15,14 @@ static char *str_dup(const char *s) {
 char *str_dupcat(const char *s, const char *c) {
     if (!s) {
         return str_dup(c);
-    } else
-    if (!c) {
+    } else if (!c) {
         return str_dup(s);
     }
-    char *d = malloc(strlen(s)+strlen(c)+1);
-    if (d) { strcpy(d, s); strcat(d, c); }
+    char *d = malloc(strlen(s) + strlen(c) + 1);
+    if (d) {
+        strcpy(d, s);
+        strcat(d, c);
+    }
     return d;
 }
 
@@ -34,7 +31,7 @@ void export_program(const char *name, uint8_t *data, size_t size) {
     uint8_t len_high;
     uint8_t len_low;
     unsigned int data_size;
-    unsigned int i,checksum;
+    unsigned int i, checksum;
     FILE *out_file;
 
     // gather structure information
@@ -85,12 +82,12 @@ void export_program(const char *name, uint8_t *data, size_t size) {
 
     // write the buffer to the file
     char *file_name = str_dupcat(name, ".8xp");
-    
+
     if (!file_name) {
         fprintf(stderr, "Unable to open output program file.");
         exit(1);
     }
-    
+
     out_file = fopen(file_name, "wb");
 
     if (!out_file) {

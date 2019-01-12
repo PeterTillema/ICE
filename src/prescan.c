@@ -1,13 +1,9 @@
 #include "defines.h"
 #include "prescan.h"
 
-#include "ast.h"
-#include "stack.h"
 #include "parse.h"
 #include "main.h"
 #include "output.h"
-#include "operator.h"
-#include "functions.h"
 #include "routines.h"
 #include "errors.h"
 
@@ -16,19 +12,21 @@ extern const uint8_t CheaderData[];
 extern const uint8_t FileiocheaderData[];
 
 extern char *str_dupcat(const char *s, const char *c);
+
 #endif
 
 extern const uint8_t implementedFunctions[AMOUNT_OF_FUNCTIONS][4];
 prescan_t prescan;
-const uint8_t colorTable[16] = {255,24,224,0,248,36,227,97,9,19,230,255,181,107,106,74};    // Thanks Cesium :D
+const uint8_t colorTable[16] = {255, 24, 224, 0, 248, 36, 227, 97, 9, 19, 230, 255, 181, 107, 106,
+                                74};    // Thanks Cesium :D
 
 void preScanProgram(void) {
     bool inString = false, afterNewLine = true;
     int token;
     uint16_t amountOfLines = 1;
-    
+
     _rewind(ice.inPrgm);
-    
+
 #ifdef CALCULATOR
     if (ice.debug) {
         // The line is 1 at the first program, otherwise it would get overwritten with AsmComp(
@@ -48,7 +46,7 @@ void preScanProgram(void) {
     // Scan the entire program
     while ((token = _getc()) != EOF) {
         uint8_t tok = token, tok2 = 0;
-        
+
         if (IsA2ByteTok(tok)) {
             tok2 = _getc();
         }
@@ -112,7 +110,7 @@ void preScanProgram(void) {
                             if ((ice.inPrgm = _open(newProg->prog))) {
 #else
                             char *inName = str_dupcat(newProg->prog, ".8xp");
-                        
+
                             if ((ice.inPrgm = _open(inName))) {
 #endif
                                 preScanProgram();
@@ -185,11 +183,11 @@ void preScanProgram(void) {
 uint8_t getNameIconDescription(void) {
     uint8_t res;
     prog_t *outputPrgm;
-    
+
     if (_getc() != 0x2C) {
         return E_NOT_ICE_PROG;
     }
-    
+
     outputPrgm = GetProgramName();
     if ((res = outputPrgm->errorCode) != VALID) {
         free(outputPrgm);
@@ -197,9 +195,9 @@ uint8_t getNameIconDescription(void) {
     }
     strcpy(ice.outName, outputPrgm->prog);
     free(outputPrgm);
-    
+
     // Has icon
-    if ((uint8_t)_getc() == tii && (uint8_t)_getc() == tString) {
+    if ((uint8_t) _getc() == tii && (uint8_t) _getc() == tString) {
         uint8_t b = 0;
 
         *ice.programPtr = OP_JP;
@@ -209,19 +207,19 @@ uint8_t getNameIconDescription(void) {
         // Get hexadecimal
         do {
             uint8_t temp;
-            
+
             if ((temp = IsHexadecimal(_getc())) == 16) {
                 return E_INVALID_HEX;
             }
             OutputWriteByte(colorTable[temp]);
         } while (++b);
 
-        if ((uint8_t)_getc() != tString || (uint8_t)_getc() != tEnter) {
+        if ((uint8_t) _getc() != tString || (uint8_t) _getc() != tEnter) {
             return E_SYNTAX;
         }
 
         // Check description
-        if ((uint8_t)_getc() == tii) {
+        if ((uint8_t) _getc() == tii) {
             grabString(&ice.programPtr, false);
         }
         OutputWriteByte(0);
@@ -229,22 +227,22 @@ uint8_t getNameIconDescription(void) {
         // Write the right jp offset
         w24(ice.programData + 1, ice.programPtr - ice.programData + PRGM_START);
     }
-    
+
     _rewind(ice.inPrgm);
-    
+
     return VALID;
 }
 
 uint8_t parsePrescan(void) {
     uint8_t *programPtr = ice.programPtr;
-    uint24_t offset = ice.programPtr - ice.programData;
-    
+    unsigned int offset = ice.programPtr - ice.programData;
+
     // Copy C header to program and write the pointers to the LibLoad data string correctly
     memcpy(programPtr, CheaderData, SIZEOF_CHEADER);
     w24(programPtr + 1, r24(programPtr + 1) + offset);
     w24(programPtr + 52, r24(programPtr + 52) + offset);
     w24(programPtr + 65, r24(programPtr + 65) + offset);
-    
+
     // Insert C functions
     if (prescan.hasGraphxFunctions) {
         uint8_t a;
@@ -252,28 +250,28 @@ uint8_t parsePrescan(void) {
         ice.programPtr += SIZEOF_CHEADER;
         for (a = 0; a < AMOUNT_OF_GRAPHX_FUNCTIONS; a++) {
             if (prescan.GraphxRoutinesStack[a] == 1) {
-                prescan.GraphxRoutinesStack[a] = (uint24_t)ice.programPtr;
+                prescan.GraphxRoutinesStack[a] = (unsigned int) ice.programPtr;
                 JP(a * 3);
             }
         }
     } else if (prescan.hasFileiocFunctions || ice.debug) {
         ice.programPtr += SIZEOF_CHEADER - 9;
     }
-    
+
     if (prescan.hasFileiocFunctions) {
         uint8_t a;
 
         memcpy(ice.programPtr, FileiocheaderData, 10);
         ice.programPtr += 10;
-                
+
         for (a = 0; a < AMOUNT_OF_FILEIOC_FUNCTIONS; a++) {
             if (prescan.FileiocRoutinesStack[a] == 1) {
-                prescan.FileiocRoutinesStack[a] = (uint24_t)ice.programPtr;
+                prescan.FileiocRoutinesStack[a] = (unsigned int) ice.programPtr;
                 JP(a * 3);
             }
         }
     }
-    
+
 #ifdef CALCULATOR
     // Write the lib header to the output program
     if (ice.debug) {
@@ -283,10 +281,12 @@ uint8_t parsePrescan(void) {
         JP(0);
     }
 #endif
-    
+
     // Set free RAM pointers (for strings)
-    prescan.freeMemoryPtr = (prescan.tempStrings[1] = (prescan.tempStrings[0] = pixelShadow + 2000 * prescan.amountOfOSVarsUsed) + 2000) + 2000;
-    
+    prescan.freeMemoryPtr = (prescan.tempStrings[1] =
+                                     (prescan.tempStrings[0] = pixelShadow + 2000 * prescan.amountOfOSVarsUsed) +
+                                     2000) + 2000;
+
     // Cleanup code
     if (prescan.hasGraphxFunctions) {
         CALL(_RunIndicOff);
@@ -298,13 +298,13 @@ uint8_t parsePrescan(void) {
         LD_IY_IMM(flags);
         RET();
     }
-    
+
     // Check free RAM for Lbls and Gotos
-    ice.LblStack = (label_t*)malloc(prescan.amountOfLbls * sizeof(label_t));
-    ice.GotoStack = (label_t*)malloc(prescan.amountOfGotos * sizeof(label_t));
+    ice.LblStack = (label_t *) malloc(prescan.amountOfLbls * sizeof(label_t));
+    ice.GotoStack = (label_t *) malloc(prescan.amountOfGotos * sizeof(label_t));
     if (!ice.LblStack || !ice.GotoStack) {
         return E_MEM_LABEL;
     }
-    
+
     return VALID;
 }

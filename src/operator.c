@@ -3,21 +3,17 @@
 #include "ast.h"
 #include "operator.h"
 
-#include "parse.h"
 #include "main.h"
-#include "functions.h"
 #include "errors.h"
-#include "stack.h"
 #include "output.h"
 #include "routines.h"
-#include "prescan.h"
 
 #ifndef CALCULATOR
 extern const uint8_t AndData[];
 extern const uint8_t OrData[];
 extern const uint8_t XorData[];
 
-static uint8_t clz(uint24_t x) {
+static uint8_t clz(unsigned int x) {
     uint8_t n = 0;
     if (!x) {
         return 24;
@@ -29,13 +25,13 @@ static uint8_t clz(uint24_t x) {
     return n;
 }
 
-void MultWithNumber(uint24_t num, uint8_t *programPtr, bool ChangeRegisters) {
-    (void)programPtr;
-    uint24_t bit;
-    uint8_t po2 = !(num & (num - 1));
+void MultWithNumber(unsigned int num, uint8_t *programPtr, bool ChangeRegisters) {
+    (void) programPtr;
+    int bit;
+    bool po2 = !(num & (num - 1));
 
     if (24 - clz(num) + __builtin_popcount(num) - 2 * po2 < 10) {
-        if(!po2) {
+        if (!po2) {
             if (!ChangeRegisters) {
                 PUSH_HL();
                 POP_DE();
@@ -48,7 +44,7 @@ void MultWithNumber(uint24_t num, uint8_t *programPtr, bool ChangeRegisters) {
         }
         for (bit = 1 << (22 - clz(num)); bit; bit >>= 1) {
             ADD_HL_HL();
-            if(num & bit) {
+            if (num & bit) {
                 ADD_HL_DE();
             }
         }
@@ -68,25 +64,30 @@ void MultWithNumber(uint24_t num, uint8_t *programPtr, bool ChangeRegisters) {
         ResetHL();
     }
 }
+
 #endif
 
 static void (*operatorFunctions[272])(void);
+
 static void (*operatorChainPushChainAnsFunctions[17])(void);
-const char operators[]              = {tStore, tDotIcon, tCrossIcon, tBoxIcon, tAnd, tXor, tOr, tEQ, tLT, tGT, tLE, tGE, tNE, tMul, tDiv, tAdd, tSub};
-const uint8_t operatorPrecedence[]  = {0, 6, 8, 8, 2, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 4, 4};
+
+const char operators[] = {tStore, tDotIcon, tCrossIcon, tBoxIcon, tAnd, tXor, tOr, tEQ, tLT, tGT, tLE, tGE, tNE, tMul,
+                          tDiv, tAdd, tSub};
+const uint8_t operatorPrecedence[] = {0, 6, 8, 8, 2, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 4, 4};
 const uint8_t operatorPrecedence2[] = {9, 6, 8, 8, 2, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 4, 4};
-const uint8_t operatorCanSwap[]     = {0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0}; // Used for operators which can swap the operands, i.e. A*B = B*A
+const uint8_t operatorCanSwap[] = {0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1,
+                                   0}; // Used for operators which can swap the operands, i.e. A*B = B*A
 
 static element_t *entry0;
 static element_t *entry1;
 static element_t *entry2;
-static uint24_t entry0_operand;
-static uint24_t entry1_operand;
-static uint24_t entry2_operand;
+static unsigned int entry0_operand;
+static unsigned int entry1_operand;
+static unsigned int entry2_operand;
 static uint8_t oper;
 static bool canOptimizeConcatenateStrings;
 
-bool comparePtrToTempStrings(uint24_t addr) {
+bool comparePtrToTempStrings(unsigned int addr) {
     return (addr == prescan.tempStrings[TempString1] || addr == prescan.tempStrings[TempString2]);
 }
 
@@ -98,7 +99,7 @@ uint8_t getIndexOfOperator(uint8_t operator) {
     return 0;
 }
 
-uint24_t executeOperator(uint24_t operand1, uint24_t operand2, uint8_t operator) {
+unsigned int executeOperator(unsigned int operand1, unsigned int operand2, uint8_t operator) {
     switch (operator) {
         case tAdd:
             return operand1 + operand2;
@@ -150,9 +151,11 @@ static void swapEntries() {
     getEntryOperands();
 }
 
-uint8_t parseOperator(element_t *outputPrevPrevPrev, element_t *outputPrevPrev, element_t *outputPrev, element_t *outputCurr, bool canOptimizeStrings) {
+uint8_t
+parseOperator(element_t *outputPrevPrevPrev, element_t *outputPrevPrev, element_t *outputPrev, element_t *outputCurr,
+              bool canOptimizeStrings) {
     uint8_t type1, type2;
-    
+
     type1 = outputPrevPrev->type;
     type2 = outputPrev->type;
     canOptimizeConcatenateStrings = canOptimizeStrings;
@@ -166,7 +169,7 @@ uint8_t parseOperator(element_t *outputPrevPrevPrev, element_t *outputPrevPrev, 
     getEntryOperands();
 
     ClearAnsFlags();
-    
+
     if (outputPrevPrev->isString && outputPrev->isString && type2 == TYPE_NUMBER && oper == tStore) {
         StoStringString();
     } else if (outputPrevPrev->isString && outputPrev->isString && oper == tAdd) {
@@ -176,10 +179,11 @@ uint8_t parseOperator(element_t *outputPrevPrevPrev, element_t *outputPrevPrev, 
     } else {
         // Only call the function if both types are valid
         if ((type1 == type2 && (type1 == TYPE_NUMBER || type1 == TYPE_CHAIN_ANS)) ||
-            (oper == tStore && (type2 != TYPE_VARIABLE  && !(type2 == TYPE_FUNCTION && outputPrev->operand.num == 0x010108))) ||
+            (oper == tStore &&
+             (type2 != TYPE_VARIABLE && !(type2 == TYPE_FUNCTION && outputPrev->operand.num == 0x010108))) ||
             (type2 == TYPE_CHAIN_PUSH) ||
             (type1 == TYPE_STRING || type2 == TYPE_STRING)
-        ) {
+                ) {
             return E_SYNTAX;
         }
 
@@ -208,7 +212,8 @@ uint8_t parseOperator(element_t *outputPrevPrevPrev, element_t *outputPrevPrev, 
             ice.dataOffsetElementsBackup = ice.dataOffsetElements;
 
             // Swap operands for compiler optimizations
-            if (oper == tLE || oper == tLT || (operatorCanSwap[getIndexOfOperator(oper) - 1] && (type1 == TYPE_NUMBER || type2 == TYPE_CHAIN_ANS))) {
+            if (oper == tLE || oper == tLT ||
+                (operatorCanSwap[getIndexOfOperator(oper) - 1] && (type1 == TYPE_NUMBER || type2 == TYPE_CHAIN_ANS))) {
                 uint8_t temp = type1;
 
                 type1 = type2;
@@ -237,7 +242,8 @@ uint8_t parseOperator(element_t *outputPrevPrevPrev, element_t *outputPrevPrev, 
         }
 
         // If the operator is *, and both operands not a number, it always ends with call __imuls
-        if (oper == tMul && type1 != TYPE_NUMBER && type2 != TYPE_NUMBER && !(expr.outputRegister == REGISTER_A && entry2_operand < 256)) {
+        if (oper == tMul && type1 != TYPE_NUMBER && type2 != TYPE_NUMBER &&
+            !(expr.outputRegister == REGISTER_A && entry2_operand < 256)) {
             CALL(__imuls);
             ResetHL();
         }
@@ -265,8 +271,9 @@ uint8_t parseOperator(element_t *outputPrevPrevPrev, element_t *outputPrevPrev, 
     return VALID;
 }
 
-void LD_HL_STRING(uint24_t stringPtr, uint8_t type) {
-    if ((type == TYPE_STRING) && (stringPtr != prescan.tempStrings[TempString1] && stringPtr != prescan.tempStrings[TempString2])) {
+void LD_HL_STRING(unsigned int stringPtr, uint8_t type) {
+    if ((type == TYPE_STRING) &&
+        (stringPtr != prescan.tempStrings[TempString1] && stringPtr != prescan.tempStrings[TempString2])) {
         ProgramPtrToOffsetStack();
     }
     LD_HL_IMM(stringPtr);
@@ -276,6 +283,7 @@ void OperatorError(void) {
     // This *should* never be triggered
     displayError(E_ICE_ERROR);
 }
+
 void StoChainAnsVariable(void) {
     MaybeAToHL();
     if (expr.outputRegister == REGISTER_HL) {
@@ -284,18 +292,21 @@ void StoChainAnsVariable(void) {
         LD_IX_OFF_IND_DE(entry2_operand);
     }
 }
+
 void StoNumberVariable(void) {
     LD_HL_IMM(entry1_operand);
     StoChainAnsVariable();
 }
+
 void StoVariableVariable(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     StoChainAnsVariable();
 }
+
 void StoNumberChainAns(void) {
     uint8_t type = entry1->type;
     uint8_t mask = entry2->mask;
-    
+
     if (type == TYPE_NUMBER) {
         if (mask == TYPE_MASK_U8) {
             LD_A(entry0_operand);
@@ -326,6 +337,7 @@ void StoNumberChainAns(void) {
     }
     StoToChainAns();
 }
+
 void StoVariableChainAns(void) {
     uint8_t type = entry1->type;
     uint8_t mask = entry2->mask;
@@ -360,6 +372,7 @@ void StoVariableChainAns(void) {
     }
     StoToChainAns();
 }
+
 void StoChainPushChainAns(void) {
     if (entry1->type == TYPE_CHAIN_ANS) {
         AnsToHL();
@@ -373,6 +386,7 @@ void StoChainPushChainAns(void) {
         StoToChainAns();
     }
 }
+
 void StoChainAnsChainAns(void) {
     uint8_t type = entry1->type;
     uint8_t mask = entry2->mask;
@@ -417,6 +431,7 @@ void StoChainAnsChainAns(void) {
     }
     StoToChainAns();
 }
+
 void StoStringChainAns(void) {
     uint8_t type = entry1->type;
     uint8_t mask = entry2->mask;
@@ -445,7 +460,8 @@ void StoStringChainAns(void) {
         }
     } else {
         AnsToHL();
-        if ((entry0->type == TYPE_STRING) && (entry0_operand != prescan.tempStrings[TempString1] && entry0_operand != prescan.tempStrings[TempString2])) {
+        if ((entry0->type == TYPE_STRING) && (entry0_operand != prescan.tempStrings[TempString1] &&
+                                              entry0_operand != prescan.tempStrings[TempString2])) {
             ProgramPtrToOffsetStack();
         }
         LD_DE_IMM(entry0_operand);
@@ -460,6 +476,7 @@ void StoStringChainAns(void) {
         }
     }
 }
+
 void StoToChainAns(void) {
     if (entry2->mask == TYPE_MASK_U8) {
         expr.outputReturnRegister = REGISTER_A;
@@ -469,6 +486,7 @@ void StoToChainAns(void) {
         EX_S_DE_HL();
     }
 }
+
 void StoStringString(void) {
     LD_HL_STRING(entry1_operand, entry1->type);
     PUSH_HL();
@@ -478,10 +496,12 @@ void StoStringString(void) {
     OutputWrite2Bytes(OP_POP_BC, OP_POP_BC);
     ResetBC();
 }
+
 void StoStringVariable(void) {
     LD_HL_STRING(entry1_operand, entry1->type);
     LD_IX_OFF_IND_HL(entry2_operand);
 }
+
 void BitAndChainAnsNumber(void) {
     if (expr.outputRegister == REGISTER_A) {
         if (oper == tDotIcon) {
@@ -520,18 +540,22 @@ void BitAndChainAnsNumber(void) {
         }
     }
 }
+
 void BitAndChainAnsVariable(void) {
     AnsToHL();
     LD_BC_IND_IX_OFF(entry2_operand);
 }
+
 void BitAndVariableNumber(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     BitAndChainAnsNumber();
 }
+
 void BitAndVariableVariable(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     BitAndChainAnsVariable();
 }
+
 void BitAndChainPushChainAns(void) {
     AnsToHL();
     POP_BC();
@@ -563,6 +587,7 @@ void AndInsert(void) {
     expr.AnsSetCarryFlag = true;
     expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
 }
+
 void AndChainAnsNumber(void) {
     if (expr.outputRegister == REGISTER_A && entry2_operand < 256) {
         expr.outputReturnRegister = REGISTER_A;
@@ -583,7 +608,7 @@ void AndChainAnsNumber(void) {
             }
         } else {
             if (!entry2_operand) {
-NumberNotZero1:
+                NumberNotZero1:
                 OutputWrite2Bytes(OP_SUB_A, 1);
                 OutputWrite2Bytes(OP_SBC_A_A, OP_INC_A);
                 ResetA();
@@ -621,7 +646,7 @@ NumberNotZero1:
             }
         } else {
             if (!entry2_operand) {
-numberNotZero2:
+                numberNotZero2:
                 MaybeAToHL();
                 if (expr.outputRegister == REGISTER_HL) {
                     LD_DE_IMM(-1);
@@ -640,6 +665,7 @@ numberNotZero2:
         }
     }
 }
+
 void AndChainAnsVariable(void) {
     MaybeAToHL();
     if (expr.outputRegister == REGISTER_HL) {
@@ -649,14 +675,17 @@ void AndChainAnsVariable(void) {
     }
     AndInsert();
 }
+
 void AndVariableNumber(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     AndChainAnsNumber();
 }
+
 void AndVariableVariable(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     AndChainAnsVariable();
 }
+
 void AndChainPushChainAns(void) {
     MaybeAToHL();
     if (expr.outputRegister == REGISTER_HL) {
@@ -693,8 +722,9 @@ void EQInsert() {
     INC_HL();
     expr.ZeroCarryFlagRemoveAmountOfBytes = 7;
 }
+
 void EQChainAnsNumber(void) {
-    uint24_t number = entry2_operand;
+    unsigned int number = entry2_operand;
 
     if (expr.outputRegister == REGISTER_A && entry2_operand < 256) {
         if (oper == tNE) {
@@ -748,10 +778,12 @@ void EQChainAnsNumber(void) {
         }
     }
 }
+
 void EQVariableNumber(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     EQChainAnsNumber();
 }
+
 void EQChainAnsVariable(void) {
     MaybeAToHL();
     if (expr.outputRegister == REGISTER_HL) {
@@ -761,10 +793,12 @@ void EQChainAnsVariable(void) {
     }
     EQInsert();
 }
+
 void EQVariableVariable(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     EQChainAnsVariable();
 }
+
 void EQChainPushChainAns(void) {
     MaybeAToHL();
     if (expr.outputRegister == REGISTER_HL) {
@@ -774,6 +808,7 @@ void EQChainPushChainAns(void) {
     }
     EQInsert();
 }
+
 void GEInsert() {
     if (oper == tGE || oper == tLE) {
         OR_A_A();
@@ -785,6 +820,7 @@ void GEInsert() {
     expr.AnsSetCarryFlag = true;
     expr.ZeroCarryFlagRemoveAmountOfBytes = 3;
 }
+
 void GEChainAnsNumber(void) {
     if (expr.outputRegister == REGISTER_A && entry2_operand < 256) {
         SUB_A(entry2_operand + (oper == tGT || oper == tLT));
@@ -811,11 +847,13 @@ void GEChainAnsNumber(void) {
         SBC_HL_HL_INC_HL();
     }
 }
+
 void GEChainAnsVariable(void) {
     AnsToHL();
     LD_DE_IND_IX_OFF(entry2_operand);
     GEInsert();
 }
+
 void GENumberChainAns(void) {
     if (expr.outputRegister == REGISTER_A && entry1_operand < 256) {
         ADD_A(256 - entry1_operand - (oper == tGE || oper == tLE));
@@ -842,23 +880,28 @@ void GENumberChainAns(void) {
         SBC_HL_HL_INC_HL();
     }
 }
+
 void GENumberVariable(void) {
     LD_HL_IND_IX_OFF(entry2_operand);
     GENumberChainAns();
 }
+
 void GEVariableNumber(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     GEChainAnsNumber();
 }
+
 void GEVariableVariable(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     GEChainAnsVariable();
 }
+
 void GEVariableChainAns(void) {
     AnsToDE();
     LD_HL_IND_IX_OFF(entry1_operand);
     GEInsert();
 }
+
 void GEChainPushChainAns(void) {
     AnsToDE();
     POP_HL();
@@ -916,7 +959,7 @@ void LEChainPushChainAns(void) {
 #define NEChainPushChainAns EQChainPushChainAns
 
 void MulChainAnsNumber(void) {
-    uint24_t number = entry2_operand;
+    unsigned int number = entry2_operand;
 
     if (expr.outputRegister == REGISTER_A && entry2_operand < 256) {
         LD_L_A();
@@ -931,26 +974,31 @@ void MulChainAnsNumber(void) {
         } else if (number == 0xFFFFFF) {
             CALL(__ineg);
         } else {
-            MultWithNumber(number, (uint8_t*)&ice.programPtr, 16*expr.outputRegister);
+            MultWithNumber(number, (uint8_t *) &ice.programPtr, 16 * expr.outputRegister);
         }
     }
 }
+
 void MulVariableNumber(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     MulChainAnsNumber();
 }
+
 void MulChainAnsVariable(void) {
     AnsToHL();
     LD_BC_IND_IX_OFF(entry2_operand);
 }
+
 void MulVariableVariable(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     MulChainAnsVariable();
 }
+
 void MulChainPushChainAns(void) {
     AnsToHL();
     POP_BC();
 }
+
 void DivChainAnsNumber(void) {
     if (expr.outputRegister == REGISTER_A && entry2_operand <= 64 && !(entry2_operand & (entry2_operand - 1))) {
         while (entry2_operand != 1) {
@@ -963,36 +1011,44 @@ void DivChainAnsNumber(void) {
         LD_BC_IMM(entry2_operand);
     }
 }
+
 void DivChainAnsVariable(void) {
     AnsToHL();
     LD_BC_IND_IX_OFF(entry2_operand);
 }
+
 void DivNumberVariable(void) {
     LD_HL_IMM(entry1_operand);
     DivChainAnsVariable();
 }
+
 void DivNumberChainAns(void) {
     AnsToBC();
     LD_HL_IMM(entry1_operand);
 }
+
 void DivVariableNumber(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     DivChainAnsNumber();
 }
+
 void DivVariableVariable(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     DivChainAnsVariable();
 }
+
 void DivVariableChainAns(void) {
     AnsToBC();
     LD_HL_IND_IX_OFF(entry1_operand);
 }
+
 void DivChainPushChainAns(void) {
     AnsToBC();
     POP_HL();
 }
+
 void AddChainAnsNumber(void) {
-    uint24_t number = entry2_operand;
+    unsigned int number = entry2_operand;
 
     if (expr.outputRegister == REGISTER_A) {
         if (!number) {
@@ -1012,7 +1068,7 @@ void AddChainAnsNumber(void) {
         if (number < 5) {
             uint8_t a;
 
-            for (a = 0; a < (uint8_t)number; a++) {
+            for (a = 0; a < (uint8_t) number; a++) {
                 if (expr.outputRegister == REGISTER_HL) {
                     INC_HL();
                 } else {
@@ -1030,10 +1086,12 @@ void AddChainAnsNumber(void) {
         }
     }
 }
+
 void AddVariableNumber(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     AddChainAnsNumber();
 }
+
 void AddChainAnsVariable(void) {
     MaybeAToHL();
     if (expr.outputRegister == REGISTER_HL) {
@@ -1043,6 +1101,7 @@ void AddChainAnsVariable(void) {
     }
     ADD_HL_DE();
 }
+
 void AddVariableVariable(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     if (entry1_operand == entry2_operand) {
@@ -1051,6 +1110,7 @@ void AddVariableVariable(void) {
         AddChainAnsVariable();
     }
 }
+
 void AddChainPushChainAns(void) {
     MaybeAToHL();
     if (expr.outputRegister == REGISTER_HL) {
@@ -1060,6 +1120,7 @@ void AddChainPushChainAns(void) {
     }
     ADD_HL_DE();
 }
+
 void AddStringString(void) {
     /**
     *    Cases:
@@ -1123,8 +1184,9 @@ void AddStringString(void) {
         ResetBC();
     }
 }
+
 void SubChainAnsNumber(void) {
-    uint24_t number = entry2_operand;
+    unsigned int number = entry2_operand;
 
     if (expr.outputRegister == REGISTER_A && number < 256) {
         if (!number) {
@@ -1142,7 +1204,7 @@ void SubChainAnsNumber(void) {
         if (number < 5) {
             uint8_t a;
 
-            for (a = 0; a < (uint8_t)number; a++) {
+            for (a = 0; a < (uint8_t) number; a++) {
                 if (expr.outputRegister == REGISTER_HL) {
                     DEC_HL();
                 } else {
@@ -1160,223 +1222,230 @@ void SubChainAnsNumber(void) {
         }
     }
 }
+
 void SubChainAnsVariable(void) {
     AnsToHL();
     LD_DE_IND_IX_OFF(entry2_operand);
 }
+
 void SubNumberVariable(void) {
     LD_HL_IMM(entry1_operand);
     SubChainAnsVariable();
 }
+
 void SubNumberChainAns(void) {
     AnsToDE();
     LD_HL_IMM(entry1_operand);
 }
+
 void SubVariableNumber(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     SubChainAnsNumber();
 }
+
 void SubVariableVariable(void) {
     LD_HL_IND_IX_OFF(entry1_operand);
     SubChainAnsVariable();
 }
+
 void SubVariableChainAns(void) {
     AnsToDE();
     LD_HL_IND_IX_OFF(entry1_operand);
 }
+
 void SubChainPushChainAns(void) {
     AnsToDE();
     POP_HL();
 }
 
 static void (*operatorChainPushChainAnsFunctions[17])(void) = {
-    StoChainPushChainAns,
-    BitAndChainPushChainAns,
-    BitOrChainPushChainAns,
-    BitXorChainPushChainAns,
-    AndChainPushChainAns,
-    XorChainPushChainAns,
-    OrChainPushChainAns,
-    EQChainPushChainAns,
-    LTChainPushChainAns,
-    GTChainPushChainAns,
-    LEChainPushChainAns,
-    GEChainPushChainAns,
-    NEChainPushChainAns,
-    MulChainPushChainAns,
-    DivChainPushChainAns,
-    AddChainPushChainAns,
-    SubChainPushChainAns
+        StoChainPushChainAns,
+        BitAndChainPushChainAns,
+        BitOrChainPushChainAns,
+        BitXorChainPushChainAns,
+        AndChainPushChainAns,
+        XorChainPushChainAns,
+        OrChainPushChainAns,
+        EQChainPushChainAns,
+        LTChainPushChainAns,
+        GTChainPushChainAns,
+        LEChainPushChainAns,
+        GEChainPushChainAns,
+        NEChainPushChainAns,
+        MulChainPushChainAns,
+        DivChainPushChainAns,
+        AddChainPushChainAns,
+        SubChainPushChainAns
 };
 
 static void (*operatorFunctions[272])(void) = {
-    OperatorError,
-    StoNumberVariable,
-    StoNumberChainAns,
-    OperatorError,
-    StoVariableVariable,
-    StoVariableChainAns,
-    OperatorError,
-    StoChainAnsVariable,
-    StoChainAnsChainAns,
+        OperatorError,
+        StoNumberVariable,
+        StoNumberChainAns,
+        OperatorError,
+        StoVariableVariable,
+        StoVariableChainAns,
+        OperatorError,
+        StoChainAnsVariable,
+        StoChainAnsChainAns,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    BitAndVariableNumber,
-    BitAndVariableVariable,
-    OperatorError,
-    BitAndChainAnsNumber,
-    BitAndChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        BitAndVariableNumber,
+        BitAndVariableVariable,
+        OperatorError,
+        BitAndChainAnsNumber,
+        BitAndChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    BitOrVariableNumber,
-    BitOrVariableVariable,
-    OperatorError,
-    BitOrChainAnsNumber,
-    BitOrChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        BitOrVariableNumber,
+        BitOrVariableVariable,
+        OperatorError,
+        BitOrChainAnsNumber,
+        BitOrChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    BitXorVariableNumber,
-    BitXorVariableVariable,
-    OperatorError,
-    BitXorChainAnsNumber,
-    BitXorChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        BitXorVariableNumber,
+        BitXorVariableVariable,
+        OperatorError,
+        BitXorChainAnsNumber,
+        BitXorChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    AndVariableNumber,
-    AndVariableVariable,
-    OperatorError,
-    AndChainAnsNumber,
-    AndChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        AndVariableNumber,
+        AndVariableVariable,
+        OperatorError,
+        AndChainAnsNumber,
+        AndChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    XorVariableNumber,
-    XorVariableVariable,
-    OperatorError,
-    XorChainAnsNumber,
-    XorChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        XorVariableNumber,
+        XorVariableVariable,
+        OperatorError,
+        XorChainAnsNumber,
+        XorChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    OrVariableNumber,
-    OrVariableVariable,
-    OperatorError,
-    OrChainAnsNumber,
-    OrChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        OrVariableNumber,
+        OrVariableVariable,
+        OperatorError,
+        OrChainAnsNumber,
+        OrChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    EQVariableNumber,
-    EQVariableVariable,
-    OperatorError,
-    EQChainAnsNumber,
-    EQChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        EQVariableNumber,
+        EQVariableVariable,
+        OperatorError,
+        EQChainAnsNumber,
+        EQChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    LTNumberVariable,
-    LTNumberChainAns,
-    LTVariableNumber,
-    LTVariableVariable,
-    LTVariableChainAns,
-    LTChainAnsNumber,
-    LTChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        LTNumberVariable,
+        LTNumberChainAns,
+        LTVariableNumber,
+        LTVariableVariable,
+        LTVariableChainAns,
+        LTChainAnsNumber,
+        LTChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    GTNumberVariable,
-    GTNumberChainAns,
-    GTVariableNumber,
-    GTVariableVariable,
-    GTVariableChainAns,
-    GTChainAnsNumber,
-    GTChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        GTNumberVariable,
+        GTNumberChainAns,
+        GTVariableNumber,
+        GTVariableVariable,
+        GTVariableChainAns,
+        GTChainAnsNumber,
+        GTChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    LENumberVariable,
-    LENumberChainAns,
-    LEVariableNumber,
-    LEVariableVariable,
-    LEVariableChainAns,
-    LEChainAnsNumber,
-    LEChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        LENumberVariable,
+        LENumberChainAns,
+        LEVariableNumber,
+        LEVariableVariable,
+        LEVariableChainAns,
+        LEChainAnsNumber,
+        LEChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    GENumberVariable,
-    GENumberChainAns,
-    GEVariableNumber,
-    GEVariableVariable,
-    GEVariableChainAns,
-    GEChainAnsNumber,
-    GEChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        GENumberVariable,
+        GENumberChainAns,
+        GEVariableNumber,
+        GEVariableVariable,
+        GEVariableChainAns,
+        GEChainAnsNumber,
+        GEChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    NEVariableNumber,
-    NEVariableVariable,
-    OperatorError,
-    NEChainAnsNumber,
-    NEChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        NEVariableNumber,
+        NEVariableVariable,
+        OperatorError,
+        NEChainAnsNumber,
+        NEChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    MulVariableNumber,
-    MulVariableVariable,
-    OperatorError,
-    MulChainAnsNumber,
-    MulChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        MulVariableNumber,
+        MulVariableVariable,
+        OperatorError,
+        MulChainAnsNumber,
+        MulChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    DivNumberVariable,
-    DivNumberChainAns,
-    DivVariableNumber,
-    DivVariableVariable,
-    DivVariableChainAns,
-    DivChainAnsNumber,
-    DivChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        DivNumberVariable,
+        DivNumberChainAns,
+        DivVariableNumber,
+        DivVariableVariable,
+        DivVariableChainAns,
+        DivChainAnsNumber,
+        DivChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    OperatorError,
-    OperatorError,
-    AddVariableNumber,
-    AddVariableVariable,
-    OperatorError,
-    AddChainAnsNumber,
-    AddChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        OperatorError,
+        OperatorError,
+        AddVariableNumber,
+        AddVariableVariable,
+        OperatorError,
+        AddChainAnsNumber,
+        AddChainAnsVariable,
+        OperatorError,
 
-    OperatorError,
-    SubNumberVariable,
-    SubNumberChainAns,
-    SubVariableNumber,
-    SubVariableVariable,
-    SubVariableChainAns,
-    SubChainAnsNumber,
-    SubChainAnsVariable,
-    OperatorError,
+        OperatorError,
+        SubNumberVariable,
+        SubNumberChainAns,
+        SubVariableNumber,
+        SubVariableVariable,
+        SubVariableChainAns,
+        SubChainAnsNumber,
+        SubChainAnsVariable,
+        OperatorError,
 };

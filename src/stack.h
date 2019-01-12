@@ -1,16 +1,26 @@
 #ifndef STACK_H
 #define STACK_H
 
-void push(uint24_t);
-uint24_t pop(void);
-uint24_t getStackSize(void);
-uint24_t getNextIndex(void);
-int24_t getCurrentIndex(void);
-uint24_t getIndexOffset(int24_t);
-void removeIndexFromStack(int24_t);
+void push(unsigned int);
+
+unsigned int pop(void);
+
+unsigned int getStackSize(void);
+
+unsigned int getNextIndex(void);
+
+int getCurrentIndex(void);
+
+unsigned int getIndexOffset(int);
+
+void removeIndexFromStack(int);
+
 void getNextFreeStack(void);
+
 void removeStack(void);
-uint24_t *getStackVar(uint8_t);
-void setStackValues(uint24_t*, uint24_t*);
+
+unsigned int *getStackVar(uint8_t);
+
+void setStackValues(unsigned int *, unsigned int *);
 
 #endif

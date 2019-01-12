@@ -1,7 +1,7 @@
 #ifndef AST_H
 #define AST_H
 
-typedef uint24_t num_t;
+typedef unsigned int num_t;
 typedef uint8_t vari_t;
 typedef uint8_t op_t;
 

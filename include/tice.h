@@ -2,15 +2,918 @@
  * @file
  * @authors Matt "MateoConLechuga" Waltz
  * @authors Jacob "jacobly" Young
- * @brief Core CE define file used for computer porting
+ * @brief Core CE define file
  */
 
 #ifndef H_TICE
 #define H_TICE
 
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*
+ * Hardware & custom macros/functions
+ */
+
+/**
+ * Returns a pseudo-random 32-bit integer.
+ *
+ * @return the random integer
+ */
+uint32_t random(void);
+
+/**
+ * Seeds the pseudo-random number generator used by random() and rand() with the
+ * value seed.
+ *
+ * @param seed the seed value
+ */
+void srandom(uint32_t seed);
+
+/**
+ * Returns a pseudo-random integer in the range of \p min to \p max (inclusive).
+ */
+#define randInt(min, max) \
+((unsigned)random() % ((max) - (min) + 1) + (min))
+
+/**
+ * Delays for a number of milliseconds.
+ * <p>
+ * Counts time spent while interrupted. Assumes a CPU clock speed of 48MHz.
+ *
+ * @param msec number of milliseconds
+ */
+void delay(uint16_t msec);
+
+/**
+ * "Atomically" loads from a volatile 32-bit value.
+ *
+ * @remarks
+ * The hardware does not provide a mechanism to truly atomically load from a
+ * 32-bit value. This "atomic" load is implemented by non-atomically reading the
+ * value twice and retrying if the values read differ.
+ *
+ * @attention
+ * If the maximum period between two value changes is 1us or less (assuming a
+ * CPU clock speed of 48MHz), then this function may never complete. For
+ * instance, the counter of a timer ticking at 1MHz or more should not be read
+ * using this function. In such a case of a purely increasing or decreasing
+ * value, atomic_load_increasing_32() or atomic_load_decreasing_32() may be
+ * appropriate instead.
+ *
+ * @param p pointer to 32-bit value
+ */
+uint32_t atomic_load_32(volatile uint32_t *p);
+
+/**
+ * "Atomically" loads from a volatile, increasing 32-bit value.
+ *
+ * @remarks
+ * The hardware does not provide a mechanism to truly atomically load from a
+ * 32-bit value. This "atomic" load is implemented by temporarily disabling
+ * interrupts while non-atomically reading the value twice and then returning
+ * the lesser of the two values read.
+ *
+ * @attention
+ * If the minimum period between two value changes is 5us or less and the
+ * value's maximum rate of change over a 5us period exceeds 256 (assuming a CPU
+ * clock speed of 48MHz), then the value returned may be incorrect. Of relevant
+ * note may be the fact that a 48MHz counter does not exceed this limit.
+ *
+ * @param p pointer to 32-bit value
+ */
+uint32_t atomic_load_increasing_32(volatile uint32_t *p);
+
+/**
+ * "Atomically" loads from a volatile, decreasing 32-bit value.
+ *
+ * @remarks
+ * The hardware does not provide a mechanism to truly atomically load from a
+ * 32-bit value. This "atomic" load is implemented by temporarily disabling
+ * interrupts while non-atomically reading the value twice and then returning
+ * the greater of the two values read.
+ *
+ * @attention
+ * If the minimum period between two value changes is 5us or less and the
+ * value's maximum rate of change over a 5us period exceeds 256 (assuming a CPU
+ * clock speed of 48MHz), then the value returned may be incorrect. Of relevant
+ * note may be the fact that a 48MHz counter does not exceed this limit.
+ *
+ * @param p pointer to 32-bit value
+ */
+uint32_t atomic_load_decreasing_32(volatile uint32_t *p);
+
+/**
+ * Gets a combination of the RTC time; useful for srand()
+ */
+#define rtc_Time()              (*(volatile uint32_t*)0xF30044)
+
+/* RTC definitions */
+#define RTC_UNFREEZE            (1<<7)
+#define RTC_FREEZE              (0<<7)
+#define RTC_LOAD                (1<<6)
+#define RTC_ENABLE              ((1<<0)|(RTC_UNFREEZE))
+#define RTC_DISABLE             (0<<0)
+
+/* RTC registers */
+#define rtc_Seconds             (*(volatile uint8_t*)0xF30000)
+#define rtc_Minutes             (*(volatile uint8_t*)0xF30004)
+#define rtc_Hours               (*(volatile uint8_t*)0xF30008)
+#define rtc_Days                (*(volatile uint16_t*)0xF3000C)
+#define rtc_AlarmSeconds        (*(uint8_t*)0xF30010)
+#define rtc_AlarmMinutes        (*(uint8_t*)0xF30014)
+#define rtc_AlarmHours          (*(uint8_t*)0xF30018)
+#define rtc_Control             (*(uint8_t*)0xF30020)
+#define rtc_LoadSeconds         (*(uint8_t*)0xF30024)
+#define rtc_LoadMinutes         (*(uint8_t*)0xF30028)
+#define rtc_LoadHours           (*(uint8_t*)0xF3002C)
+#define rtc_LoadDays            (*(uint16_t*)0xF30030)
+#define rtc_IntStatus           (*(volatile uint8_t*)0xF30034)
+#define rtc_IntAcknowledge      (*(volatile uint8_t*)0xF30034)
+#define rtc_IsBusy()            (rtc_Control & RTC_LOAD)
+
+/* RTC interrupt masks */
+#define RTC_ALARM_INT_SOURCE    (1<<5)
+#define RTC_DAY_INT_SOURCE      (1<<4)
+#define RTC_HR_INT_SOURCE       (1<<3)
+#define RTC_MIN_INT_SOURCE      (1<<2)
+#define RTC_SEC_INT_SOURCE      (1<<1)
+
+/* RTC interrupt statuses */
+#define RTC_LOAD_INT            (1<<5)
+#define RTC_ALARM_INT           (1<<4)
+#define RTC_DAY_INT             (1<<3)
+#define RTC_HR_INT              (1<<2)
+#define RTC_MIN_INT             (1<<1)
+#define RTC_SEC_INT             (1<<0)
+#define RTC_INT_MASK            (RTC_SEC_INT | RTC_MIN_INT | RTC_HR_INT | RTC_DAY_INT | RTC_ALARM_INT | RTC_LOAD_INT)
+
+/* Whole bunch of useful timer functions */
+#define TIMER1_ENABLE            (1<<0)  /* Enables Timer 1                                        */
+#define TIMER1_DISABLE           (0<<0)  /* Disables Timer 1                                       */
+#define TIMER1_32K               (1<<1)  /* Use the 32K clock for timer 1                          */
+#define TIMER1_CPU               (0<<1)  /* Use the CPU clock rate for timer 1                     */
+#define TIMER1_0INT              (1<<2)  /* Enable an interrupt when 0 is reached for the timer 1  */
+#define TIMER1_NOINT             (0<<2)  /* Disable interrupts for the timer 1                     */
+#define TIMER1_UP                (1<<9)  /* Timer 1 counts up                                      */
+#define TIMER1_DOWN              (0<<9)  /* Timer 1 counts down                                    */
+
+#define TIMER2_ENABLE            (1<<3)  /* Enables Timer 2                                        */
+#define TIMER2_DISABLE           (0<<3)  /* Disables Timer 2                                       */
+#define TIMER2_32K               (1<<4)  /* Use the 32K clock for timer 2                          */
+#define TIMER2_CPU               (0<<4)  /* Use the CPU clock rate for timer 2                     */
+#define TIMER2_0INT              (1<<5)  /* Enable an interrupt when 0 is reached for the timer 2  */
+#define TIMER2_NOINT             (0<<5)  /* Disable interrupts for the timer 2                     */
+#define TIMER2_UP                (1<<10) /* Timer 2 counts up                                      */
+#define TIMER2_DOWN              (0<<10) /* Timer 2 counts down                                    */
+
+#define TIMER3_ENABLE            (1<<6)  /* Enables Timer 3                                        */
+#define TIMER3_DISABLE           (0<<6)  /* Disables Timer 3                                       */
+#define TIMER3_32K               (1<<7)  /* Use the 32K clock for timer 3                          */
+#define TIMER3_CPU               (0<<7)  /* Use the CPU clock rate for timer 3                     */
+#define TIMER3_0INT              (1<<8)  /* Enable an interrupt when 0 is reached for the timer 3  */
+#define TIMER3_NOINT             (0<<8)  /* Disable interrupts for the timer 3                     */
+#define TIMER3_UP                (1<<11) /* Timer 3 counts up                                      */
+#define TIMER3_DOWN              (0<<11) /* Timer 3 counts down                                    */
+
+/* These defines can be used to check the status of the timer */
+#define TIMER1_MATCH1            (1<<0)  /* Timer 1 hit the first match value                      */
+#define TIMER1_MATCH2            (1<<1)  /* Timer 1 hit the second match value                     */
+#define TIMER1_RELOADED          (1<<2)  /* Timer 1 was reloaded (Needs TIMER1_0INT enabled)       */
+
+#define TIMER2_MATCH1            (1<<3)  /* Timer 2 hit the first match value                      */
+#define TIMER2_MATCH2            (1<<4)  /* Timer 2 hit the second match value                     */
+#define TIMER2_RELOADED          (1<<5)  /* Timer 2 was reloaded (Needs TIMER2_0INT enabled)       */
+
+#define TIMER3_MATCH1            (1<<6)  /* Timer 3 hit the first match value                      */
+#define TIMER3_MATCH2            (1<<7)  /* Timer 3 hit the second match value                     */
+#define TIMER3_RELOADED          (1<<8)  /* Timer 3 was reloaded (Needs TIMER3_0INT enabled)       */
+
+/* Timer registers */
+#define timer_1_Counter          (*(volatile uint32_t*)0xF20000)
+#define timer_1_ReloadValue      (*(uint32_t*)0xF20004)
+#define timer_1_MatchValue_1     (*(uint32_t*)0xF20008)
+#define timer_1_MatchValue_2     (*(uint32_t*)0xF2000C)
+#define timer_2_Counter          (*(volatile uint32_t*)0xF20010)
+#define timer_2_ReloadValue      (*(uint32_t*)0xF20014)
+#define timer_2_MatchValue_1     (*(uint32_t*)0xF20018)
+#define timer_2_MatchValue_2     (*(uint32_t*)0xF2001C)
+#define timer_3_Counter          (*(volatile uint32_t*)0xF20020)
+#define timer_3_ReloadValue      (*(uint32_t*)0xF20024)
+#define timer_3_MatchValue_1     (*(uint32_t*)0xF20028)
+#define timer_3_MatchValue_2     (*(uint32_t*)0xF2002C)
+#define timer_Control            (*(uint16_t*)0xF20030)
+#define timer_IntStatus          (*(volatile uint16_t*)0xF20034)
+#define timer_IntAcknowledge     (*(volatile uint16_t*)0xF20034)
+#define timer_EnableInt          (*(uint16_t*)0xF20038)
+
+/* LCD defines */
+#define lcd_BacklightLevel       (*(uint8_t*)0xF60024)
+#define lcd_Timing0              (*(uint32_t*)0xE30000)
+#define lcd_Timing1              (*(uint32_t*)0xE30004)
+#define lcd_Timing2              (*(uint32_t*)0xE30008)
+#define lcd_Timing3              (*(unsigned int*)0xE3000C)
+#define lcd_UpBase               (*(uint32_t*)0xE30010)
+#define lcd_LpBase               (*(uint32_t*)0xE30014)
+#define lcd_Control              (*(unsigned int*)0xE30018)
+#define lcd_EnableInt            (*(uint8_t*)0xE3001C)
+#define lcd_IntStatus            (*(uint8_t*)0xE30020)
+#define lcd_IntStatusMasked      (*(uint8_t*)0xE30024)
+#define lcd_IntAcknowledge       (*(volatile uint8_t*)0xE30028)
+#define lcd_UpBaseCurr           (*(volatile uint32_t*)0xE3002C)
+#define lcd_LpBaseCurr           (*(volatile uint32_t*)0xE30030)
+#define lcd_Palette              ((uint16_t*)0xE30200)
+#define lcd_Ram                  ((uint16_t*)0xD40000)
+
+/**
+ * Width of LCD in pixels
+ */
+#define LCD_WIDTH \
+(320)
+
+/**
+ * Height of LCD in pixels
+ */
+#define LCD_HEIGHT \
+(240)
+
+/**
+ * Total number of pixels in LCD
+ */
+#define LCD_SIZE \
+(LCD_WIDTH*LCD_HEIGHT*2)
+
+/**
+ * @brief Structure of real variable type
+ */
+typedef struct { int8_t sign, exp; uint8_t mant[7]; } real_t;
+/**
+ * @brief Structure of complex variable type
+ */
+typedef struct { real_t real, imag; } cplx_t;
+/**
+ * @brief Structure of list variable type
+ */
+typedef struct { uint16_t dim; real_t items[1]; } list_t;
+/**
+ * @brief Structure of complex list variable type
+ */
+typedef struct { uint16_t dim; cplx_t items[1]; } cplx_list_t;
+/**
+ * @brief Structure of matrix variable type
+ */
+typedef struct { uint8_t cols, rows; real_t items[1]; } matrix_t;
+/**
+ * @brief Structure of string variable type
+ */
+typedef struct { uint16_t len; char data[1]; } string_t;
+/**
+ * @brief Structure of equation variable type
+ */
+typedef struct { uint16_t len; char data[1]; } equ_t;
+/**
+ * @brief Structure of miscellaneous variable type
+ */
+typedef struct { uint16_t size; uint8_t data[1]; } var_t;
+
+/**
+ * Gets an element from a matrix
+ *
+ * @param matrix Structure of matrix
+ * @param row Row in matrix
+ * @param col Column in matrix
+ * @returns real_t containing element data
+ */
+#define matrix_element(matrix, row, col) ((matrix)->items[(row)+(col)*(matrix)->rows])
+
+/**
+ * Resets the OS homescreen; accounts for split screen
+ */
+#define os_ClrHome() do { _OS(asm_ClrLCD); _OS(asm_HomeUp); _OS(asm_DrawStatusBar); } while (0)
+
+/**
+ * Resets the OS homescreen fully
+ */
+#define os_ClrHomeFull() do { _OS(asm_ClrLCDFull); _OS(asm_HomeUp); _OS(asm_DrawStatusBar); } while (0)
+
+/*
+ * Bootcode functions
+ */
+
+/**
+ * Sets the calculator's date
+ *
+ * Performs checks to ensure date is within range
+ * @param day Day to set
+ * @param month Month to set
+ * @param year Year to set
+ */
+void boot_SetDate(uint8_t day, uint8_t month, uint16_t year);
+
+/**
+ * Gets the calculator's date
+ *
+ * @param day Pointer to variable to store day
+ * @param month Pointer to variable to store month
+ * @param year Pointer to variable to store year
+ */
+void boot_GetDate(uint8_t *day, uint8_t *month, uint16_t *year);
+
+/**
+ * Sets the calculator's time
+ *
+ * Performs checks to ensure time is within range
+ * @param seconds Seconds to set
+ * @param minutes Minutes to set
+ * @param hours Hours to set
+ */
+void boot_SetTime(uint8_t seconds, uint8_t minutes, uint8_t hours);
+
+/**
+ * Gets the calculator's time
+ *
+ * @param seconds Pointer to variable to store seconds
+ * @param minutes Pointer to variable to store minutes
+ * @param hours Pointer to variable to store hours
+ */
+void boot_GetTime(uint8_t *seconds, uint8_t *minutes, uint8_t *hours);
+
+/**
+ * Checks if past noon
+ *
+ * @returns True if past noon
+ */
+bool boot_IsAfterNoon(void);
+
+/**
+ * @returns Bootcode version major
+ */
+uint8_t boot_GetBootMajorVer(void);
+
+/**
+ * @returns Bootcode version minor
+ */
+uint8_t boot_GetBootMinorVer(void);
+
+/**
+ * @returns Hardware version
+ */
+uint8_t boot_GetHardwareVer(void);
+
+/**
+ * Turns all of VRAM into 0xFF (white)
+ */
+void boot_ClearVRAM(void);
+
+/**
+ * Checks if the [on] key was pressed
+ *
+ * @returns True is returned if [on] key was pressed
+ */
+bool boot_CheckOnPressed(void);
+
+/**
+ * Basically a reimplemented form of printf that prints to some debugging device
+ *
+ * @param string String to send to debug device
+ */
+void boot_DebugPrintf(const char *string);
+
+/**
+ * Turns off the calculator (probably not a good idea to use)
+ */
+void boot_TurnOff(void);
+
+/**
+ * Inserts a new line at the current cursor posistion on the homescreen
+ * Does not scroll.
+ */
+void boot_NewLine(void);
+
+/**
+ * @returns Current battery status
+ */
+uint8_t boot_GetBatteryStatus(void);
+
+/**
+ * Waits for ~10 ms
+ */
+void boot_WaitShort(void);
+
+/*
+ * OS Routines
+ */
+
+/**
+ * Inserts a new line at the current cursor posistion on the homescreen
+ * Does scroll.
+ */
+void os_NewLine(void);
+
+/**
+ * Disables the OS cursor
+ */
+void os_DisableCursor(void);
+
+/**
+ * Enables the OS cursor
+ */
+void os_EnableCursor(void);
+
+/**
+ * Sets the foreground color used to draw text on the graphscreen
+ * @param color 565 BGR color to set text foreground to
+ */
+void os_SetDrawFGColor(unsigned int color);
+
+/**
+ * Gets the foreground color used to draw text on the graphscreen
+ * @returns 565 BGR color of text foreground
+ */
+unsigned int os_GetDrawFGColor(void);
+
+/**
+ * Sets the background color used to draw text on the graphscreen
+ * @param color 565 BGR color to set text background to
+ */
+void os_SetDrawBGColor(unsigned int color);
+
+/**
+ * Gets the background color used to draw text on the graphscreen
+ *
+ * @returns 565 BGR color of text nackground
+ * @warning Only useable in OS 5.2 and above; use at your own risk
+ */
+unsigned int os_GetDrawBGColor(void);
+
+/**
+ * Set the cursor posistion used on the homescreen
+ *
+ * @param curRow The row aligned offset
+ * @param curCol The column aligned offset
+ */
+void os_SetCursorPos(uint8_t curRow, uint8_t curCol);
+
+/**
+ * Gets the cursor posistion used on the homescreen
+ *
+ * @param curRow Pointer to store the row aligned offset
+ * @param curCol Pointer to store the column aligned offset
+ */
+void os_GetCursorPos(unsigned int *curRow, unsigned int *curCol);
+
+/**
+ * Selects the font to use when drawing on the graphscreen
+ *
+ * @param id
+ * 0: small font                                      <br>
+ * 1: large monospace font
+ */
+void os_FontSelect(char id);
+
+/**
+ * Gets the font to use when drawing on the graphscreen
+ *
+ * @returns
+ * 0: small font                                      <br>
+ * 1: large monospace font
+ */
+unsigned int os_FontGetID(void);
+
+/**
+ * @param string String to get pixel width of
+ * @returns The width of a string in the variable-width format
+ */
+unsigned int os_FontGetWidth(const char *string);
+
+/**
+ * @returns The height of the font characters
+ */
+unsigned int os_FontGetHeight(void);
+
+/**
+ * Draws text using the small font to the screen
+ *
+ * @param string String to draw
+ * @param col Column to start drawing at
+ * @param row Row to start drawing at
+ * @returns The end column
+ */
+unsigned int os_FontDrawText(const char *string, uint16_t col, uint8_t row);
+
+/**
+ * Draws transparent text using the small font to the screen
+ *
+ * @param string String to draw
+ * @param col Column to start drawing at
+ * @param row Row to start drawing at
+ * @returns The end column
+ */
+unsigned int os_FontDrawTransText(const char *string, uint16_t col, uint8_t row);
+
+/**
+ * Puts some text at the current homescreen cursor location
+ *
+ * @param string Test to put on homescreen
+ * @returns 1 if string fits on screen, 0 otherwise
+ */
+unsigned int os_PutStrFull(const char *string);
+
+/**
+ * Puts some text at the current homescreen cursor location
+ *
+ * @param string Test to put on homescreen
+ * @returns 1 if string fits on line, 0 otherwise
+ */
+unsigned int os_PutStrLine(const char *string);
+
+/**
+ * Set a particular flag variable
+ *
+ * @param offset Offset to particular flag in list
+ * @param set Bitmask of flag to set
+ */
+void os_SetFlagByte(int offset, uint8_t set);
+
+/**
+ * Get a particular flag variable
+ *
+ * @param offset Offset to particular flag in list
+ * @returns Bitmask of flag
+ */
+uint8_t os_GetFlagByte(int offset);
+
+/**
+ * Get amount of free ram in order to allocate extra ram
+ *
+ * @param free Set to start of free available ram
+ * @returns Size of available ram
+ */
+size_t os_MemChk(void **free);
+
+/**
+ * Throws an OS error
+ *
+ * @param error Error code to throw
+ */
+void os_ThrowError(uint8_t error);
+
+/**
+ * Gets a pointer to the system stats
+ *
+ * @returns
+ * [3]     - Hardware version                       <br>
+ * [12-13] - Boot Version Major                     <br>
+ * [14]    - Boot Version Minor                     <br>
+ * [15-16] - Boot Version Build                     <br>
+ * [28-37] - Calc ID (From certificate if exists)   <br>
+ * [38-39] - Appears to be localization language
+ */
+void *os_GetSystemStats(void);
+
+/**
+ * This function can return twice (like setjmp).
+ * First return always happens with a return value of 0.
+ * Second return only happens if an error occurs before os_PopErrorHandler is called,
+ * with the errNo as the return value.
+ *
+ * @code
+ * int errno = os_PushErrorHandler();
+ * if (errno) {
+ *     // handle error, but no longer under the protection of the error handler so do not call os_PopErrorHandler()
+ * } else {
+ *     // run some code that may error
+ *     os_PopErrorHandler();
+ * }
+ * @endcode
+ *
+ * @param routine Error handling routine
+ * @see os_PopErrorHandler
+ */
+int os_PushErrorHandler(void);
+
+/**
+ * Restores stack state after a call to os_PushErrorHandler.  Must be called with stack in the same state
+ * as it was when os_PushErrorHandler returned with 0, and should not be called along the error path.
+ *
+ * @see os_PushErrorHandler
+ */
+void os_PopErrorHandler(void);
+
+/**
+ * @returns A pointer to symtable of the OS
+ */
+void *os_GetSymTablePtr(void);
+
+/**
+ * Creates an AppVar
+ *
+ * @param name Pointer to name of AppVar to create
+ * @param size Size of AppVar to create
+ * @returns A pointer to the AppVar data
+ * @note Returns NULL if creation failed for some reason, otherwise a pointer to the size bytes
+ */
+var_t *os_CreateAppVar(const char *name, uint16_t size);
+
+/**
+ * Returns next entry or NULL if no more entries, pass os_GetSymTablePtr() as first entry
+ */
+void *os_NextSymEntry(void *entry, unsigned int *type, unsigned int *nameLength, char *name, void **data);
+
+/**
+ * Locates a symbol in the symtable
+ *
+ * @param type Type of symbol to find
+ * @param name Pointer to name of symbol to find
+ * @param entry Can be NULL if you don't care
+ * @param data Can be NULL if you don't care
+ * @returns If file exists, returns 1 and sets entry and data, otherwise returns 0.
+ */
+int os_ChkFindSym(uint8_t type, const char *name, void **entry, void **data);
+
+/**
+ * Gets the Ans variable
+ *
+ * @param type This is set to the current variable type in ANS
+ * @returns Pointer to the data
+ * @note Returns NULL if Ans doesn't exist or type is NULL
+ */
+void *os_RclAns(uint8_t *type);
+
+/**
+ * Copies a real_t type
+ *
+ * @param src Pointer to original real_t
+ * @returns Copied real_t
+ */
+real_t os_RealCopy(const real_t *src);
+
+/* Unary operations used to interact with the OS math functions */
+real_t os_RealAcosRad(const real_t *arg);
+real_t os_RealAsinRad(const real_t *arg);
+real_t os_RealAtanRad(const real_t *arg);
+real_t os_RealCosRad(const real_t *arg);
+real_t os_RealRadToDeg(const real_t *arg);
+real_t os_RealExp(const real_t *arg);
+real_t os_RealFloor(const real_t *arg);
+real_t os_RealFrac(const real_t *arg);
+real_t os_RealRoundInt(const real_t *arg);
+real_t os_RealLog(const real_t *arg);
+real_t os_RealNeg(const real_t *arg);
+real_t os_RealDegToRad(const real_t *arg);
+real_t os_RealInv(const real_t *arg);
+real_t os_RealSinRad(const real_t *arg);
+real_t os_RealSqrt(const real_t *arg);
+real_t os_RealTanRad(const real_t *arg);
+real_t os_RealInt(const real_t *arg);
+cplx_t os_CplxSquare(const cplx_t *arg);
+
+/* Binary operations used to interact with the OS math functions */
+real_t os_RealAdd(const real_t *arg1, const real_t *arg2);
+real_t os_RealDiv(const real_t *arg1, const real_t *arg2);
+real_t os_RealGcd(const real_t *arg1, const real_t *arg2);
+real_t os_RealLcm(const real_t *arg1, const real_t *arg2);
+real_t os_RealMax(const real_t *arg1, const real_t *arg2);
+real_t os_RealMin(const real_t *arg1, const real_t *arg2);
+real_t os_RealMul(const real_t *arg1, const real_t *arg2);
+real_t os_RealNcr(const real_t *total, const real_t *num);
+real_t os_RealNpr(const real_t *total, const real_t *num);
+real_t os_RealPow(const real_t *base, const real_t *exp);
+real_t os_RealRandInt(const real_t *min, const real_t *max);
+real_t os_RealMod(const real_t *arg1, const real_t *arg2);
+real_t os_RealSub(const real_t *arg1, const real_t *arg2);
+
+/**
+ * Rounds a real_t
+ *
+ * @note digits must be in the range 0 - 9
+ */
+real_t os_RealRound(const real_t *arg, char digits);
+
+/**
+ * Compares two real_t
+ *
+ * @returns -1, 0, or 1 depending on the comparison
+ */
+int os_RealCompare(const real_t *arg1, const real_t *arg2);
+
+/**
+ * Converts a real_t to an integer
+ * @note Saturates on overflow
+ */
+int os_RealToInt24(const real_t *arg);
+
+/**
+ * Converts an integer to a real_t
+ * @note Saturates on overflow
+ */
+real_t os_Int24ToReal(int arg);
+
+/**
+ * Converts a real_t to a float
+ * @note Saturates on overflow
+ */
+float os_RealToFloat(const real_t *arg);
+
+/**
+ * Converts an float to a real_t
+ * @note Saturates on overflow
+ */
+real_t os_FloatToReal(float arg);
+
+/** This converts a ti-float to a ti-ascii string.
+ *
+ * @param result Zero terminated string copied to this address
+ * @param arg Real to convert
+ * @param maxLength
+ *  <=0: use default max length (14)                            <br>
+ *  >0:  max length of result, minimum of 6
+ * @param mode:
+ *  0: Use current mode for everything (digits ignored)         <br>
+ *  1: Normal mode                                              <br>
+ *  2: Sci mode                                                 <br>
+ *  3: Eng mode                                                 <br>
+ *  >4: Use current Normal/Sci/Eng mode (digits still used)     <br>
+ * @param digits
+ *  -1:  Float mode                                             <br>
+ *  0-9: Fix # mode                                             <br>
+ * @returns Length of result
+ */
+int os_RealToStr(char *result, const real_t *arg, int8_t maxLength, uint8_t mode, int8_t digits);
+
+/**
+ *  This converts a ti-ascii string to a ti-float.
+ *
+ *  String format regexp: / *[-\032+]?[0-9]*(\.[0-9]*)?([eE\033][-\032+]?[0-9]*)?/
+ *  @param string TI-ascii string to convert
+ *  @param end If non-null, pointer to end of parsed number is stored here
+ *  @returns resulting TI-float; on exponent overflow this is +-9.9999999999999e99
+ */
+real_t os_StrToReal(const char *string, char **end);
+
+/**
+ * High 8 is unsigned offset, low 8 is bits to test
+ */
+int os_TestFlagBits(uint16_t offset_pattern);
+void os_SetFlagBits(int16_t offset_pattern);
+void os_ResetFlagBits(int16_t offset_pattern);
+
+/**
+ * Custom implementation input routine for use in conjunction with the TIOS.
+ * It is HIGHLY recommended you implement your own routine, this routine has
+ * some quirks. It is good enough for getting basic input however.
+ *
+ * @param string Input prompt string to be displayed to the user
+ * @param buf Storage location to store input string
+ * @param bufsize Available storage size for input string. -1 for null termination.
+ * @returns None
+ */
+void os_GetStringInput(char *string, char *buf, size_t bufsize);
+
+/**
+ * Gets a key from the OS
+ *
+ * @returns Key code
+ * @returns Extended key code in high byte
+ */
+uint16_t os_GetKey(void);
+
+/**
+ * Disable text buffering on the homescreen. C programs use this area by default for the BSS / Heap.
+ */
+void os_DisableHomeTextBuffer(void);
+
+/**
+ * Enables text buffering on the homescreen. C programs use this area by default for the BSS / Heap.
+ */
+void os_EnableHomeTextBuffer(void);
+
+/**
+ * @brief Scan code type
+ */
+typedef uint8_t sk_key_t;
+
+/**
+ * Performs an OS call to get the keypad scan code
+ *
+ * You can also use this function to get input from the user as a string like this:
+ * @code
+ * const char *chars = "\0\0\0\0\0\0\0\0\0\0\"WRMH\0\0?[VQLG\0\0:ZUPKFC\0 YTOJEB\0\0XSNIDA\0\0\0\0\0\0\0\0";
+ * uint8_t key, i = 0;
+ * char buffer[50];
+ *
+ * while((key = os_GetCSC()) != sk_Enter) {
+ *     if(chars[key]) {
+ *         buffer[i++] = chars[key];
+ *     }
+ * }
+ * @endcode
+ * Feel free to modify the string to suit your needs.
+ * @returns Key scan code
+ */
+sk_key_t os_GetCSC(void);
+
+/**
+ * Runs the calulator at 6 MHz
+ */
+void boot_Set6MHzMode(void);
+
+/**
+ * Runs the calulator at 48 MHz
+ */
+void boot_Set48MHzMode(void);
+
+/**
+ * Runs the calulator at 6 MHz (saves interrupt status)
+ */
+void boot_Set6MHzModeI(void);
+
+/**
+ * Runs the calulator at 48 MHz (saves interrupt status)
+ */
+void boot_Set48MHzModeI(void);
+
+/**
+ * Executes the assembly routine _ForceCmdNoChar
+ */
+void os_ForceCmdNoChar(void);
+
+/**
+ * Use this function to call assembly functions in the OS and Bootcode
+ * i.e. _OS( asm_ArcChk );
+ */
+void _OS(void (*function)(void));
+
+/**
+ * Assembly routine to scroll homescreen up
+ */
+void asm_MoveUp(void);
+
+/**
+ * Assembly routine to scroll homescreen down
+ */
+void asm_MoveDown(void);
+
+/**
+ * Assembly routine to move row and column posistion to (0,0)
+ */
+void asm_HomeUp(void);
+
+/**
+ * Assembly routine to turn on the Run Indicator
+ */
+void asm_RunIndicOn(void);
+
+/**
+ * Assembly routine to turn off the Run Indicator
+ */
+void asm_RunIndicOff(void);
+
+/**
+ * Assembly routine to turn off APD
+ */
+void asm_DisableAPD(void);
+
+/**
+ * Assembly routine to turn on APD
+ */
+void asm_EnableAPD(void);
+
+/**
+ * Assembly routine checks the amount of free archive
+ */
+void asm_ArcChk(void);
+
+/**
+ * Assembly routine to clear the homescreen lcd
+ */
+void asm_ClrLCDFull(void);
+
+/**
+ * Assembly routine to clear the homescreen lcd.
+ * Accounts for split screen
+ */
+void asm_ClrLCD(void);
+
+/**
+ * Assembly routine to redraw the status bar
+ */
+void asm_DrawStatusBar(void);
+
+/**
+ * Invalidate and clear stat variables
+ */
+void asm_DelRes(void);
+
+/**
+ * Invalidate and clear text shadow area
+ */
+void asm_ClrTxtShd(void);
 
 /**
  * Colors used by the OS
@@ -75,7 +978,7 @@ typedef enum {
 #define os_PromptRet         (*(uint8_t*)0xD00804)
 #define os_PromptValid       (*(uint8_t*)0xD00807)
 
-#define os_PenCol            (*(uint24_t*)0xD008D2)        /**< Small font column location */
+#define os_PenCol            (*(unsigned int*)0xD008D2)        /**< Small font column location */
 #define os_PenRow            (*(uint8_t*)0xD008D5)         /**< Small font row location */
 
 #define os_StatVars          ((uint8_t*)0xD01191)
@@ -203,31 +1106,31 @@ typedef enum {
 #define os_AppErr1           ((char*)0xD025A9)             /**< String [1] for custom error */
 #define os_AppErr2           ((char*)0xD025B6)             /**< String [2] for custom error */
 
-#define os_CursorHookPtr     (*(uint24_t*)0xD025D5)
-#define os_LibraryHookPtr    (*(uint24_t*)0xD025D8)
-#define os_RawKeyHookPtr     (*(uint24_t*)0xD025DB)
-#define os_GetKeyHookPtr     (*(uint24_t*)0xD025DE)
-#define os_HomescreenHookPtr (*(uint24_t*)0xD025E1)
-#define os_WindowHookPtr     (*(uint24_t*)0xD025E4)
-#define os_GraphHookPtr      (*(uint24_t*)0xD025E7)
-#define os_YEqualsHookPtr    (*(uint24_t*)0xD025EA)
-#define os_FontHookPtr       (*(uint24_t*)0xD025ED)
-#define os_RegraphHookPtr    (*(uint24_t*)0xD025F0)
-#define os_GraphicsHookPtr   (*(uint24_t*)0xD025F3)
-#define os_TraceHookPtr      (*(uint24_t*)0xD025F6)
-#define os_ParserHookPtr     (*(uint24_t*)0xD025F9)
-#define os_AppChangeHookPtr  (*(uint24_t*)0xD025FC)
-#define os_Catalog1HookPtr   (*(uint24_t*)0xD025FF)
-#define os_HelpHookPtr       (*(uint24_t*)0xD02602)
-#define os_CxRedispHookPtr   (*(uint24_t*)0xD02605)
-#define os_MenuHookPtr       (*(uint24_t*)0xD02608)
-#define os_Catalog2HookPtr   (*(uint24_t*)0xD0260B)
-#define os_TokenHookPtr      (*(uint24_t*)0xD0260E)
-#define os_LocalizeHookPtr   (*(uint24_t*)0xD02611)
-#define os_SilentLinkHookPtr (*(uint24_t*)0xD02614)
-#define os_ActiveUSBHookPtr  (*(uint24_t*)0xD0261A)
+#define os_CursorHookPtr     (*(unsigned int*)0xD025D5)
+#define os_LibraryHookPtr    (*(unsigned int*)0xD025D8)
+#define os_RawKeyHookPtr     (*(unsigned int*)0xD025DB)
+#define os_GetKeyHookPtr     (*(unsigned int*)0xD025DE)
+#define os_HomescreenHookPtr (*(unsigned int*)0xD025E1)
+#define os_WindowHookPtr     (*(unsigned int*)0xD025E4)
+#define os_GraphHookPtr      (*(unsigned int*)0xD025E7)
+#define os_YEqualsHookPtr    (*(unsigned int*)0xD025EA)
+#define os_FontHookPtr       (*(unsigned int*)0xD025ED)
+#define os_RegraphHookPtr    (*(unsigned int*)0xD025F0)
+#define os_GraphicsHookPtr   (*(unsigned int*)0xD025F3)
+#define os_TraceHookPtr      (*(unsigned int*)0xD025F6)
+#define os_ParserHookPtr     (*(unsigned int*)0xD025F9)
+#define os_AppChangeHookPtr  (*(unsigned int*)0xD025FC)
+#define os_Catalog1HookPtr   (*(unsigned int*)0xD025FF)
+#define os_HelpHookPtr       (*(unsigned int*)0xD02602)
+#define os_CxRedispHookPtr   (*(unsigned int*)0xD02605)
+#define os_MenuHookPtr       (*(unsigned int*)0xD02608)
+#define os_Catalog2HookPtr   (*(unsigned int*)0xD0260B)
+#define os_TokenHookPtr      (*(unsigned int*)0xD0260E)
+#define os_LocalizeHookPtr   (*(unsigned int*)0xD02611)
+#define os_SilentLinkHookPtr (*(unsigned int*)0xD02614)
+#define os_ActiveUSBHookPtr  (*(unsigned int*)0xD0261A)
 
-#define os_TempFreeArc       (*(uint24_t*)0xD02655)        /**< Set after asm_ArcChk call */
+#define os_TempFreeArc       (*(unsigned int*)0xD02655)        /**< Set after asm_ArcChk call */
 
 #define os_TextBGcolor       (*(uint16_t*)0xD02688)        /**< Large font background color */
 #define os_TextFGcolor       (*(uint16_t*)0xD0268A)        /**< Large font foreground color */
@@ -346,88 +1249,7 @@ typedef enum {
 #define tY                  0x59
 #define tZ                  0x5A
 #define tTheta              0x5B
-
-/*
- * Extended Tokens
- */
-#define tExtTok             0xEF
-#define tSetDate            0x00
-#define tSetTime            0x01
-#define tCheckTmr           0x02
-#define tSetDtFmt           0x03
-#define tSetTmFmt           0x04
-#define tTimeCnv            0x05
-#define tDayOfWk            0x06
-#define tGetDtStr           0x07
-#define tGetTmStr           0x08
-#define tGetDate            0x09
-#define tGetTime            0x0A
-#define tStartTmr           0x0B
-#define tGtDtFmt            0x0C
-#define tGetTmFmt           0x0D
-#define tIsClockOn          0x0E
-#define tClockOff           0x0F
-#define tClockOn            0x10
-#define tOpenLib            0x11
-#define tExecLib            0x12
-#define tInvT               0x13
-#define tChiSquaredTest     0x14
-#define tLinRegTInt         0x15
-#define tManualFit          0x16
-#define tZQuadrant          0x17
-#define tZFracHalf          0x18
-#define tZFracThird         0x19
-#define tZFracFourth        0x1A
-#define tZFracFifth         0x1B
-#define tZFracEighth        0x1C
-#define tZFracTenth         0x1D
-#define tFracSlash          0x2E
-#define tFracMixedNum       0x2F
-#define tSwapImProper       0x30
-#define tSwapFracDec        0x31
-#define tRemainder          0x32
-#define tSummationSigma     0x33
-#define tLogBase            0x34
-#define tRandIntNoRep       0x35
-#define tMathPrint          0x36
-#define tClassic            0x38
-#define tAutoAnswer         0x3B
-#define tDecAnswer          0x3C
-#define tFracAnswer         0x3D
-#define tBlue               0x41
-#define tRed                0x42
-#define tBlack              0x43
-#define tMagenta            0x44
-#define tGreen              0x45
-#define tOrange             0x46
-#define tBrown              0x47
-#define tNavy               0x48
-#define tLtBlue             0x49
-#define tYellow             0x4A
-#define tWhite              0x4B
-#define tLtGray             0x4C
-#define tMedGray            0x4D
-#define tGray               0x4E
-#define tDarkGray           0x4F
-#define tGraphColor         0x65
-#define tTextColor          0x67
-#define tBackgroundOn       0x5B
-#define tBackgroundOff      0x64
-#define tThin               0x74
-#define tBorderColor        0x6C
-#define tAsm84CPrgm         0x68
-#define tAsm84CCmp          0x69
-#define tAsm84CeCmp         0x7B
-#define tAsm84CePrgm        0x7A
-
-#define tVarMat             0x5C
-#define tVarLst             0x5D
-#define tVarEqu             0x5E
 #define tProg               0x5F
-#define tVarPict            0x60
-#define tVarGDB             0x61
-#define tVarOut             0x62
-#define tVarSys             0x63
 
 /*
  * Mode settings tokens
@@ -507,7 +1329,6 @@ typedef enum {
 #define tTanLn              0xA7 // 'TanLn'
 #define tDrInv              0xA8 // 'DrInv_'
 #define tDrawF              0xA9 // 'DrawF_'
-#define tVarStrng           0xAA
 
 // Functions with no argument
 #define tRand               0xAB // 'rand'
@@ -602,6 +1423,7 @@ typedef enum {
 #define tScatter            0xFE // 'Scatter_'
 #define tLR1                0xFF // 'LINR(AX+B)'
 
+#define tGFormat            0x7E
 // 2nd Half Of Graph Format Tokens
 #define tSeq                0x00 // 'SeqG'
 #define tSimulG             0x01 // 'SimulG'
@@ -623,6 +1445,7 @@ typedef enum {
 #define tvw                 0x11 // V vs W
 #define tuw                 0x12 // U vs W
 
+#define tVarMat             0x5C
 // 2nd Half Of User Matrix Tokens
 #define tMatA               0x00 // MAT A
 #define tMatB               0x01 // MAT B
@@ -635,6 +1458,7 @@ typedef enum {
 #define tMatI               0x08 // MAT I
 #define tMatJ               0x09 // MAT J
 
+#define tVarLst             0x5D
 // 2nd Half Of User List Tokens
 #define tL1                 0x00 // LIST 1
 #define tL2                 0x01 // LIST 2
@@ -643,7 +1467,9 @@ typedef enum {
 #define tL5                 0x04 // LIST 5
 #define tL6                 0x05 // LIST 6
 
+#define tVarEqu             0x5E
 // 2nd Half Of User Equation Tokens
+
 // Y Equations have bit 4 set
 #define tY1                 0x10 // Y1
 #define tY2                 0x11 // Y2
@@ -683,6 +1509,7 @@ typedef enum {
 #define tvn                 0x81 // Vn
 #define twn                 0x82 // Wn
 
+#define tVarPict            0x60
 // 2nd Half User Picture Tokens
 #define tPic1               0x00 // PIC1
 #define tPic2               0x01 // PIC2
@@ -695,6 +1522,7 @@ typedef enum {
 #define tPic9               0x08 // PIC9
 #define tPic0               0x09 // PIC0
 
+#define tVarGDB             0x61
 // 2nd Half User Graph Database Tokens
 #define tGDB1               0x00 // GDB1
 #define tGDB2               0x01 // GDB2
@@ -707,6 +1535,7 @@ typedef enum {
 #define tGDB9               0x08 // GDB9
 #define tGDB0               0x09 // GDB0
 
+#define tVarStrng           0xAA
 // 2nd Half Of String Vars
 #define tStr1               0x00
 #define tStr2               0x01
@@ -719,6 +1548,7 @@ typedef enum {
 #define tStr9               0x08
 #define tStr0               0x09
 
+#define tVarOut             0x62
 // 2nd Half Of System Output Only Variables
 #define tRegEq              0x01 // REGRESSION EQUATION
 #define tStatN              0x02 // STATISTICS N
@@ -784,6 +1614,7 @@ typedef enum {
 #define tE_SS               0x3B
 #define tE_MS               0x3C
 
+#define tVarSys             0x63
 // 2nd Half Of System Input/Output Variables
 #define tuXscl              0x00
 #define tuYscl              0x01
@@ -1046,6 +1877,77 @@ typedef enum {
 #define tLcapIAcute         0xCD
 #define tGarbageCollect     0xCE
 
+#define tExtTok             0xEF
+// 2nd Byte Of tExtTok Tokens
+#define tSetDate            0x00
+#define tSetTime            0x01
+#define tCheckTmr           0x02
+#define tSetDtFmt           0x03
+#define tSetTmFmt           0x04
+#define tTimeCnv            0x05
+#define tDayOfWk            0x06
+#define tGetDtStr           0x07
+#define tGetTmStr           0x08
+#define tGetDate            0x09
+#define tGetTime            0x0A
+#define tStartTmr           0x0B
+#define tGtDtFmt            0x0C
+#define tGetTmFmt           0x0D
+#define tIsClockOn          0x0E
+#define tClockOff           0x0F
+#define tClockOn            0x10
+#define tOpenLib            0x11
+#define tExecLib            0x12
+#define tInvT               0x13
+#define tChiSquaredTest     0x14
+#define tLinRegTInt         0x15
+#define tManualFit          0x16
+#define tZQuadrant          0x17
+#define tZFracHalf          0x18
+#define tZFracThird         0x19
+#define tZFracFourth        0x1A
+#define tZFracFifth         0x1B
+#define tZFracEighth        0x1C
+#define tZFracTenth         0x1D
+#define tFracSlash          0x2E
+#define tFracMixedNum       0x2F
+#define tSwapImProper       0x30
+#define tSwapFracDec        0x31
+#define tRemainder          0x32
+#define tSummationSigma     0x33
+#define tLogBase            0x34
+#define tRandIntNoRep       0x35
+#define tMathPrint          0x36
+#define tClassic            0x38
+#define tAutoAnswer         0x3B
+#define tDecAnswer          0x3C
+#define tFracAnswer         0x3D
+#define tBlue               0x41
+#define tRed                0x42
+#define tBlack              0x43
+#define tMagenta            0x44
+#define tGreen              0x45
+#define tOrange             0x46
+#define tBrown              0x47
+#define tNavy               0x48
+#define tLtBlue             0x49
+#define tYellow             0x4A
+#define tWhite              0x4B
+#define tLtGray             0x4C
+#define tMedGray            0x4D
+#define tGray               0x4E
+#define tDarkGray           0x4F
+#define tGraphColor         0x65
+#define tTextColor          0x67
+#define tBackgroundOn       0x5B
+#define tBackgroundOff      0x64
+#define tThin               0x74
+#define tBorderColor        0x6C
+#define tAsm84CPrgm         0x68
+#define tAsm84CCmp          0x69
+#define tAsm84CeCmp         0x7B
+#define tAsm84CePrgm        0x7A
+
 /* 2 byte extended tokens (tExtTok) present in OS 5.2 and above */
 #define tSEQn               0x8F /* 'SEQ(n)'     */
 #define tSEQn1              0x90 /* 'SEQ(n+1)'   */
@@ -1061,59 +1963,59 @@ typedef enum {
 /*
  * --- TIOS System error codes ---
  */
-#define OS_E_EDIT           1<<7
-#define OS_E_MASK           0x7F
-#define OS_E_OVERFLOW       1+OS_E_EDIT
-#define OS_E_DIVBY0         2+OS_E_EDIT
-#define OS_E_SINGULARMAT    3+OS_E_EDIT
-#define OS_E_DOMAIN         4+OS_E_EDIT
-#define OS_E_INCREMENT      5+OS_E_EDIT
-#define OS_E_BREAK          6+OS_E_EDIT
-#define OS_E_NONREAL        7+OS_E_EDIT
-#define OS_E_SYNTAX         8+OS_E_EDIT
-#define OS_E_DATATYPE       9+OS_E_EDIT
-#define OS_E_ARGUMENT       10+OS_E_EDIT
-#define OS_E_DIMMISMATCH    11+OS_E_EDIT
-#define OS_E_DIMENSION      12+OS_E_EDIT
-#define OS_E_UNDEFINED      13+OS_E_EDIT
-#define OS_E_MEMORY         14+OS_E_EDIT
-#define OS_E_INVALID        15+OS_E_EDIT
-#define OS_E_ILLEGALNEST    16+OS_E_EDIT
-#define OS_E_BOUND          17+OS_E_EDIT
-#define OS_E_GRAPHRANGE     18+OS_E_EDIT
-#define OS_E_ZOOM           19+OS_E_EDIT
-#define OS_E_LABEL          20
-#define OS_E_STAT           21
-#define OS_E_SOLVER         22+OS_E_EDIT
-#define OS_E_SINGULARITY    23+OS_E_EDIT
-#define OS_E_SIGNCHANGE     24+OS_E_EDIT
-#define OS_E_ITERATIONS     25+OS_E_EDIT
-#define OS_E_BADGUESS       26+OS_E_EDIT
-#define OS_E_STATPLOT       27
-#define OS_E_TOLTOOSMALL    28+OS_E_EDIT
-#define OS_E_RESERVED       29+OS_E_EDIT
-#define OS_E_MODE           30+OS_E_EDIT
-#define OS_E_LNKERR         31+OS_E_EDIT
-#define OS_E_LNKMEMERR      32+OS_E_EDIT
-#define OS_E_LNKTRANSERR    33+OS_E_EDIT
-#define OS_E_LNKDUPERR      34+OS_E_EDIT
-#define OS_E_LNKMEMFULL     35+OS_E_EDIT
-#define OS_E_UNKNOWN        36+OS_E_EDIT
-#define OS_E_SCALE          37+OS_E_EDIT
-#define OS_E_IDNOTFOUND     38
-#define OS_E_NOMODE         39+OS_E_EDIT
-#define OS_E_VALIDATION     40
-#define OS_E_LENGTH         41+OS_E_EDIT
-#define OS_E_APPLICATION    42+OS_E_EDIT
-#define OS_E_APPERR1        43+OS_E_EDIT
-#define OS_E_APPERR2        44+OS_E_EDIT
-#define OS_E_EXPIREDAPP     45
-#define OS_E_BADADD         46
-#define OS_E_ARCHIVED       47+OS_E_EDIT
-#define OS_E_VERSION        48
-#define OS_E_ARCHFULL       49
-#define OS_E_VARIABLE       50+OS_E_EDIT
-#define OS_E_DUPLICATE      51+OS_E_EDIT
+#define OS_E_EDIT           (1<<7)
+#define OS_E_MASK           (0x7F)
+#define OS_E_OVERFLOW       (1+OS_E_EDIT)
+#define OS_E_DIVBY0         (2+OS_E_EDIT)
+#define OS_E_SINGULARMAT    (3+OS_E_EDIT)
+#define OS_E_DOMAIN         (4+OS_E_EDIT)
+#define OS_E_INCREMENT      (5+OS_E_EDIT)
+#define OS_E_BREAK          (6+OS_E_EDIT)
+#define OS_E_NONREAL        (7+OS_E_EDIT)
+#define OS_E_SYNTAX         (8+OS_E_EDIT)
+#define OS_E_DATATYPE       (9+OS_E_EDIT)
+#define OS_E_ARGUMENT       (10+OS_E_EDIT)
+#define OS_E_DIMMISMATCH    (11+OS_E_EDIT)
+#define OS_E_DIMENSION      (12+OS_E_EDIT)
+#define OS_E_UNDEFINED      (13+OS_E_EDIT)
+#define OS_E_MEMORY         (14+OS_E_EDIT)
+#define OS_E_INVALID        (15+OS_E_EDIT)
+#define OS_E_ILLEGALNEST    (16+OS_E_EDIT)
+#define OS_E_BOUND          (17+OS_E_EDIT)
+#define OS_E_GRAPHRANGE     (18+OS_E_EDIT)
+#define OS_E_ZOOM           (19+OS_E_EDIT)
+#define OS_E_LABEL          (20)
+#define OS_E_STAT           (21)
+#define OS_E_SOLVER         (22+OS_E_EDIT)
+#define OS_E_SINGULARITY    (23+OS_E_EDIT)
+#define OS_E_SIGNCHANGE     (24+OS_E_EDIT)
+#define OS_E_ITERATIONS     (25+OS_E_EDIT)
+#define OS_E_BADGUESS       (26+OS_E_EDIT)
+#define OS_E_STATPLOT       (27)
+#define OS_E_TOLTOOSMALL    (28+OS_E_EDIT)
+#define OS_E_RESERVED       (29+OS_E_EDIT)
+#define OS_E_MODE           (30+OS_E_EDIT)
+#define OS_E_LNKERR         (31+OS_E_EDIT)
+#define OS_E_LNKMEMERR      (32+OS_E_EDIT)
+#define OS_E_LNKTRANSERR    (33+OS_E_EDIT)
+#define OS_E_LNKDUPERR      (34+OS_E_EDIT)
+#define OS_E_LNKMEMFULL     (35+OS_E_EDIT)
+#define OS_E_UNKNOWN        (36+OS_E_EDIT)
+#define OS_E_SCALE          (37+OS_E_EDIT)
+#define OS_E_IDNOTFOUND     (38)
+#define OS_E_NOMODE         (39+OS_E_EDIT)
+#define OS_E_VALIDATION     (40)
+#define OS_E_LENGTH         (41+OS_E_EDIT)
+#define OS_E_APPLICATION    (42+OS_E_EDIT)
+#define OS_E_APPERR1        (43+OS_E_EDIT)
+#define OS_E_APPERR2        (44+OS_E_EDIT)
+#define OS_E_EXPIREDAPP     (45)
+#define OS_E_BADADD         (46)
+#define OS_E_ARCHIVED       (47+OS_E_EDIT)
+#define OS_E_VERSION        (48)
+#define OS_E_ARCHFULL       (49)
+#define OS_E_VARIABLE       (50+OS_E_EDIT)
+#define OS_E_DUPLICATE      (51+OS_E_EDIT)
 
 /*
  * --- TI-OS os_GetCSC Scan Code Return Values ---
@@ -1162,11 +2064,16 @@ typedef enum {
 #define sk_Cos              0x1E
 #define sk_Prgm             0x1F
 #define sk_Stat             0x20
-#define sk_Chs              0x10
+#define sk_Chs              0x11
 #define sk_RParen           0x15
 #define sk_Tan              0x16
 #define sk_Vars             0x17
 #define sk_Power            0x0E
+
+/* Compatibility defines */
+#define prgm_CleanUp()
+#define pgrm_CleanUp()
+#define memset_fast memset
 
 #ifdef __cplusplus
 }
