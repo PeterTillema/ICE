@@ -28,7 +28,7 @@ script:
 # Build ICE
   - make
 # Build CEmu core and autotester_cli
-  - git clone --recursive -b latest-stable --depth 1 https://github.com/CE-Programming/CEmu.git
+  - git clone --recursive --depth 1 https://github.com/CE-Programming/CEmu.git
   - make -C CEmu/core -j4
   - make -C CEmu/tests/autotester -j4
   - export PATH=$(pwd)/CEmu/tests/autotester:$PATH
