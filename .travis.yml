@@ -1,5 +1,4 @@
 dist: xenial
-sudo: required
 
 language: cpp
 
@@ -23,7 +22,7 @@ script:
   - make install
   - make release
   - make release-libs
-  - export AUTOTESTER_LIBS_DIR=$(pwd)/clibraries
+  - export AUTOTESTER_LIBS_GROUP=$(pwd)/clibraries/clibs.8xg
   - cd ..
 # Build ICE
   - make
