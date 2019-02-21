@@ -1958,6 +1958,11 @@ static uint8_t functionBB(int token) {
             free(inName);
             fprintf(stdout, "Program size: %u\n", ice.programLength);
 
+            if ((uint8_t)_getc() != tii) {
+                return E_SUBPROG_HEADER;
+            }
+            _rewind(ice.inPrgm);
+
             // Compile it, and close
             ice.currentLine = 0;
             if ((res = parseProgramUntilEnd()) != VALID) {
@@ -1982,6 +1987,12 @@ static uint8_t functionBB(int token) {
             sprintf(buf, "Compiling subprogram %s...", outputPrgm->prog);
             displayMessageLineScroll(buf);
             free(outputPrgm);
+
+            // Check if the subprogram has the right header
+            if ((uint8_t)_getc() != tii) {
+                return E_SUBPROG_HEADER;
+            }
+            _rewind(ice.inPrgm);
             
             if (ice.debug) {
                 WriteWordToDebugProg(0);

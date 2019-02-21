@@ -20,8 +20,9 @@
 #define E_NO_DBG_FILE      16
 #define E_NOT_ICE_PROG     17
 #define E_MEM_VARIABLES    18
-#define W_WRONG_CHAR       19
-#define W_SQUISHED         20
+#define E_SUBPROG_HEADER   19
+#define W_WRONG_CHAR       20
+#define W_SQUISHED         21
 
 #define W_VALID            254
 #define VALID              255
