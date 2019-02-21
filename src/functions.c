@@ -1181,6 +1181,7 @@ uint8_t parseFunction(unsigned int index) {
                     if (expr.outputIsNumber && expr.outputNumber >= IX_VARIABLES - 0x80 &&
                         expr.outputNumber <= IX_VARIABLES + 0x7F) {
                         *(ice.programPtr - 2) = 0x65;
+                        reg.HLIsNumber = false;
                     } else {
                         if (smallArguments & whichSmallArgument) {
                             if (expr.outputIsNumber) {
