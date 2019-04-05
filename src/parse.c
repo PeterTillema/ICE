@@ -1953,12 +1953,12 @@ static uint8_t functionBB(int token) {
 
             fseek(ice.inPrgm, 0, SEEK_END);
             ice.programLength = ftell(ice.inPrgm);
-            _rewind(ice.inPrgm);
             fprintf(stdout, "Compiling subprogram %s\n", inName);
             free(inName);
             fprintf(stdout, "Program size: %u\n", ice.programLength);
 
-            if ((uint8_t)_getc() != tii) {
+            // Double [i] at the start of a subprogram
+            if ((uint8_t)_getc() != tii || (uint8_t)_getc() != tii) {
                 return E_SUBPROG_HEADER;
             }
             _rewind(ice.inPrgm);
@@ -1988,8 +1988,8 @@ static uint8_t functionBB(int token) {
             displayMessageLineScroll(buf);
             free(outputPrgm);
 
-            // Check if the subprogram has the right header
-            if ((uint8_t)_getc() != tii) {
+            // Check if the subprogram has the right [i][i] header
+            if ((uint8_t)_getc() != tii || (uint8_t)_getc() != tii) {
                 return E_SUBPROG_HEADER;
             }
             _rewind(ice.inPrgm);

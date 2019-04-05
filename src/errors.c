@@ -32,7 +32,7 @@ static const char *errors[] = {
         "Unable to open debug file",
         "Error: not an ICE program\n",
         "Error: not enough memory for variables",
-        "Subprograms should have the i header (new)",
+        "NEW: Subprograms should have an ii header",
         "Warning: Unknown char in the string!",
         "Warning: string has been automatically squish-ed!",
 };

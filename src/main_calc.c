@@ -109,6 +109,7 @@ displayMainScreen:
     search_pos = NULL;
     while ((temp_name = ti_DetectAny(&search_pos, ICEheader, &type)) != NULL) {
         if (type == TI_PRGM_TYPE || type == TI_PPRGM_TYPE) {
+            // Hidden programs
             if ((uint8_t)(*temp_name) < 64) {
                 *temp_name += 64;
             }
@@ -276,6 +277,14 @@ compile_program:
         displayError(res);
         goto stop;
     }
+	
+	if (prescan.amountOfVariablesUsed > 84) {
+		gfx_SetTextFGColor(224);
+		sprintf(buf, "Too much variables used: %d", prescan.amountOfVariablesUsed);
+		displayMessageLineScroll(buf);
+		didCompile = false;
+		goto stop;
+	}
 
     // Allow hidden programs from Cesium
     if (*var_name < 64) {
