@@ -1953,6 +1953,7 @@ static uint8_t functionBB(int token) {
 
             fseek(ice.inPrgm, 0, SEEK_END);
             ice.programLength = ftell(ice.inPrgm);
+            _rewind(ice.inPrgm);
             fprintf(stdout, "Compiling subprogram %s\n", inName);
             free(inName);
             fprintf(stdout, "Program size: %u\n", ice.programLength);
