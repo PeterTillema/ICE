@@ -193,6 +193,9 @@ const function_t implementedFunctions[AMOUNT_OF_FUNCTIONS] = {
         {t2ByteTok, tFinDBD,        1,   0, 0},
         {t2ByteTok, tRandInt,       2,   0, 0},
         {t2ByteTok, tInStrng,       2,   0, 1},
+//A little something from beck.
+        {t2ByteTok, tRandBin,       1,   0, 0},
+//</>
         {tVarOut,   tDefineSprite,  255, 0, 0},
         {tVarOut,   tData,          255, 0, 0},
         {tVarOut,   tCopy,          255, 0, 0},
@@ -294,7 +297,7 @@ uint8_t parseFunction(unsigned int index) {
             ResetAllRegs();
         }
 
-            // Ans
+        // Ans
         else if (function == tAns) {
             CALL(_RclAns);
             CALL(_ConvOP1);
@@ -630,6 +633,18 @@ uint8_t parseFunction(unsigned int index) {
 #else
                 fprintf(stdout, "Debugging not allowed - use the calculator version!");
 #endif
+            }
+            //A little something from beck.
+            // randBin(SEED
+            else if (function2 == tRandBin){
+                if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID){
+                    return res;
+                }
+                ProgramPtrToOffsetStack();
+                CALL(ice.randAddr);
+    
+                ice.modifiedIY = true;
+                ResetAllRegs();
             }
         } else if (function == tExtTok) {
             // LEFT(
