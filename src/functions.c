@@ -642,10 +642,9 @@ uint8_t parseFunction(unsigned int index) {
                 }
                 ProgramPtrToOffsetStack();
                 CALL(ice.randAddr);
-    
-                ice.modifiedIY = true;
                 ResetAllRegs();
             }
+            //</beck>
         } else if (function == tExtTok) {
             // LEFT(
             if (function2 == tLEFT) {
