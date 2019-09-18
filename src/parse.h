@@ -23,7 +23,7 @@ enum {
     TYPE_MASK_U24
 };
 
-bool JumpForward(uint8_t *, uint8_t *, unsigned int, uint8_t, uint8_t);
+bool JumpForward(uint8_t *, uint8_t *, unsigned int, unsigned int, unsigned int);
 
 bool JumpBackwards(uint8_t *, uint8_t);
 

@@ -33,7 +33,8 @@ element_t stack[50];
 
 uint8_t parseProgram(void) {
     char buf[21];
-    uint8_t currentGoto, currentLbl, ret, *randAddr, *amountOfLinesOffset = 0;
+    uint8_t ret, *randAddr, *amountOfLinesOffset = 0;
+    unsigned int currentLbl, currentGoto;
 
     LD_IX_IMM(IX_VARIABLES);
 
@@ -1047,8 +1048,8 @@ static uint8_t functionI(int token) {
 
 static uint8_t functionIf(int token) {
     uint8_t *IfElseAddr = NULL;
-    uint8_t tempGotoElements = ice.curGoto;
-    uint8_t tempLblElements = ice.curLbl;
+    unsigned int tempGotoElements = ice.curGoto;
+    unsigned int tempLblElements = ice.curLbl;
 
     if ((token = _getc()) != EOF && token != tEnter && token != tColon) {
         uint8_t *IfStartAddr, res;
@@ -1173,8 +1174,8 @@ static uint8_t dummyReturn(int token) {
     return VALID;
 }
 
-bool JumpForward(uint8_t *startAddr, uint8_t *endAddr, unsigned int tempDataOffsetElements, uint8_t tempGotoElements,
-                 uint8_t tempLblElements) {
+bool JumpForward(uint8_t *startAddr, uint8_t *endAddr, unsigned int tempDataOffsetElements, unsigned int tempGotoElements,
+                 unsigned int tempLblElements) {
     if (!ice.debug && endAddr - startAddr <= 0x80) {
         uint8_t *tempPtr = startAddr;
         uint8_t opcode = *startAddr;
@@ -1250,8 +1251,8 @@ bool WhileJumpBackwardsLarge;
 
 static uint8_t functionWhile(int token) {
     unsigned int tempDataOffsetElements = ice.dataOffsetElements;
-    uint8_t tempGotoElements = ice.curGoto;
-    uint8_t tempLblElements = ice.curLbl;
+    unsigned int tempGotoElements = ice.curGoto;
+    unsigned int tempLblElements = ice.curLbl;
     uint8_t *WhileStartAddr = ice.programPtr, res;
     uint8_t *WhileRepeatCondStartTemp = WhileRepeatCondStart;
     bool WhileJumpForwardSmall;
@@ -1553,8 +1554,8 @@ static uint8_t functionClrHome(int token) {
 static uint8_t functionFor(int token) {
     bool endPointIsNumber = false, stepIsNumber = false, reversedCond = false, smallCode;
     unsigned int endPointNumber = 0, stepNumber = 0, tempDataOffsetElements;
-    uint8_t tempGotoElements = ice.curGoto;
-    uint8_t tempLblElements = ice.curLbl;
+    unsigned int tempGotoElements = ice.curGoto;
+    unsigned int tempLblElements = ice.curLbl;
     uint8_t *endPointExpressionValue = 0, *stepExpression = 0, *jumpToCond, *loopStart;
     uint8_t tok, variable, res;
 
