@@ -68,7 +68,8 @@ void displayError(uint8_t index) {
 void displayBreakError(void){
 #ifdef CALCULATOR
     gfx_SetTextFGColor(224);
-    displayMessageLineScroll("Quit key pressed. Cancel compile.");
+    displayMessageLineScroll("Quit key pressed. Cancel compiling");
+    while (!os_GetCSC());
 #else
     fprintf(stderr, "How did you get here?");
 #endif
