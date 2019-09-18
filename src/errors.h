@@ -24,10 +24,16 @@
 #define W_WRONG_CHAR       20
 #define W_SQUISHED         21
 
+//Beck waz here
+#define E_BREAK            253
+
 #define W_VALID            254
 #define VALID              255
 
 void displayLabelError(char *label);
 void displayError(uint8_t);
+
+//Beck did this
+void displayBreakError(void);
 
 #endif

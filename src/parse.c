@@ -201,6 +201,12 @@ uint8_t parseProgramUntilEnd(void) {
         }
 
         displayLoadingBar();
+        //Beck: Quit if the Quit key is pressed :P
+        kb_ScanGroup(1);
+        if (kb_Data[1]&kb_Graph){
+            return E_BREAK;
+        }
+        //</Beck>
 #endif
     }
 
@@ -1098,8 +1104,8 @@ static uint8_t functionIf(int token) {
         if (res == E_ELSE) {
             bool shortElseCode;
             uint16_t *ElseJumpAddr = NULL;
-            uint8_t tempGotoElements2 = ice.curGoto;
-            uint8_t tempLblElements2 = ice.curLbl;
+            unsigned int tempGotoElements2 = ice.curGoto;
+            unsigned int tempLblElements2 = ice.curLbl;
             unsigned int tempDataOffsetElements2;
 
             // Backup stuff

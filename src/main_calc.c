@@ -376,7 +376,15 @@ compile_program:
         sprintf(buf, "Output program: %s", ice.outName);
         displayMessageLineScroll(buf);
     } else if (res != W_VALID) {
-        displayError(res);
+#ifdef CALCULATOR
+        if (res==E_BREAK){
+            displayBreakError();
+        } else {
+#endif
+            displayError(res);
+#ifdef CALCULATOR
+        }
+#endif
     }
 
 stop:
