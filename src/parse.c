@@ -201,12 +201,11 @@ uint8_t parseProgramUntilEnd(void) {
         }
 
         displayLoadingBar();
-        //Beck: Quit if the Quit key is pressed :P
+        //Quit if the Quit key is pressed :P
         kb_ScanGroup(1);
         if (kb_Data[1]&kb_Graph){
             return E_BREAK;
         }
-        //</Beck>
 #endif
     }
 

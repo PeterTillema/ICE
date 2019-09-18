@@ -193,9 +193,7 @@ const function_t implementedFunctions[AMOUNT_OF_FUNCTIONS] = {
         {t2ByteTok, tFinDBD,        1,   0, 0},
         {t2ByteTok, tRandInt,       2,   0, 0},
         {t2ByteTok, tInStrng,       2,   0, 1},
-//A little something from beck.
         {t2ByteTok, tRandBin,       1,   0, 0},
-//</>
         {tVarOut,   tDefineSprite,  255, 0, 0},
         {tVarOut,   tData,          255, 0, 0},
         {tVarOut,   tCopy,          255, 0, 0},
@@ -634,8 +632,8 @@ uint8_t parseFunction(unsigned int index) {
                 fprintf(stdout, "Debugging not allowed - use the calculator version!");
 #endif
             }
-            //A little something from beck.
             // randBin(SEED
+            //Seed the rng.
             else if (function2 == tRandBin){
                 if ((res = parseFunction1Arg(index, REGISTER_HL)) != VALID){
                     return res;
@@ -644,7 +642,6 @@ uint8_t parseFunction(unsigned int index) {
                 CALL(ice.randAddr);
                 ResetAllRegs();
             }
-            //</beck>
         } else if (function == tExtTok) {
             // LEFT(
             if (function2 == tLEFT) {
