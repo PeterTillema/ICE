@@ -64,3 +64,15 @@ void displayError(uint8_t index) {
     fprintf(stderr, "Error at line %u\n", ice.currentLine);
 #endif
 }
+
+void displayBreakError(void){
+#ifdef CALCULATOR
+    gfx_SetTextFGColor(224);
+    displayMessageLineScroll("Quit key pressed. Cancel compiling");
+    while (!os_GetCSC());
+#else
+    fprintf(stderr, "How did you get here?");
+#endif
+}
+
+
