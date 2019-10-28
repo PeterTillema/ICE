@@ -1,2 +1,2 @@
 Full documentation guide:
-https://www.sharelatex.com/project/59e76e0ee3c6a97fc442f707
+https://github.com/PeterTillema/ICE/wiki
