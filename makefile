@@ -10,7 +10,14 @@ COMPRESSED  ?= YES
 ICON        ?= icon.png
 DESCRIPTION ?= "ICE Compiler"
 
+CFLAGS ?= -Wall -Wextra -Oz
+CXXFLAGS ?= -Wall -Wextra -Oz
+
 # ----------------------------
 
-include $(CEDEV)/include/.makefile
+ifndef CEDEV
+$(error CEDEV environment path variable is not set)
+endif
+
+include $(CEDEV)/meta/makefile.mk
 

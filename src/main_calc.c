@@ -76,7 +76,7 @@ void main(void) {
     // check if a program was used as input
     ti_CloseAll();
     ice.usingInputProgram = false;
-    inputProgram = os_RclAns(&inputProgramType);
+    inputProgram = os_GetAnsData(&inputProgramType);
     if (inputProgram && inputProgramType == TI_STRING_TYPE && inputProgram[2] == tProg && (inputProgramSize = *(uint16_t*)inputProgram) < 10) {
         memset(var_name, 0, sizeof var_name);
         memcpy(var_name, inputProgram + 3, inputProgramSize - 1);
