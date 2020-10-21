@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _MeanData
+assume adl = 1
+public _MeanData
 
 _MeanData:
 	add	hl, de

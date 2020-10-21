@@ -1,8 +1,7 @@
-.assume adl = 1
-segment data
-.def _RunPrgm
+assume adl = 1
+public _RunPrgm
 
-.ref __errsp
+extern __exitsp
 
 _RunPrgm:
 	call	0021A3Ch		; _DrawStatusBar
@@ -25,7 +24,7 @@ StartRunProgram:
 	ld	(hl), 5			; ProgObj
 	
 ; Cleanup C things
-	ld	sp, (__errsp + 1);
+	ld	sp, (__exitsp + 1);
 	pop	iy
 	pop	af
 	ex	(sp), hl

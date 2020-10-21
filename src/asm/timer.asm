@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _TimerData
+assume adl = 1
+public _TimerData
 
 _TimerData:
 	ld	hl, 0F20031h

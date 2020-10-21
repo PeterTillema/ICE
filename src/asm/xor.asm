@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _XorData
+assume adl = 1
+public _XorData
 
 _XorData:				; Credits to Runer112
 	ld	bc, -1

@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _SetHooks
+assume adl = 1
+public _SetHooks
 
 _SetHooks:
 	pop	bc

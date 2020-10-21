@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _GetCRC
+assume adl = 1
+public _GetCRC
 
 _GetCRC:
 	pop	hl

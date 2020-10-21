@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _OrData
+assume adl = 1
+public _OrData
 
 _OrData:				; Credits to Runer112
 	or	a, a

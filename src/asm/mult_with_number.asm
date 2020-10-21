@@ -1,10 +1,10 @@
-.assume adl = 1
-segment data
-.def _MultWithNumber
-.ref _SetRegHLToRegDE
-.ref _SetRegDEToRegHL
-.ref _ResetHL
-.ref _reg
+assume adl = 1
+public _MultWithNumber
+
+extern _SetRegHLToRegDE
+extern _SetRegDEToRegHL
+extern _ResetHL
+extern _reg
 
 _MultWithNumber:
 	ld	iy, 0

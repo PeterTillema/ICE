@@ -1,7 +1,6 @@
-.assume adl = 1
-segment data
-.def _CheaderData
-.def _GraphxHeader
+assume adl = 1
+public _CheaderData
+public _GraphxHeader
 
 _CheaderData:
 	ld	hl, LibLoadAppVar - _CheaderData + 0D1A882h
@@ -36,11 +35,11 @@ NotFound:
 	call	00207F0h
 	jp	00207C0h
 MissingAppVar:
-	.db	"Need"
+	db	"Need"
 LibLoadAppVar:
-	.db	" LibLoad", 0
-	.db	"tiny.cc/clibs", 0
+	db	" LibLoad", 0
+	db	"tiny.cc/clibs", 0
 RelocationStart:
 
 _GraphxHeader:
-	.db	0C0h, "GRAPHX", 0, 9
+	db	0C0h, "GRAPHX", 0, 9

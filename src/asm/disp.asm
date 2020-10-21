@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _DispData
+assume adl = 1
+public _DispData
 
 include 'ti84pce.inc'
 

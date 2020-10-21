@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _PauseData
+assume adl = 1
+public _PauseData
 
 _PauseData:
 	di

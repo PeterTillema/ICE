@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _PrgmData
+assume adl = 1
+public _PrgmData
 
 _PrgmData:
 	ld	iy, 0D00080h

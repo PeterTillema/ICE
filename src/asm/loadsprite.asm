@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _LoadspriteData
+assume adl = 1
+public _LoadspriteData
 
 _LoadspriteData:
 	call	0020320h

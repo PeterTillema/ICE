@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _RandData
+assume adl = 1
+public _RandData
 
 _RandData:
 	xor	a, a
@@ -61,7 +60,7 @@ __setstateloop:
 	ret
 
 __state:
-	.db	10h, 0Fh, 0Eh, 0Dh
-	.db	0Ch, 0Bh, 0Ah, 09h
-	.db	08h, 07h, 06h, 05h
-	.db	04h, 03h, 02h, 01h
+	db	10h, 0Fh, 0Eh, 0Dh
+	db	0Ch, 0Bh, 0Ah, 09h
+	db	08h, 07h, 06h, 05h
+	db	04h, 03h, 02h, 01h

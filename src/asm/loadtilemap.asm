@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _LoadtilemapData
+assume adl = 1
+public _LoadtilemapData
 
 _LoadtilemapData:
 	call	0020320h

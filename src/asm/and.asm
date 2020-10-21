@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _AndData
+assume adl = 1
+public _AndData
 
 _AndData:				; Credits to Runer112
 	add	hl, de

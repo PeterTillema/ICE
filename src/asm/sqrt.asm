@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _SqrtData
+assume adl = 1
+public _SqrtData
 
 _SqrtData:
 	dec	sp			; (sp) = ?

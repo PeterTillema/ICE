@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _KeypadData
+assume adl = 1
+public _KeypadData
 
 _KeypadData:
 	di

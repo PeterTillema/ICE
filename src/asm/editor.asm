@@ -1,10 +1,9 @@
-.assume adl = 1
-segment data
-.def _GotoEditor
-
-.ref __errsp
+assume adl = 1
+public _GotoEditor
 
 include 'ti84pce.inc'
+
+extern __exitsp
 
 _GotoEditor:
 	ld	iy, flags
@@ -24,7 +23,7 @@ _GotoEditor:
 	call	_PushOP1
 	
 ; Cleanup C things
-	ld	sp, (__errsp + 1);
+	ld	sp, (__exitsp + 1);
 	pop	iy
 	pop	af
 	ex	(sp), hl

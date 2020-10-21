@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _InputData
+assume adl = 1
+public _InputData
 
 include 'ti84pce.inc'
 

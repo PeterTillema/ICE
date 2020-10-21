@@ -1,6 +1,5 @@
-.assume adl = 1
-segment data
-.def _MallocData
+assume adl = 1
+public _MallocData
 
 _MallocData:
 	ld	de, 0
