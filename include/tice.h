@@ -21,13 +21,6 @@ extern "C" {
  */
 
 /**
- * Returns a pseudo-random 32-bit integer.
- *
- * @return the random integer
- */
-uint32_t random(void);
-
-/**
  * Seeds the pseudo-random number generator used by random() and rand() with the
  * value seed.
  *
