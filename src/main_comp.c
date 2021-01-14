@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 
     if (argc == 1) {
         fprintf(stdout, "%s\n", infoStr);
-        fprintf(stdout, "Usage: ice INPUT.8xp");
+        fprintf(stdout, "Usage: ice INPUT.8xp\n");
         exit(0);
     } else if (argc != 2) {
         fprintf(stderr, "Error: invalid amount of arguments\n");
