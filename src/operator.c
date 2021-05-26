@@ -42,12 +42,14 @@ void MultWithNumber(unsigned int num, uint8_t *programPtr, bool ChangeRegisters)
                 SetRegDEToRegHL();
             }
         }
-        for (bit = 1 << (22 - clz(num)); bit; bit >>= 1) {
-            ADD_HL_HL();
-            if (num & bit) {
-                ADD_HL_DE();
-            }
-        }
+		if (num > 1) {
+			for (bit = 1 << (22 - clz(num)); bit; bit >>= 1) {
+				ADD_HL_HL();
+				if (num & bit) {
+					ADD_HL_DE();
+				}
+			}
+		}
     } else if (num < 0x100) {
         if (ChangeRegisters) {
             EX_DE_HL();
